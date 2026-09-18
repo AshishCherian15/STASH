@@ -1,5 +1,6 @@
 package com.ashish.stash.core.database.repository;
 
+import android.content.Context;
 import com.ashish.stash.core.database.dao.CategoryDao;
 import com.ashish.stash.core.database.dao.DocumentDao;
 import com.ashish.stash.core.database.dao.DocumentSearchDao;
@@ -16,7 +17,7 @@ import javax.annotation.processing.Generated;
 import javax.inject.Provider;
 
 @ScopeMetadata("javax.inject.Singleton")
-@QualifierMetadata
+@QualifierMetadata("dagger.hilt.android.qualifiers.ApplicationContext")
 @DaggerGenerated
 @Generated(
     value = "dagger.internal.codegen.ComponentProcessor",
@@ -31,6 +32,8 @@ import javax.inject.Provider;
     "deprecation"
 })
 public final class DocumentRepositoryImpl_Factory implements Factory<DocumentRepositoryImpl> {
+  private final Provider<Context> contextProvider;
+
   private final Provider<DocumentDao> documentDaoProvider;
 
   private final Provider<CategoryDao> categoryDaoProvider;
@@ -47,11 +50,13 @@ public final class DocumentRepositoryImpl_Factory implements Factory<DocumentRep
 
   private final Provider<HashService> hashServiceProvider;
 
-  public DocumentRepositoryImpl_Factory(Provider<DocumentDao> documentDaoProvider,
-      Provider<CategoryDao> categoryDaoProvider, Provider<FolderDao> folderDaoProvider,
-      Provider<LabelDao> labelDaoProvider, Provider<DocumentSearchDao> documentSearchDaoProvider,
+  public DocumentRepositoryImpl_Factory(Provider<Context> contextProvider,
+      Provider<DocumentDao> documentDaoProvider, Provider<CategoryDao> categoryDaoProvider,
+      Provider<FolderDao> folderDaoProvider, Provider<LabelDao> labelDaoProvider,
+      Provider<DocumentSearchDao> documentSearchDaoProvider,
       Provider<ResourceLinkDao> resourceLinkDaoProvider,
       Provider<SafUriManager> safUriManagerProvider, Provider<HashService> hashServiceProvider) {
+    this.contextProvider = contextProvider;
     this.documentDaoProvider = documentDaoProvider;
     this.categoryDaoProvider = categoryDaoProvider;
     this.folderDaoProvider = folderDaoProvider;
@@ -64,20 +69,22 @@ public final class DocumentRepositoryImpl_Factory implements Factory<DocumentRep
 
   @Override
   public DocumentRepositoryImpl get() {
-    return newInstance(documentDaoProvider.get(), categoryDaoProvider.get(), folderDaoProvider.get(), labelDaoProvider.get(), documentSearchDaoProvider.get(), resourceLinkDaoProvider.get(), safUriManagerProvider.get(), hashServiceProvider.get());
+    return newInstance(contextProvider.get(), documentDaoProvider.get(), categoryDaoProvider.get(), folderDaoProvider.get(), labelDaoProvider.get(), documentSearchDaoProvider.get(), resourceLinkDaoProvider.get(), safUriManagerProvider.get(), hashServiceProvider.get());
   }
 
-  public static DocumentRepositoryImpl_Factory create(Provider<DocumentDao> documentDaoProvider,
-      Provider<CategoryDao> categoryDaoProvider, Provider<FolderDao> folderDaoProvider,
-      Provider<LabelDao> labelDaoProvider, Provider<DocumentSearchDao> documentSearchDaoProvider,
+  public static DocumentRepositoryImpl_Factory create(Provider<Context> contextProvider,
+      Provider<DocumentDao> documentDaoProvider, Provider<CategoryDao> categoryDaoProvider,
+      Provider<FolderDao> folderDaoProvider, Provider<LabelDao> labelDaoProvider,
+      Provider<DocumentSearchDao> documentSearchDaoProvider,
       Provider<ResourceLinkDao> resourceLinkDaoProvider,
       Provider<SafUriManager> safUriManagerProvider, Provider<HashService> hashServiceProvider) {
-    return new DocumentRepositoryImpl_Factory(documentDaoProvider, categoryDaoProvider, folderDaoProvider, labelDaoProvider, documentSearchDaoProvider, resourceLinkDaoProvider, safUriManagerProvider, hashServiceProvider);
+    return new DocumentRepositoryImpl_Factory(contextProvider, documentDaoProvider, categoryDaoProvider, folderDaoProvider, labelDaoProvider, documentSearchDaoProvider, resourceLinkDaoProvider, safUriManagerProvider, hashServiceProvider);
   }
 
-  public static DocumentRepositoryImpl newInstance(DocumentDao documentDao, CategoryDao categoryDao,
-      FolderDao folderDao, LabelDao labelDao, DocumentSearchDao documentSearchDao,
-      ResourceLinkDao resourceLinkDao, SafUriManager safUriManager, HashService hashService) {
-    return new DocumentRepositoryImpl(documentDao, categoryDao, folderDao, labelDao, documentSearchDao, resourceLinkDao, safUriManager, hashService);
+  public static DocumentRepositoryImpl newInstance(Context context, DocumentDao documentDao,
+      CategoryDao categoryDao, FolderDao folderDao, LabelDao labelDao,
+      DocumentSearchDao documentSearchDao, ResourceLinkDao resourceLinkDao,
+      SafUriManager safUriManager, HashService hashService) {
+    return new DocumentRepositoryImpl(context, documentDao, categoryDao, folderDao, labelDao, documentSearchDao, resourceLinkDao, safUriManager, hashService);
   }
 }

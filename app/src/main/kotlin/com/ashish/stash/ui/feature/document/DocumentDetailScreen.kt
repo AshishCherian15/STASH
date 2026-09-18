@@ -15,6 +15,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.ashish.stash.ui.theme.StashBlue
 import com.ashish.stash.ui.theme.VaultBrass
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -54,19 +55,25 @@ fun DocumentDetailScreen(
                         val isLocked = uiState.documentWithMetadata?.document?.isLocked == 1
                         Icon(
                             if (isLocked) Icons.Default.Lock else Icons.Default.LockOpen,
-                            contentDescription = if (isLocked) "Unlock" else "Lock"
+                            contentDescription = if (isLocked) "Unlock" else "Lock",
+                            tint = StashBlue
                         )
                     }
                     IconButton(onClick = { showDeleteDialog = true }) {
-                        Icon(Icons.Default.Delete, contentDescription = "Delete")
+                        Icon(Icons.Default.Delete, contentDescription = "Delete", tint = StashBlue)
                     }
-                }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.surface,
+                    titleContentColor = StashBlue,
+                    navigationIconContentColor = StashBlue
+                )
             )
         }
     ) { padding ->
         if (uiState.isLoading) {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator()
+                CircularProgressIndicator(color = StashBlue)
             }
         } else {
             val docWithMetadata = uiState.documentWithMetadata
@@ -81,22 +88,27 @@ fun DocumentDetailScreen(
                     verticalArrangement = Arrangement.spacedBy(24.dp)
                 ) {
                     // Header Section
-                    Card(modifier = Modifier.fillMaxWidth()) {
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = CardDefaults.cardColors(containerColor = StashBlue.copy(alpha = 0.05f))
+                    ) {
                         Column(modifier = Modifier.padding(16.dp)) {
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 Text(
                                     text = doc.displayTitle,
                                     style = MaterialTheme.typography.headlineMedium,
                                     fontWeight = FontWeight.Bold,
+                                    color = StashBlue,
                                     modifier = Modifier.weight(1f)
                                 )
                                 IconButton(onClick = { showRenameDialog = true }) {
-                                    Icon(Icons.Default.Edit, contentDescription = "Rename")
+                                    Icon(Icons.Default.Edit, contentDescription = "Rename", tint = StashBlue)
                                 }
                             }
                             Button(
                                 onClick = { onViewDocument(doc.documentId) },
-                                modifier = Modifier.fillMaxWidth().padding(top = 16.dp)
+                                modifier = Modifier.fillMaxWidth().padding(top = 16.dp),
+                                colors = ButtonDefaults.buttonColors(containerColor = StashBlue)
                             ) {
                                 Icon(Icons.Default.Visibility, contentDescription = null)
                                 Spacer(Modifier.width(8.dp))
@@ -107,7 +119,7 @@ fun DocumentDetailScreen(
 
                     // Metadata Section
                     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                        Text("Metadata", style = MaterialTheme.typography.titleMedium, color = VaultBrass)
+                        Text("Metadata", style = MaterialTheme.typography.titleMedium, color = StashBlue)
                         DetailItem(label = "Category", value = docWithMetadata.category?.name ?: "Uncategorized")
                         DetailItem(label = "Folder", value = docWithMetadata.folder?.name ?: "Vault Root")
                         DetailItem(label = "Priority", value = doc.importance, onClick = { showPriorityDialog = true })
@@ -117,13 +129,17 @@ fun DocumentDetailScreen(
 
                     // Notes Section
                     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        Text("Notes", style = MaterialTheme.typography.titleMedium, color = VaultBrass)
+                        Text("Notes", style = MaterialTheme.typography.titleMedium, color = StashBlue)
                         OutlinedTextField(
                             value = doc.notes ?: "",
                             onValueChange = { viewModel.updateNotes(it) },
                             modifier = Modifier.fillMaxWidth(),
                             minLines = 3,
-                            placeholder = { Text("Add private notes here...") }
+                            placeholder = { Text("Add private notes here...") },
+                            colors = OutlinedTextFieldDefaults.colors(
+                                focusedBorderColor = StashBlue,
+                                focusedLabelColor = StashBlue
+                            )
                         )
                     }
 
@@ -134,9 +150,9 @@ fun DocumentDetailScreen(
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Text("Resource Links", style = MaterialTheme.typography.titleMedium, color = VaultBrass)
+                            Text("Resource Links", style = MaterialTheme.typography.titleMedium, color = StashBlue)
                             IconButton(onClick = { showAddLinkDialog = true }) {
-                                Icon(Icons.Default.AddLink, contentDescription = "Add Link")
+                                Icon(Icons.Default.AddLink, contentDescription = "Add Link", tint = StashBlue)
                             }
                         }
                         if (docWithMetadata.resourceLinks.isEmpty()) {
@@ -147,7 +163,7 @@ fun DocumentDetailScreen(
                                     headlineContent = { Text(link.urlOrNote) },
                                     trailingContent = {
                                         IconButton(onClick = { viewModel.deleteResourceLink(link) }) {
-                                            Icon(Icons.Default.Close, contentDescription = "Remove")
+                                            Icon(Icons.Default.Close, contentDescription = "Remove", tint = MaterialTheme.colorScheme.error)
                                         }
                                     }
                                 )
@@ -172,20 +188,27 @@ fun DocumentDetailScreen(
                     onValueChange = { newTitle = it },
                     label = { Text("Title") },
                     singleLine = true,
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = StashBlue,
+                        focusedLabelColor = StashBlue
+                    )
                 )
             },
             confirmButton = {
-                Button(onClick = {
-                    viewModel.renameDocument(newTitle)
-                    showRenameDialog = false
-                }) {
+                Button(
+                    onClick = {
+                        viewModel.renameDocument(newTitle)
+                        showRenameDialog = false
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = StashBlue)
+                ) {
                     Text("Rename")
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showRenameDialog = false }) {
-                    Text("Cancel")
+                    Text("Cancel", color = StashBlue)
                 }
             }
         )
@@ -210,7 +233,8 @@ fun DocumentDetailScreen(
                         ) {
                             RadioButton(
                                 selected = uiState.documentWithMetadata?.document?.importance == priority,
-                                onClick = null
+                                onClick = null,
+                                colors = RadioButtonDefaults.colors(selectedColor = StashBlue)
                             )
                             Spacer(Modifier.width(12.dp))
                             Text(priority)
@@ -220,7 +244,7 @@ fun DocumentDetailScreen(
             },
             confirmButton = {
                 TextButton(onClick = { showPriorityDialog = false }) {
-                    Text("Close")
+                    Text("Close", color = StashBlue)
                 }
             }
         )
@@ -236,20 +260,27 @@ fun DocumentDetailScreen(
                     value = linkUrl,
                     onValueChange = { linkUrl = it },
                     label = { Text("URL or Reference") },
-                    singleLine = true
+                    singleLine = true,
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = StashBlue,
+                        focusedLabelColor = StashBlue
+                    )
                 )
             },
             confirmButton = {
-                Button(onClick = {
-                    viewModel.addResourceLink(linkUrl)
-                    showAddLinkDialog = false
-                }) {
+                Button(
+                    onClick = {
+                        viewModel.addResourceLink(linkUrl)
+                        showAddLinkDialog = false
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = StashBlue)
+                ) {
                     Text("Add")
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showAddLinkDialog = false }) {
-                    Text("Cancel")
+                    Text("Cancel", color = StashBlue)
                 }
             }
         )
@@ -288,21 +319,14 @@ fun DetailItem(label: String, value: String, onClick: (() -> Unit)? = null) {
             .clickable(enabled = onClick != null) { onClick?.invoke() }
             .padding(vertical = 8.dp)
     ) {
-        Text(text = label, style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.primary)
+        Text(text = label, style = MaterialTheme.typography.labelMedium, color = StashBlue)
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text(text = value, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.weight(1f))
             if (onClick != null) {
-                Icon(Icons.Default.Edit, contentDescription = null, modifier = Modifier.size(16.dp), tint = MaterialTheme.colorScheme.outline)
+                Icon(Icons.Default.Edit, contentDescription = null, modifier = Modifier.size(16.dp), tint = StashBlue.copy(alpha = 0.6f))
             }
         }
     }
-}
-
-fun formatFileSize(size: Long): String {
-    if (size <= 0) return "0 B"
-    val units = arrayOf("B", "KB", "MB", "GB", "TB")
-    val digitGroups = (Math.log10(size.toDouble()) / Math.log10(1024.0)).toInt()
-    return String.format("%.1f %s", size / Math.pow(1024.0, digitGroups.toDouble()), units[digitGroups])
 }
 
 fun formatDate(timestamp: Long): String = SimpleDateFormat("dd MMM yyyy", Locale.getDefault()).format(

@@ -8,7 +8,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Star
-import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -21,9 +20,9 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ashish.stash.core.database.entity.DocumentWithMetadata
 import com.ashish.stash.ui.feature.home.DocumentCard
-import com.ashish.stash.ui.theme.InkNavy
 import com.ashish.stash.ui.theme.Limestone
 import com.ashish.stash.ui.theme.SignalRust
+import com.ashish.stash.ui.theme.StashBlue
 import com.ashish.stash.ui.theme.VaultBrass
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -35,7 +34,7 @@ fun PriorityModeScreen(
     viewModel: PriorityModeViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    
+
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
@@ -46,9 +45,9 @@ fun PriorityModeScreen(
                     }
                 },
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                    containerColor = InkNavy,
-                    titleContentColor = Limestone,
-                    navigationIconContentColor = Limestone
+                    containerColor = Limestone,
+                    titleContentColor = StashBlue,
+                    navigationIconContentColor = StashBlue
                 )
             )
         }
@@ -56,7 +55,7 @@ fun PriorityModeScreen(
         Column(modifier = Modifier.padding(padding).fillMaxSize()) {
             if (uiState.isLoading) {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    CircularProgressIndicator(color = VaultBrass)
+                    CircularProgressIndicator(color = StashBlue)
                 }
             } else if (uiState.documents.isEmpty()) {
                 PriorityEmptyState()

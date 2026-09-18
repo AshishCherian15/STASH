@@ -27,9 +27,9 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.ashish.stash.core.database.entity.CategoryEntity
 import com.ashish.stash.ui.component.rememberSafFilePickerLauncher
 import com.ashish.stash.ui.component.rememberSafMultiFilePickerLauncher
-import com.ashish.stash.ui.theme.InkNavy
 import com.ashish.stash.ui.theme.LedgerSlate
 import com.ashish.stash.ui.theme.Limestone
+import com.ashish.stash.ui.theme.StashBlue
 import com.ashish.stash.ui.theme.VaultBrass
 import java.util.Locale
 
@@ -69,7 +69,7 @@ fun HomeScreen(
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
-                title = { Text("Stash", fontWeight = FontWeight.Bold) },
+                title = { Text("Stash", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold) },
                 navigationIcon = {
                     IconButton(onClick = onOpenDrawer) {
                         Icon(Icons.Default.Menu, contentDescription = "Menu")
@@ -87,15 +87,17 @@ fun HomeScreen(
                     }
                 },
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                    containerColor = InkNavy,
-                    titleContentColor = Limestone,
-                    navigationIconContentColor = Limestone,
-                    actionIconContentColor = Limestone
+                    containerColor = Limestone,
+                    titleContentColor = StashBlue,
+                    navigationIconContentColor = StashBlue,
+                    actionIconContentColor = StashBlue
                 )
             )
         },
         bottomBar = {
             BottomAppBar(
+                containerColor = Limestone,
+                contentColor = StashBlue,
                 actions = {
                     IconButton(onClick = { multiFilePicker.launch(arrayOf("*/*")) }) {
                         Icon(Icons.Default.CreateNewFolder, contentDescription = "Batch Import")
@@ -109,7 +111,7 @@ fun HomeScreen(
                 floatingActionButton = {
                     FloatingActionButton(
                         onClick = { filePicker.launch(arrayOf("*/*")) },
-                        containerColor = VaultBrass,
+                        containerColor = StashBlue,
                         contentColor = Color.White,
                         elevation = FloatingActionButtonDefaults.elevation(0.dp) // Docked look
                     ) {
@@ -119,7 +121,7 @@ fun HomeScreen(
             )
         },
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
-        containerColor = MaterialTheme.colorScheme.background
+        containerColor = Color.White
     ) { padding ->
         Box(modifier = Modifier.padding(padding).fillMaxSize()) {
             if (uiState.documents.isEmpty() && !uiState.isLoading) {
@@ -130,10 +132,10 @@ fun HomeScreen(
 
             if (uiState.isImporting) {
                 Box(
-                    modifier = Modifier.fillMaxSize().background(Color.Black.copy(alpha = 0.5f)),
+                    modifier = Modifier.fillMaxSize().background(Color.White.copy(alpha = 0.7f)),
                     contentAlignment = Alignment.Center
                 ) {
-                    CircularProgressIndicator(color = VaultBrass)
+                    CircularProgressIndicator(color = StashBlue)
                 }
             }
         }
@@ -151,10 +153,15 @@ private fun DocumentListContent(
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         item {
-            StatStrip(
-                unlockedCount = state.stats.unlockedDocuments,
-                lockedCount = state.stats.lockedDocuments,
-                totalSizeBytes = state.stats.totalSizeBytes
+            StatStrip(stats = state.stats)
+        }
+
+        // Category Filter Row: Making categories visible and interactive
+        item {
+            CategoryFilterRow(
+                categories = state.documents.mapNotNull { it.data.category }.distinctBy { it.categoryId },
+                selectedCategoryId = null, // Future: wire up filtering
+                onCategorySelected = {}
             )
         }
 
@@ -168,14 +175,45 @@ private fun DocumentListContent(
 }
 
 @Composable
-private fun StatStrip(unlockedCount: Int, lockedCount: Int, totalSizeBytes: Long) {
+private fun CategoryFilterRow(
+    categories: List<CategoryEntity>,
+    selectedCategoryId: Long?,
+    onCategorySelected: (Long?) -> Unit
+) {
+    LazyRow(
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp)
+    ) {
+        item {
+            FilterChip(
+                selected = selectedCategoryId == null,
+                onClick = { onCategorySelected(null) },
+                label = { Text("All") }
+            )
+        }
+        items(categories) { category ->
+            FilterChip(
+                selected = selectedCategoryId == category.categoryId,
+                onClick = { onCategorySelected(category.categoryId) },
+                label = { Text(category.name) },
+                colors = FilterChipDefaults.filterChipColors(
+                    selectedContainerColor = StashBlue.copy(alpha = 0.2f),
+                    selectedLabelColor = StashBlue
+                )
+            )
+        }
+    }
+}
+
+@Composable
+private fun StatStrip(stats: HomeStats) {
     Row(
         modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Text("$unlockedCount docs ($lockedCount locked)", style = MaterialTheme.typography.labelMedium, color = LedgerSlate)
-        Text(formatFileSize(totalSizeBytes), style = MaterialTheme.typography.labelSmall, color = LedgerSlate)
+        Text("${stats.unlockedDocuments} docs (${stats.lockedDocuments} locked)", style = MaterialTheme.typography.labelMedium, color = LedgerSlate)
+        Text(formatFileSize(stats.totalSizeBytes), style = MaterialTheme.typography.labelSmall, color = LedgerSlate)
     }
 }
 
@@ -189,7 +227,7 @@ private fun EmptyHomeContent(onAddClick: () -> Unit) {
         Icon(
             imageVector = Icons.Outlined.FolderSpecial,
             contentDescription = null,
-            tint = VaultBrass,
+            tint = StashBlue,
             modifier = Modifier.size(120.dp)
         )
         Spacer(modifier = Modifier.height(24.dp))
@@ -208,7 +246,7 @@ private fun EmptyHomeContent(onAddClick: () -> Unit) {
         Spacer(modifier = Modifier.height(32.dp))
         Button(
             onClick = onAddClick,
-            colors = ButtonDefaults.buttonColors(containerColor = VaultBrass),
+            colors = ButtonDefaults.buttonColors(containerColor = StashBlue),
             contentPadding = PaddingValues(horizontal = 32.dp, vertical = 12.dp)
         ) {
             Icon(Icons.Default.Add, null)

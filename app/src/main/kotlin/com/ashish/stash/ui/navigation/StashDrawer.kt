@@ -8,11 +8,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavDestination
 import androidx.navigation.NavDestination.Companion.hasRoute
 import com.ashish.stash.ui.component.StashLogo
-import com.ashish.stash.ui.theme.VaultBrass
+import com.ashish.stash.ui.theme.StashBlue
 
 @Composable
 fun StashDrawer(
@@ -30,15 +31,16 @@ fun StashDrawer(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.padding(horizontal = 28.dp, vertical = 16.dp)
         ) {
-            StashLogo(modifier = Modifier.size(40.dp))
+            StashLogo(modifier = Modifier.size(60.dp))
             Spacer(Modifier.width(12.dp))
             Text(
                 text = "Stash",
                 style = MaterialTheme.typography.headlineMedium,
-                color = VaultBrass
+                color = StashBlue,
+                fontWeight = FontWeight.Bold
             )
         }
-        HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+        HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp), color = StashBlue.copy(alpha = 0.1f))
         
         DrawerItem(
             label = "Home",
@@ -60,7 +62,7 @@ fun StashDrawer(
         )
         
         Spacer(Modifier.weight(1f))
-        HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+        HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp), color = StashBlue.copy(alpha = 0.1f))
         
         DrawerItem(
             label = "Settings",
@@ -92,9 +94,9 @@ private fun DrawerItem(
         onClick = onClick,
         modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding),
         colors = NavigationDrawerItemDefaults.colors(
-            selectedContainerColor = VaultBrass.copy(alpha = 0.1f),
-            selectedIconColor = VaultBrass,
-            selectedTextColor = VaultBrass,
+            selectedContainerColor = StashBlue.copy(alpha = 0.1f),
+            selectedIconColor = StashBlue,
+            selectedTextColor = StashBlue,
             unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
             unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant
         )

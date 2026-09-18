@@ -17,7 +17,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import com.ashish.stash.ui.theme.VaultBrass
+import com.ashish.stash.ui.theme.StashBlue
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -30,7 +30,12 @@ fun PrivacyScreen(onNavigateBack: () -> Unit) {
                     IconButton(onClick = onNavigateBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
                     }
-                }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.surface,
+                    titleContentColor = StashBlue,
+                    navigationIconContentColor = StashBlue
+                )
             )
         }
     ) { padding ->
@@ -47,14 +52,15 @@ fun PrivacyScreen(onNavigateBack: () -> Unit) {
                 imageVector = Icons.Default.GppGood,
                 contentDescription = null,
                 modifier = Modifier.size(80.dp),
-                tint = VaultBrass
+                tint = StashBlue
             )
 
             Text(
                 text = "Privacy is the core of Stash",
                 style = MaterialTheme.typography.headlineMedium,
                 fontWeight = FontWeight.Bold,
-                textAlign = TextAlign.Center
+                textAlign = TextAlign.Center,
+                color = StashBlue
             )
 
             Text(
@@ -85,7 +91,7 @@ fun PrivacyScreen(onNavigateBack: () -> Unit) {
             )
 
             Surface(
-                color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f),
+                color = StashBlue.copy(alpha = 0.05f),
                 shape = MaterialTheme.shapes.medium,
                 modifier = Modifier.fillMaxWidth()
             ) {
@@ -93,7 +99,8 @@ fun PrivacyScreen(onNavigateBack: () -> Unit) {
                     Text(
                         text = "Data Collection",
                         style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold
+                        fontWeight = FontWeight.Bold,
+                        color = StashBlue
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
@@ -121,7 +128,7 @@ private fun PrivacySection(
         Icon(
             imageVector = icon,
             contentDescription = null,
-            tint = VaultBrass,
+            tint = StashBlue,
             modifier = Modifier.size(24.dp)
         )
         Spacer(modifier = Modifier.width(16.dp))

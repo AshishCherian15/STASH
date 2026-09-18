@@ -16,7 +16,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.ashish.stash.ui.component.StashLogo
-import com.ashish.stash.ui.theme.VaultBrass
+import com.ashish.stash.ui.theme.StashBlue
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -31,12 +31,17 @@ fun AboutScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("About Stash") },
+                title = { Text("About") },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
                     }
-                }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.surface,
+                    titleContentColor = StashBlue,
+                    navigationIconContentColor = StashBlue
+                )
             )
         }
     ) { padding ->
@@ -56,7 +61,7 @@ fun AboutScreen(
                 text = "Stash",
                 style = MaterialTheme.typography.displaySmall,
                 fontWeight = FontWeight.Bold,
-                color = VaultBrass
+                color = StashBlue
             )
             
             Text(
@@ -108,15 +113,27 @@ fun AboutScreen(
             Spacer(modifier = Modifier.height(32.dp))
 
             // Secondary Actions
-            OutlinedButton(onClick = onLicensesClick, modifier = Modifier.fillMaxWidth()) {
+            OutlinedButton(
+                onClick = onLicensesClick, 
+                modifier = Modifier.fillMaxWidth(),
+                colors = ButtonDefaults.outlinedButtonColors(contentColor = StashBlue)
+            ) {
                 Text("Open Source Licenses")
             }
             Spacer(modifier = Modifier.height(8.dp))
-            OutlinedButton(onClick = onPrivacyClick, modifier = Modifier.fillMaxWidth()) {
+            OutlinedButton(
+                onClick = onPrivacyClick, 
+                modifier = Modifier.fillMaxWidth(),
+                colors = ButtonDefaults.outlinedButtonColors(contentColor = StashBlue)
+            ) {
                 Text("Privacy Policy")
             }
             Spacer(modifier = Modifier.height(8.dp))
-            OutlinedButton(onClick = onHelpFaqClick, modifier = Modifier.fillMaxWidth()) {
+            OutlinedButton(
+                onClick = onHelpFaqClick, 
+                modifier = Modifier.fillMaxWidth(),
+                colors = ButtonDefaults.outlinedButtonColors(contentColor = StashBlue)
+            ) {
                 Text("Help & FAQ")
             }
 
@@ -141,7 +158,7 @@ private fun DeveloperLinkItem(
     Surface(
         onClick = onClick,
         shape = MaterialTheme.shapes.medium,
-        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+        color = StashBlue.copy(alpha = 0.05f),
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 4.dp)
@@ -150,10 +167,10 @@ private fun DeveloperLinkItem(
             modifier = Modifier.padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Icon(icon, contentDescription = null, tint = VaultBrass)
+            Icon(icon, contentDescription = null, tint = StashBlue)
             Spacer(modifier = Modifier.width(16.dp))
             Column {
-                Text(label, style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.primary)
+                Text(label, style = MaterialTheme.typography.labelMedium, color = StashBlue)
                 Text(value, style = MaterialTheme.typography.bodyMedium)
             }
         }

@@ -2,13 +2,13 @@
 <resources>
     <!--
       XML theme used only for the window/splash period before Compose draws its first frame.
-      windowBackground set to ink navy so the window phase matches the branded Compose splash.
+      windowBackground set to white so the window phase matches the new white/blue splash.
       Compose MaterialTheme takes over from here.
     -->
     <style name="Theme.Stash" parent="android:Theme.Material.Light.NoActionBar">
-        <item name="android:windowBackground">@color/ink_navy</item>
-        <item name="android:statusBarColor">@color/ink_navy</item>
-        <item name="android:navigationBarColor">@color/ink_navy</item>
+        <item name="android:windowBackground">@color/limestone</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
     </style>
 
     <style name="Theme.Stash.Transparent" parent="android:Theme.Material.Light.NoActionBar">
