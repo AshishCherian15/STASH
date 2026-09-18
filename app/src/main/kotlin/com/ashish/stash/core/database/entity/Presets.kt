@@ -2,9 +2,10 @@ package com.ashish.stash.core.database.entity
 
 /**
  * Professional preset palette for Legal, Financial, and Medical documents.
+ * design.md §1: premium leather and paper tones.
  */
 object StashPalette {
-    const val PRIMARY_FOLDER = "#E6D2B5"
+    const val ACTIVE_CASE = "#E6D2B5"
     const val ARCHIVED = "#BCAAA4"
     const val PENDING = "#DBBDAA"
     const val EXTERNAL = "#DFCCBE"
@@ -21,21 +22,22 @@ object StashPalette {
  */
 object StashDefaults {
     val Categories = listOf(
-        CategoryEntity(name = "Active Cases", color = StashPalette.PRIMARY_FOLDER),
+        CategoryEntity(name = "Active Cases", color = StashPalette.ACTIVE_CASE),
+        CategoryEntity(name = "Archived", color = StashPalette.ARCHIVED),
         CategoryEntity(name = "Financial", color = StashPalette.FINANCIAL),
         CategoryEntity(name = "Legal", color = StashPalette.LEGAL),
         CategoryEntity(name = "Medical", color = StashPalette.MEDICAL),
-        CategoryEntity(name = "Personal", color = StashPalette.PERSONNEL)
+        CategoryEntity(name = "Personnel", color = StashPalette.PERSONNEL)
     )
     
     val Folders = listOf(
-        FolderEntity(name = "Vault Root", isLocked = 1),
-        FolderEntity(name = "Inbox", isLocked = 0)
+        FolderEntity(name = "General Vault", isLocked = 1),
+        FolderEntity(name = "Priority Inbox", isLocked = 0)
     )
     
     val Labels = listOf(
-        LabelEntity(name = "Priority"),
-        LabelEntity(name = "Review Needed"),
-        LabelEntity(name = "Tax 2026")
+        LabelEntity(name = "Urgent"),
+        LabelEntity(name = "To Review"),
+        LabelEntity(name = "Personal")
     )
 }
