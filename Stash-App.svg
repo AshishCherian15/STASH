@@ -1,0 +1,100 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024" fill="none">
+  <defs>
+    <linearGradient id="bg" x1="130" y1="90" x2="890" y2="950" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#111C3B"/>
+      <stop offset="1" stop-color="#050916"/>
+    </linearGradient>
+    <linearGradient id="rim" x1="160" y1="110" x2="870" y2="920" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#2D7BFF"/>
+      <stop offset=".55" stop-color="#1237D9"/>
+      <stop offset="1" stop-color="#00D9FF"/>
+    </linearGradient>
+    <linearGradient id="folder" x1="270" y1="410" x2="770" y2="900" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#159BFF"/>
+      <stop offset=".5" stop-color="#1452EA"/>
+      <stop offset="1" stop-color="#1729B8"/>
+    </linearGradient>
+    <linearGradient id="folderSide" x1="210" y1="390" x2="360" y2="850" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#16E6FF"/>
+      <stop offset="1" stop-color="#1245D9"/>
+    </linearGradient>
+    <linearGradient id="paper" x1="340" y1="180" x2="590" y2="570" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFFFFF"/>
+      <stop offset="1" stop-color="#DCE7FF"/>
+    </linearGradient>
+    <linearGradient id="doc" x1="560" y1="300" x2="810" y2="580" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#527DFF"/>
+      <stop offset="1" stop-color="#1838D0"/>
+    </linearGradient>
+    <linearGradient id="lock" x1="490" y1="580" x2="690" y2="920" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFFFFF"/>
+      <stop offset="1" stop-color="#BFD4FF"/>
+    </linearGradient>
+    <filter id="shadow" x="-30%" y="-30%" width="160%" height="170%">
+      <feDropShadow dx="0" dy="24" stdDeviation="24" flood-color="#000000" flood-opacity=".45"/>
+    </filter>
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="14" result="blur"/>
+    </filter>
+    <clipPath id="clip">
+      <rect x="82" y="82" width="860" height="860" rx="190"/>
+    </clipPath>
+  </defs>
+
+  <!-- Premium rounded-square icon -->
+  <rect x="72" y="72" width="880" height="880" rx="205" fill="#020612"/>
+  <rect x="82" y="82" width="860" height="860" rx="190" fill="url(#bg)"/>
+  <rect x="82" y="82" width="860" height="860" rx="190" stroke="url(#rim)" stroke-width="7"/>
+
+  <!-- subtle ambient glow -->
+  <g opacity=".24" filter="url(#glow)">
+    <ellipse cx="510" cy="760" rx="310" ry="180" fill="#087CFF"/>
+  </g>
+
+  <g clip-path="url(#clip)" filter="url(#shadow)">
+    <!-- rear folder/document silhouette -->
+    <path d="M214 427C214 388 245 357 284 357H431L476 402H759C795 402 824 431 824 467V676H214V427Z"
+          fill="url(#folderSide)"/>
+
+    <!-- white document -->
+    <g transform="rotate(-11 505 365)">
+      <rect x="292" y="174" width="442" height="405" rx="38" fill="url(#paper)"/>
+      <rect x="348" y="270" width="270" height="18" rx="9" fill="#5A80EA"/>
+      <rect x="348" y="322" width="235" height="18" rx="9" fill="#6D8FF0"/>
+      <rect x="348" y="374" width="195" height="18" rx="9" fill="#7B9AF2"/>
+      <rect x="348" y="426" width="250" height="18" rx="9" fill="#9BB2F7"/>
+    </g>
+
+    <!-- image/document card -->
+    <g transform="rotate(8 700 405)">
+      <rect x="542" y="254" width="310" height="300" rx="34" fill="url(#doc)"/>
+      <circle cx="760" cy="324" r="24" fill="#DCE9FF"/>
+      <path d="M585 484L655 400C668 385 690 386 702 402L738 447L771 416C784 404 804 405 816 419L852 462V520H585V484Z"
+            fill="#AFC5FF" opacity=".95"/>
+    </g>
+
+    <!-- main folder -->
+    <path d="M232 486C232 447 263 416 302 416H448L490 459H770C808 459 838 490 838 528V820C838 866 801 902 756 902H310C266 902 232 868 232 824V486Z"
+          fill="url(#folder)"/>
+    <!-- folder highlight -->
+    <path d="M260 520C260 489 285 465 316 465H443L475 497H773C790 497 805 506 814 520"
+          stroke="#55C9FF" stroke-width="10" stroke-linecap="round" opacity=".85"/>
+
+    <!-- lock shackle -->
+    <path d="M525 664V615C525 555 572 508 632 508C692 508 739 555 739 615V664"
+          stroke="url(#lock)" stroke-width="52" stroke-linecap="round"/>
+    <!-- lock body -->
+    <rect x="474" y="640" width="316" height="252" rx="52" fill="url(#lock)"/>
+    <rect x="474" y="640" width="316" height="252" rx="52" stroke="#FFFFFF" stroke-opacity=".65" stroke-width="4"/>
+
+    <!-- keyhole -->
+    <circle cx="632" cy="747" r="34" fill="#102B91"/>
+    <path d="M614 771H650L661 826H603L614 771Z" fill="#102B91"/>
+
+    <!-- tiny specular highlights -->
+    <path d="M286 549C286 531 300 517 318 517H418" stroke="#8CE8FF" stroke-width="8" stroke-linecap="round" opacity=".45"/>
+  </g>
+
+  <!-- clean outer highlight -->
+  <rect x="82" y="82" width="860" height="860" rx="190" stroke="#3A8CFF" stroke-opacity=".22" stroke-width="18"/>
+</svg>

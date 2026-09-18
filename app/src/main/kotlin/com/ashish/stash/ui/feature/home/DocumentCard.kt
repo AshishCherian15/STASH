@@ -1,0 +1,169 @@
+package com.ashish.stash.ui.feature.home
+
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.AutoAwesome
+import androidx.compose.material.icons.outlined.Lock
+import androidx.compose.material3.*
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.unit.dp
+import com.ashish.stash.core.database.entity.DocumentWithMetadata
+import com.ashish.stash.ui.theme.VaultBrass
+import com.ashish.stash.ui.theme.LedgerSlate
+
+@Composable
+fun DocumentCard(
+    documentWithMetadata: DocumentWithMetadata,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    searchQuery: String = ""
+) {
+    val document = documentWithMetadata.document
+    val category = documentWithMetadata.category
+    val folder = documentWithMetadata.folder
+    val labels = documentWithMetadata.labels
+    
+    val needsOcr = document.mimeType.startsWith("image/") || document.mimeType.contains("pdf")
+    val ocrComplete = !document.ocrText.isNullOrBlank()
+
+    Card(
+        onClick = onClick,
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 8.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .height(IntrinsicSize.Min)
+                .fillMaxWidth()
+        ) {
+            val notchColor = category?.color?.let { parseColor(it) } ?: MaterialTheme.colorScheme.outline
+            Box(
+                modifier = Modifier
+                    .fillMaxHeight()
+                    .width(6.dp)
+                    .background(notchColor)
+            )
+
+            Column(
+                modifier = Modifier
+                    .padding(16.dp)
+                    .weight(1f)
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    if (category != null) {
+                        Text(
+                            text = category.name.uppercase(),
+                            style = MaterialTheme.typography.labelSmall,
+                            color = notchColor,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Text(" • ", style = MaterialTheme.typography.labelSmall)
+                    }
+                    if (folder != null) {
+                        Text(
+                            text = folder.name,
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.secondary
+                        )
+                        Text(" • ", style = MaterialTheme.typography.labelSmall)
+                    }
+                    Text(
+                        text = document.mimeType.split("/").last().uppercase(),
+                        style = MaterialTheme.typography.labelSmall
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(4.dp))
+
+                Text(
+                    text = highlightText(document.displayTitle, searchQuery),
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+                
+                if (labels.isNotEmpty() || (needsOcr && !ocrComplete)) {
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(4.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        if (needsOcr && !ocrComplete) {
+                            Icon(
+                                Icons.Outlined.AutoAwesome,
+                                contentDescription = null,
+                                modifier = Modifier.size(14.dp),
+                                tint = VaultBrass
+                            )
+                            Text("Indexing...", style = MaterialTheme.typography.labelSmall, color = VaultBrass)
+                        }
+                        
+                        labels.take(2).forEach { label ->
+                            SuggestionChip(
+                                onClick = {},
+                                label = { Text(label.name, style = MaterialTheme.typography.labelSmall) },
+                                modifier = Modifier.height(24.dp)
+                            )
+                        }
+                    }
+                }
+            }
+
+            if (document.isLocked == 1) {
+                Icon(
+                    imageVector = Icons.Outlined.Lock,
+                    contentDescription = "Locked",
+                    modifier = Modifier
+                        .padding(16.dp)
+                        .align(Alignment.CenterVertically),
+                    tint = VaultBrass
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun highlightText(text: String, query: String): AnnotatedString {
+    if (query.isEmpty() || !text.contains(query, ignoreCase = true)) {
+        return AnnotatedString(text)
+    }
+
+    return buildAnnotatedString {
+        var start = 0
+        while (start < text.length) {
+            val index = text.indexOf(query, start, ignoreCase = true)
+            if (index == -1) {
+                append(text.substring(start))
+                break
+            }
+            append(text.substring(start, index))
+            withStyle(SpanStyle(background = VaultBrass.copy(alpha = 0.3f), fontWeight = FontWeight.Bold)) {
+                append(text.substring(index, index + query.length))
+            }
+            start = index + query.length
+        }
+    }
+}
+
+private fun parseColor(colorString: String): Color {
+    return try {
+        Color(android.graphics.Color.parseColor(colorString))
+    } catch (e: Exception) {
+        Color.Gray
+    }
+}

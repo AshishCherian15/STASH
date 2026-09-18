@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Color values referenced from themes.xml only (pre-Compose window period).
+         All other colors live in Color.kt in the Compose theme. -->
+    <color name="limestone">#F1EEE6</color>
+    <color name="ink_navy">#1C2733</color>
+    <color name="vault_brass">#B8873B</color>
+    
+    <!-- Widget colors -->
+    <color name="widget_background">#1C2733</color>
+    <color name="widget_text">#F1EEE6</color>
+    <color name="widget_text_secondary">#8FA0AA</color>
+</resources>

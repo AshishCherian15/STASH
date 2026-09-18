@@ -1,0 +1,66 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="200dp"
+    android:height="200dp"
+    android:viewportWidth="1024"
+    android:viewportHeight="1024">
+
+    <!-- Center and scale to fit the 240dp container. -->
+    <group
+        android:scaleX="0.9"
+        android:scaleY="0.9"
+        android:translateX="51"
+        android:translateY="51">
+
+        <!-- ambient glow -->
+        <path
+            android:pathData="M510,760m-310,0a310,180 0,1 1,620 0a310,180 0,1 1,-620 0"
+            android:fillColor="#087CFF"
+            android:fillAlpha="0.15"/>
+
+        <!-- rear document silhouette -->
+        <path
+            android:pathData="M214 427C214 388 245 357 284 357H431L476 402H759C795 402 824 431 824 467V676H214V427Z"
+            android:fillColor="#1245D9"/>
+
+        <!-- primary white document -->
+        <group android:rotation="-11" android:pivotX="505" android:pivotY="365">
+            <path
+                android:pathData="M292,174h442v405h-442z"
+                android:fillColor="#FFFFFF"/>
+            <path android:pathData="M348,270h270v18h-270z" android:fillColor="#5A80EA"/>
+            <path android:pathData="M348,322h235v18h-235z" android:fillColor="#6D8FF0"/>
+            <path android:pathData="M348,374h195v18h-195z" android:fillColor="#7B9AF2"/>
+        </group>
+
+        <!-- front document/image card -->
+        <group android:rotation="8" android:pivotX="700" android:pivotY="405">
+            <path
+                android:pathData="M542,254h310v300h-310z"
+                android:fillColor="#1838D0"/>
+            <path
+                android:pathData="M585 484L655 400C668 385 690 386 702 402L738 447L771 416C784 404 804 405 816 419L852 462V520H585V484Z"
+                android:fillColor="#AFC5FF"/>
+        </group>
+
+        <!-- main vault folder -->
+        <path
+            android:pathData="M232 486C232 447 263 416 302 416H448L490 459H770C808 459 838 490 838 528V820C838 866 801 902 756 902H310C266 902 232 868 232 824V486Z"
+            android:fillColor="#1452EA"/>
+
+        <!-- lock mechanism -->
+        <path
+            android:pathData="M525 664V615C525 555 572 508 632 508C692 508 739 555 739 615V664"
+            android:strokeColor="#FFFFFF"
+            android:strokeWidth="52"
+            android:strokeLineCap="round"/>
+        <path
+            android:pathData="M474,640h316v252c0,28.7 -23.3,52 -52,52h-212c-28.7,0 -52,-23.3 -52,-52z"
+            android:fillColor="#BFD4FF"/>
+
+        <!-- keyhole detail -->
+        <path
+            android:pathData="M632,747m-34,0a34,34 0,1 1,68 0a34,34 0,1 1,-68 0"
+            android:fillColor="#102B91"/>
+    </group>
+
+</vector>

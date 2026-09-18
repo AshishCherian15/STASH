@@ -1,0 +1,204 @@
+package com.ashish.stash.ui.feature.settings
+
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowForwardIos
+import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.outlined.Edit
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.ashish.stash.ui.component.rememberSafFilePickerLauncher
+import com.ashish.stash.ui.feature.settings.tabs.CategoriesTab
+import com.ashish.stash.ui.feature.settings.tabs.FoldersTab
+import com.ashish.stash.ui.feature.settings.tabs.LabelsTab
+import com.ashish.stash.ui.theme.VaultBrass
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun SettingsScreen(
+    onNavigateBack: () -> Unit,
+    onNavigateToAbout: () -> Unit,
+    onNavigateToPrivacy: () -> Unit,
+    onNavigateToHelp: () -> Unit,
+    onNavigateToLicenses: () -> Unit,
+    modifier: Modifier = Modifier,
+    viewModel: SettingsViewModel = hiltViewModel()
+) {
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val context = LocalContext.current
+    var currentSubScreen by remember { mutableStateOf<SubScreen?>(null) }
+
+    val backupPicker = rememberSafFilePickerLauncher(
+        onFileSelected = { uri ->
+            val jsonString = context.contentResolver.openInputStream(uri)?.bufferedReader()?.use { it.readText() } ?: ""
+            viewModel.importBackup(jsonString)
+        }
+    )
+
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text(currentSubScreen?.title ?: "Settings") },
+                navigationIcon = {
+                    IconButton(onClick = {
+                        if (currentSubScreen != null) {
+                            currentSubScreen = null
+                        } else {
+                            onNavigateBack()
+                        }
+                    }) {
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                    }
+                }
+            )
+        }
+    ) { padding ->
+        Box(modifier = Modifier.padding(padding).fillMaxSize()) {
+            if (currentSubScreen == null) {
+                SettingsMainMenu(
+                    onNavigateToSubScreen = { currentSubScreen = it },
+                    onNavigateToAbout = onNavigateToAbout,
+                    onNavigateToPrivacy = onNavigateToPrivacy,
+                    onNavigateToHelp = onNavigateToHelp,
+                    onNavigateToLicenses = onNavigateToLicenses
+                )
+            } else {
+                when (currentSubScreen) {
+                    SubScreen.CATEGORIES -> CategoriesTab(uiState.categories, viewModel::addCategory, viewModel::updateCategory, viewModel::deleteCategory)
+                    SubScreen.FOLDERS -> FoldersTab(uiState.folders, viewModel::addFolder, viewModel::updateFolder, viewModel::deleteFolder)
+                    SubScreen.LABELS -> LabelsTab(uiState.labels, viewModel::addLabel, viewModel::updateLabel, viewModel::deleteLabel)
+                    SubScreen.APPEARANCE -> AppearanceTab(
+                        darkTheme = uiState.darkTheme,
+                        dynamicColor = uiState.dynamicColor,
+                        onDarkThemeChange = viewModel::setDarkTheme,
+                        onDynamicColorChange = viewModel::setDynamicColor
+                    )
+                    SubScreen.SECURITY -> SecurityTab(
+                        preventScreenshots = uiState.preventScreenshots,
+                        onPreventScreenshotsChange = viewModel::setPreventScreenshots
+                    )
+                    SubScreen.BACKUP -> BackupTab(
+                        onExport = viewModel::exportBackup,
+                        onImport = { backupPicker.launch(arrayOf("application/json")) }
+                    )
+                    null -> {}
+                }
+            }
+        }
+    }
+}
+
+enum class SubScreen(val title: String) {
+    CATEGORIES("Categories"),
+    FOLDERS("Folders"),
+    LABELS("Labels"),
+    APPEARANCE("Appearance"),
+    SECURITY("Security"),
+    BACKUP("Backup")
+}
+
+@Composable
+fun SettingsMainMenu(
+    onNavigateToSubScreen: (SubScreen) -> Unit,
+    onNavigateToAbout: () -> Unit,
+    onNavigateToPrivacy: () -> Unit,
+    onNavigateToHelp: () -> Unit,
+    onNavigateToLicenses: () -> Unit
+) {
+    LazyColumn(modifier = Modifier.fillMaxSize()) {
+        item { SettingsItem("Categories", "Manage document categories", Icons.Default.Category) { onNavigateToSubScreen(SubScreen.CATEGORIES) } }
+        item { SettingsItem("Folders", "Manage document folders", Icons.Default.Folder) { onNavigateToSubScreen(SubScreen.FOLDERS) } }
+        item { SettingsItem("Labels", "Manage document labels", Icons.Default.Label) { onNavigateToSubScreen(SubScreen.LABELS) } }
+        item { HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp)) }
+        item { SettingsItem("Appearance", "Theme and colors", Icons.Default.Palette) { onNavigateToSubScreen(SubScreen.APPEARANCE) } }
+        item { SettingsItem("Security", "Vault lock and privacy", Icons.Default.Lock) { onNavigateToSubScreen(SubScreen.SECURITY) } }
+        item { SettingsItem("Backup", "Export and restore data", Icons.Default.Backup) { onNavigateToSubScreen(SubScreen.BACKUP) } }
+        item { HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp)) }
+        item { SettingsItem("Help & FAQ", "How to use the app", Icons.Default.Help) { onNavigateToHelp() } }
+        item { SettingsItem("Privacy Policy", "Your data safety", Icons.Default.PrivacyTip) { onNavigateToPrivacy() } }
+        item { SettingsItem("Licenses", "Open source libraries", Icons.Default.Description) { onNavigateToLicenses() } }
+        item { SettingsItem("About Stash", "App version and developer", Icons.Default.Info) { onNavigateToAbout() } }
+    }
+}
+
+@Composable
+fun SettingsItem(
+    title: String,
+    subtitle: String,
+    icon: ImageVector,
+    onClick: () -> Unit
+) {
+    ListItem(
+        headlineContent = { Text(title) },
+        supportingContent = { Text(subtitle) },
+        leadingContent = { Icon(icon, contentDescription = null, tint = VaultBrass) },
+        trailingContent = { Icon(Icons.AutoMirrored.Filled.ArrowForwardIos, contentDescription = null, modifier = Modifier.size(16.dp)) },
+        modifier = Modifier.clickable(onClick = onClick)
+    )
+}
+
+@Composable
+fun AppearanceTab(
+    darkTheme: Boolean,
+    dynamicColor: Boolean,
+    onDarkThemeChange: (Boolean) -> Unit,
+    onDynamicColorChange: (Boolean) -> Unit
+) {
+    Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
+        Text("Theme Settings", style = MaterialTheme.typography.titleMedium)
+        ListItem(
+            headlineContent = { Text("Dark Mode") },
+            trailingContent = { Switch(checked = darkTheme, onCheckedChange = onDarkThemeChange) }
+        )
+        ListItem(
+            headlineContent = { Text("Dynamic Color") },
+            trailingContent = { Switch(checked = dynamicColor, onCheckedChange = onDynamicColorChange) }
+        )
+    }
+}
+
+@Composable
+fun SecurityTab(
+    preventScreenshots: Boolean,
+    onPreventScreenshotsChange: (Boolean) -> Unit
+) {
+    Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
+        Text("Vault Security", style = MaterialTheme.typography.titleMedium)
+        ListItem(
+            headlineContent = { Text("Prevent Screenshots") },
+            supportingContent = { Text("Hide app content in Recent Apps and recordings") },
+            trailingContent = { Switch(checked = preventScreenshots, onCheckedChange = onPreventScreenshotsChange) }
+        )
+    }
+}
+
+@Composable
+fun BackupTab(
+    onExport: () -> Unit,
+    onImport: () -> Unit
+) {
+    Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
+        Text("Data Management", style = MaterialTheme.typography.titleMedium)
+        Spacer(modifier = Modifier.height(16.dp))
+        Button(onClick = onExport, modifier = Modifier.fillMaxWidth()) {
+            Text("Export Index Metadata")
+        }
+        Spacer(modifier = Modifier.height(8.dp))
+        OutlinedButton(onClick = onImport, modifier = Modifier.fillMaxWidth()) {
+            Text("Restore from Backup")
+        }
+    }
+}

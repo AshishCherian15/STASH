@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="ink_navy">#1C2733</color>
+    <color name="limestone">#F1EEE6</color>
+    <color name="vault_brass">#B8873B</color>
+    <color name="widget_background">#1C2733</color>
+    <color name="widget_text">#F1EEE6</color>
+    <color name="widget_text_secondary">#8FA0AA</color>
+    <string name="app_name">Stash</string>
+    <string name="cd_add_document">Add document</string>
+    <string name="cd_back">Back</string>
+    <string name="cd_document_locked">Locked</string>
+    <string name="cd_priority_mode">Priority mode</string>
+    <string name="cd_search">Search</string>
+    <string name="cd_settings">Settings</string>
+    <string name="empty_home_body">Nothing indexed yet. Add your first document to get started.</string>
+    <string name="empty_home_cta">Add Document</string>
+    <string name="empty_lock_body">Locking protects sensitive documents behind your fingerprint or face. Nothing is locked yet.</string>
+    <string name="empty_lock_cta">Set Up Lock</string>
+    <string name="empty_priority_body">Nothing flagged yet. Mark a document HIGH or CRITICAL from its detail screen to see it here.</string>
+    <string name="empty_priority_cta">Learn more</string>
+    <string name="empty_search_body">No matches for \'%1$s\'. Try a different term or check your filters.</string>
+    <string name="error_access_lost">Access lost — tap to reconnect</string>
+    <string name="error_biometric_unavailable">Biometric unavailable. Use device PIN instead.</string>
+    <string name="error_db_integrity">We detected a data issue. Restore from your last backup?</string>
+    <string name="error_low_storage">Low storage — thumbnail cache may be reduced.</string>
+    <string name="rationale_biometric">Locks sensitive documents behind your fingerprint or face. We never see or store your biometric data.</string>
+    <string name="rationale_folder_access">Stash needs access to a folder so it can index your files. Nothing is uploaded — everything stays on this device.</string>
+    <string name="rationale_notifications">So Stash can tell you when it finds a new file worth adding.</string>
+    <string name="rationale_photos_ocr">Used to read text from photos of whiteboards and handwritten notes, entirely on this device.</string>
+    <string name="widget_description">Quick access to your document vault</string>
+    <string name="widget_documents">%d documents</string>
+    <string name="widget_loading">Loading…</string>
+    <string name="widget_title">Stash</string>
+    <style name="Theme.Stash" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="android:windowBackground">@color/ink_navy</item>
+        <item name="android:statusBarColor">@color/ink_navy</item>
+        <item name="android:navigationBarColor">@color/ink_navy</item>
+    </style>
+    <style name="Theme.Stash.Transparent" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:windowIsTranslucent">true</item>
+        <item name="android:windowContentOverlay">@null</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:backgroundDimEnabled">true</item>
+    </style>
+</resources>
