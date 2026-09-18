@@ -3,7 +3,6 @@ package com.ashish.stash.ui.feature.home
 import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.ashish.stash.core.database.entity.Importance
 import com.ashish.stash.core.database.repository.DocumentRepository
 import com.ashish.stash.core.saf.SafUriManager
 import com.ashish.stash.core.security.SecuritySessionManager
@@ -26,6 +25,9 @@ class HomeViewModel @Inject constructor(
     private val _searchQuery = MutableStateFlow("")
     val searchQuery = _searchQuery.asStateFlow()
 
+    private val _viewMode = MutableStateFlow(ViewMode.LIST)
+    val viewMode = _viewMode.asStateFlow()
+
     private val _importSuccess = MutableStateFlow(false)
     val importSuccess = _importSuccess.asStateFlow()
 
@@ -37,10 +39,11 @@ class HomeViewModel @Inject constructor(
 
     val uiState: StateFlow<HomeUiState> = combine(
         securitySessionManager.isLocked,
-        _searchQuery
-    ) { isLocked, query ->
-        isLocked to query
-    }.flatMapLatest { (isLocked, query) ->
+        _searchQuery,
+        _viewMode
+    ) { isLocked, query, mode ->
+        Triple(isLocked, query, mode)
+    }.flatMapLatest { (isLocked, query, mode) ->
         val showLocked = !isLocked
         val documentsFlow = if (query.isEmpty()) {
             repository.observeAllDocuments(showLocked)
@@ -64,6 +67,7 @@ class HomeViewModel @Inject constructor(
                 isLoading = false,
                 documents = uiDocs,
                 searchQuery = query,
+                viewMode = mode,
                 stats = HomeStats(
                     totalDocuments = unlocked + locked,
                     unlockedDocuments = unlocked,
@@ -80,6 +84,10 @@ class HomeViewModel @Inject constructor(
 
     fun onSearchQueryChanged(query: String) {
         _searchQuery.value = query
+    }
+
+    fun setViewMode(mode: ViewMode) {
+        _viewMode.value = mode
     }
 
     fun importDocument(uri: Uri) {
@@ -113,7 +121,10 @@ class HomeViewModel @Inject constructor(
 
     fun clearImportSuccess() { _importSuccess.value = false }
     fun clearImportError() { _importError.value = null }
-    
-    fun onBatchImportClick() { /* Handled via SAF launcher */ }
-    fun onAddDocumentClick() { /* Handled via SAF launcher */ }
+
+    fun deleteDocument(id: Long) {
+        viewModelScope.launch {
+            repository.deleteDocument(id)
+        }
+    }
 }

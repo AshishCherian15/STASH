@@ -58,6 +58,22 @@ class DocumentDetailViewModel @Inject constructor(
         }
     }
 
+    fun setCategory(categoryId: Long) {
+        viewModelScope.launch {
+            val current = _uiState.value.documentWithMetadata?.document ?: return@launch
+            documentRepository.updateDocument(current.copy(categoryId = categoryId))
+            loadDocument()
+        }
+    }
+
+    fun setFolder(folderId: Long) {
+        viewModelScope.launch {
+            val current = _uiState.value.documentWithMetadata?.document ?: return@launch
+            documentRepository.updateDocument(current.copy(folderId = folderId))
+            loadDocument()
+        }
+    }
+
     fun updateNotes(notes: String) {
         viewModelScope.launch {
             val current = _uiState.value.documentWithMetadata?.document ?: return@launch

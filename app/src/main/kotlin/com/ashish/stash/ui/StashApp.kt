@@ -9,11 +9,19 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.NavDestination.Companion.hasRoute
+import com.ashish.stash.core.preferences.PreferencesManager
+import com.ashish.stash.core.security.BiometricLockManager
+import com.ashish.stash.core.security.SecuritySessionManager
 import com.ashish.stash.ui.navigation.*
+import com.ashish.stash.ui.security.LockGate
 import kotlinx.coroutines.launch
 
 @Composable
-fun StashApp() {
+fun StashApp(
+    preferencesManager: PreferencesManager,
+    biometricLockManager: BiometricLockManager,
+    securitySessionManager: SecuritySessionManager
+) {
     val navController = rememberNavController()
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
@@ -28,31 +36,37 @@ fun StashApp() {
         dest.hasRoute(Destination.Priority::class)
     } ?: false
 
-    ModalNavigationDrawer(
-        drawerState = drawerState,
-        gesturesEnabled = showSidebar,
-        drawerContent = {
-            StashDrawer(
-                currentDestination = currentDestination,
-                onNavigate = { destination ->
-                    scope.launch { drawerState.close() }
-                    navController.navigate(destination) {
-                        popUpTo(Destination.Home) { saveState = true }
-                        launchSingleTop = true
-                        restoreState = true
-                    }
-                }
-            )
-        }
+    LockGate(
+        preferencesManager = preferencesManager,
+        biometricLockManager = biometricLockManager,
+        securitySessionManager = securitySessionManager
     ) {
-        Surface(
-            modifier = Modifier.fillMaxSize(),
-            color = MaterialTheme.colorScheme.background
+        ModalNavigationDrawer(
+            drawerState = drawerState,
+            gesturesEnabled = showSidebar,
+            drawerContent = {
+                StashDrawer(
+                    currentDestination = currentDestination,
+                    onNavigate = { destination ->
+                        scope.launch { drawerState.close() }
+                        navController.navigate(destination) {
+                            popUpTo(Destination.Home) { saveState = true }
+                            launchSingleTop = true
+                            restoreState = true
+                        }
+                    }
+                )
+            }
         ) {
-            StashNavHost(
-                navController = navController,
-                onOpenDrawer = { scope.launch { drawerState.open() } }
-            )
+            Surface(
+                modifier = Modifier.fillMaxSize(),
+                color = MaterialTheme.colorScheme.background
+            ) {
+                StashNavHost(
+                    navController = navController,
+                    onOpenDrawer = { scope.launch { drawerState.open() } }
+                )
+            }
         }
     }
 }

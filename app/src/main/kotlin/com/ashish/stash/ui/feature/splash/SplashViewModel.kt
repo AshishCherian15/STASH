@@ -2,6 +2,7 @@ package com.ashish.stash.ui.feature.splash
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.ashish.stash.core.database.repository.DocumentRepository
 import com.ashish.stash.core.preferences.PreferencesManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
@@ -14,7 +15,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class SplashViewModel @Inject constructor(
-    private val preferencesManager: PreferencesManager
+    private val preferencesManager: PreferencesManager,
+    private val repository: DocumentRepository
 ) : ViewModel() {
 
     private val _navigationEvent = MutableSharedFlow<SplashNavigation>()
@@ -26,8 +28,12 @@ class SplashViewModel @Inject constructor(
 
     private fun checkInitialDestination() {
         viewModelScope.launch {
+            // Ensure defaults are in DB before first screen
+            repository.checkAndInjectDefaults()
+            
             // Artificial delay for splash feel
-            delay(1000)
+            delay(1200)
+            
             val onboardingCompleted = preferencesManager.onboardingCompleted.first()
             if (onboardingCompleted) {
                 _navigationEvent.emit(SplashNavigation.ToHome)

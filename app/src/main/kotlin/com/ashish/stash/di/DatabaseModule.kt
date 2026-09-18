@@ -2,13 +2,10 @@ package com.ashish.stash.di
 
 import android.content.Context
 import androidx.room.Room
+import androidx.room.RoomDatabase
+import androidx.sqlite.db.SupportSQLiteDatabase
 import com.ashish.stash.core.database.StashDatabase
-import com.ashish.stash.core.database.dao.CategoryDao
-import com.ashish.stash.core.database.dao.DocumentDao
-import com.ashish.stash.core.database.dao.DocumentSearchDao
-import com.ashish.stash.core.database.dao.FolderDao
-import com.ashish.stash.core.database.dao.LabelDao
-import com.ashish.stash.core.database.dao.ResourceLinkDao
+import com.ashish.stash.core.database.dao.*
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -29,7 +26,9 @@ object DatabaseModule {
             context,
             StashDatabase::class.java,
             "stash_database"
-        ).fallbackToDestructiveMigration().build()
+        )
+        .fallbackToDestructiveMigration()
+        .build()
     }
 
     @Provides

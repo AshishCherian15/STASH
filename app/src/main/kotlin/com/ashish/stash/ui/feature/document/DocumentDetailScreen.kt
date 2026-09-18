@@ -7,6 +7,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -15,8 +16,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.ashish.stash.core.database.entity.CategoryEntity
+import com.ashish.stash.core.database.entity.FolderEntity
+import com.ashish.stash.core.database.entity.LabelEntity
+import com.ashish.stash.ui.feature.settings.SettingsViewModel
 import com.ashish.stash.ui.theme.StashBlue
-import com.ashish.stash.ui.theme.VaultBrass
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -27,13 +31,19 @@ fun DocumentDetailScreen(
     onNavigateBack: () -> Unit,
     onViewDocument: (Long) -> Unit,
     modifier: Modifier = Modifier,
-    viewModel: DocumentDetailViewModel = hiltViewModel()
+    viewModel: DocumentDetailViewModel = hiltViewModel(),
+    settingsViewModel: SettingsViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val settingsState by settingsViewModel.uiState.collectAsStateWithLifecycle()
+    
     var showRenameDialog by remember { mutableStateOf(false) }
     var showDeleteDialog by remember { mutableStateOf(false) }
     var showPriorityDialog by remember { mutableStateOf(false) }
     var showAddLinkDialog by remember { mutableStateOf(false) }
+    
+    var showCategoryMenu by remember { mutableStateOf(false) }
+    var showFolderMenu by remember { mutableStateOf(false) }
 
     LaunchedEffect(uiState.isDeleted) {
         if (uiState.isDeleted) {
@@ -101,8 +111,9 @@ fun DocumentDetailScreen(
                                     color = StashBlue,
                                     modifier = Modifier.weight(1f)
                                 )
+                                // Pencil icon for editing details (Renaming)
                                 IconButton(onClick = { showRenameDialog = true }) {
-                                    Icon(Icons.Default.Edit, contentDescription = "Rename", tint = StashBlue)
+                                    Icon(Icons.Outlined.Edit, contentDescription = "Rename", tint = StashBlue)
                                 }
                             }
                             Button(
@@ -117,25 +128,62 @@ fun DocumentDetailScreen(
                         }
                     }
 
-                    // Metadata Section
+                    // Organization (Dropdown Selection)
                     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                        Text("Metadata", style = MaterialTheme.typography.titleMedium, color = StashBlue)
-                        DetailItem(label = "Category", value = docWithMetadata.category?.name ?: "Uncategorized")
-                        DetailItem(label = "Folder", value = docWithMetadata.folder?.name ?: "Vault Root")
+                        Text("Organization", style = MaterialTheme.typography.titleMedium, color = StashBlue)
+                        
+                        // Category Selection
+                        Box {
+                            DetailItem(
+                                label = "Category", 
+                                value = docWithMetadata.category?.name ?: "Uncategorized",
+                                onClick = { showCategoryMenu = true }
+                            )
+                            DropdownMenu(expanded = showCategoryMenu, onDismissRequest = { showCategoryMenu = false }) {
+                                settingsState.categories.forEach { category ->
+                                    DropdownMenuItem(
+                                        text = { Text(category.name) },
+                                        onClick = {
+                                            viewModel.setCategory(category.categoryId)
+                                            showCategoryMenu = false
+                                        }
+                                    )
+                                }
+                            }
+                        }
+
+                        // Folder Selection
+                        Box {
+                            DetailItem(
+                                label = "Folder", 
+                                value = docWithMetadata.folder?.name ?: "Vault Root",
+                                onClick = { showFolderMenu = true }
+                            )
+                            DropdownMenu(expanded = showFolderMenu, onDismissRequest = { showFolderMenu = false }) {
+                                settingsState.folders.forEach { folder ->
+                                    DropdownMenuItem(
+                                        text = { Text(folder.name) },
+                                        onClick = {
+                                            viewModel.setFolder(folder.folderId)
+                                            showFolderMenu = false
+                                        }
+                                    )
+                                }
+                            }
+                        }
+
                         DetailItem(label = "Priority", value = doc.importance, onClick = { showPriorityDialog = true })
-                        DetailItem(label = "Type", value = doc.mimeType)
-                        DetailItem(label = "Added", value = formatDate(doc.createdAt))
                     }
 
-                    // Notes Section
+                    // Description Section (Renamed from Notes)
                     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        Text("Notes", style = MaterialTheme.typography.titleMedium, color = StashBlue)
+                        Text("Description", style = MaterialTheme.typography.titleMedium, color = StashBlue)
                         OutlinedTextField(
                             value = doc.notes ?: "",
                             onValueChange = { viewModel.updateNotes(it) },
                             modifier = Modifier.fillMaxWidth(),
                             minLines = 3,
-                            placeholder = { Text("Add private notes here...") },
+                            placeholder = { Text("Add private description here...") },
                             colors = OutlinedTextFieldDefaults.colors(
                                 focusedBorderColor = StashBlue,
                                 focusedLabelColor = StashBlue
@@ -177,6 +225,7 @@ fun DocumentDetailScreen(
         }
     }
 
+    // Dialogs (Rename, Priority, Add Link, Delete) remain same but with StashBlue branding
     if (showRenameDialog) {
         var newTitle by remember { mutableStateOf(uiState.documentWithMetadata?.document?.displayTitle ?: "") }
         AlertDialog(

@@ -1,26 +1,39 @@
 package com.ashish.stash.ui.navigation
 
+import android.graphics.Color
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavDestination
 import androidx.navigation.NavDestination.Companion.hasRoute
+import com.ashish.stash.core.database.entity.CategoryEntity
+import com.ashish.stash.core.database.entity.FolderEntity
 import com.ashish.stash.ui.component.StashLogo
+import com.ashish.stash.ui.feature.settings.SettingsViewModel
 import com.ashish.stash.ui.theme.StashBlue
 
 @Composable
 fun StashDrawer(
     currentDestination: NavDestination?,
     onNavigate: (Destination) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    settingsViewModel: SettingsViewModel = hiltViewModel()
 ) {
+    val settingsState by settingsViewModel.uiState.collectAsState()
+
     ModalDrawerSheet(
         modifier = modifier,
         drawerContainerColor = MaterialTheme.colorScheme.surface,
@@ -42,26 +55,58 @@ fun StashDrawer(
         }
         HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp), color = StashBlue.copy(alpha = 0.1f))
         
-        DrawerItem(
-            label = "Home",
-            icon = Icons.Outlined.Home,
-            selected = currentDestination?.hasRoute(Destination.Home::class) == true,
-            onClick = { onNavigate(Destination.Home) }
-        )
-        DrawerItem(
-            label = "Search",
-            icon = Icons.Outlined.Search,
-            selected = currentDestination?.hasRoute(Destination.Search::class) == true,
-            onClick = { onNavigate(Destination.Search) }
-        )
-        DrawerItem(
-            label = "Priority Mode",
-            icon = Icons.Outlined.Star,
-            selected = currentDestination?.hasRoute(Destination.Priority::class) == true,
-            onClick = { onNavigate(Destination.Priority) }
-        )
+        LazyColumn(modifier = Modifier.weight(1f)) {
+            item {
+                DrawerItem(
+                    label = "Home",
+                    icon = Icons.Outlined.Home,
+                    selected = currentDestination?.hasRoute(Destination.Home::class) == true,
+                    onClick = { onNavigate(Destination.Home) }
+                )
+            }
+            item {
+                DrawerItem(
+                    label = "Search",
+                    icon = Icons.Outlined.Search,
+                    selected = currentDestination?.hasRoute(Destination.Search::class) == true,
+                    onClick = { onNavigate(Destination.Search) }
+                )
+            }
+            item {
+                DrawerItem(
+                    label = "Priority Mode",
+                    icon = Icons.Outlined.Star,
+                    selected = currentDestination?.hasRoute(Destination.Priority::class) == true,
+                    onClick = { onNavigate(Destination.Priority) }
+                )
+            }
+
+            // Categories Section
+            if (settingsState.categories.isNotEmpty()) {
+                item { DrawerSectionHeader("Categories") }
+                items(settingsState.categories) { category ->
+                    DrawerSubItem(
+                        label = category.name,
+                        icon = Icons.Outlined.Category,
+                        color = category.color,
+                        onClick = { /* Future: Navigate to Category specific view */ }
+                    )
+                }
+            }
+
+            // Folders Section
+            if (settingsState.folders.isNotEmpty()) {
+                item { DrawerSectionHeader("Folders") }
+                items(settingsState.folders) { folder ->
+                    DrawerSubItem(
+                        label = folder.name,
+                        icon = Icons.Outlined.Folder,
+                        onClick = { /* Future: Navigate to Folder specific view */ }
+                    )
+                }
+            }
+        }
         
-        Spacer(Modifier.weight(1f))
         HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp), color = StashBlue.copy(alpha = 0.1f))
         
         DrawerItem(
@@ -78,6 +123,16 @@ fun StashDrawer(
         )
         Spacer(Modifier.height(16.dp))
     }
+}
+
+@Composable
+private fun DrawerSectionHeader(text: String) {
+    Text(
+        text = text,
+        style = MaterialTheme.typography.labelLarge,
+        color = MaterialTheme.colorScheme.primary,
+        modifier = Modifier.padding(horizontal = 28.dp, vertical = 8.dp)
+    )
 }
 
 @Composable
@@ -100,5 +155,25 @@ private fun DrawerItem(
             unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
             unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant
         )
+    )
+}
+
+@Composable
+private fun DrawerSubItem(
+    label: String,
+    icon: ImageVector,
+    color: String? = null,
+    onClick: () -> Unit
+) {
+    val tint = color?.let { runCatching { androidx.compose.ui.graphics.Color(Color.parseColor(it)) }.getOrNull() }
+        ?: MaterialTheme.colorScheme.onSurfaceVariant
+
+    ListItem(
+        headlineContent = { Text(label, style = MaterialTheme.typography.bodyMedium) },
+        leadingContent = { Icon(icon, contentDescription = null, modifier = Modifier.size(18.dp), tint = tint) },
+        modifier = Modifier
+            .clickable(onClick = onClick)
+            .padding(start = 12.dp)
+            .fillMaxWidth()
     )
 }

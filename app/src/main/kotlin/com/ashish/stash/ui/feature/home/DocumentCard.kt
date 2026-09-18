@@ -2,9 +2,9 @@ package com.ashish.stash.ui.feature.home
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.AutoAwesome
+import androidx.compose.material.icons.outlined.Link
 import androidx.compose.material.icons.outlined.Lock
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -19,8 +19,9 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import com.ashish.stash.core.database.entity.DocumentWithMetadata
-import com.ashish.stash.ui.theme.VaultBrass
+import com.ashish.stash.ui.theme.StashBlue
 import com.ashish.stash.ui.theme.LedgerSlate
+import com.ashish.stash.ui.theme.VaultBrass
 
 @Composable
 fun DocumentCard(
@@ -33,6 +34,7 @@ fun DocumentCard(
     val category = documentWithMetadata.category
     val folder = documentWithMetadata.folder
     val labels = documentWithMetadata.labels
+    val resourceLinks = documentWithMetadata.resourceLinks
     
     val needsOcr = document.mimeType.startsWith("image/") || document.mimeType.contains("pdf")
     val ocrComplete = !document.ocrText.isNullOrBlank()
@@ -42,14 +44,15 @@ fun DocumentCard(
         modifier = modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 8.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White)
     ) {
         Row(
             modifier = Modifier
                 .height(IntrinsicSize.Min)
                 .fillMaxWidth()
         ) {
-            val notchColor = category?.color?.let { parseColor(it) } ?: MaterialTheme.colorScheme.outline
+            val notchColor = category?.color?.let { parseColor(it) } ?: StashBlue
             Box(
                 modifier = Modifier
                     .fillMaxHeight()
@@ -96,6 +99,22 @@ fun DocumentCard(
                     overflow = TextOverflow.Ellipsis
                 )
                 
+                // Show resource links preview directly on home screen
+                if (resourceLinks.isNotEmpty()) {
+                    Row(
+                        modifier = Modifier.padding(top = 4.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        Icon(Icons.Outlined.Link, null, modifier = Modifier.size(12.dp), tint = StashBlue)
+                        Text(
+                            text = "${resourceLinks.size} links attached",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = StashBlue
+                        )
+                    }
+                }
+
                 if (labels.isNotEmpty() || (needsOcr && !ocrComplete)) {
                     Spacer(modifier = Modifier.height(8.dp))
                     Row(
@@ -107,9 +126,9 @@ fun DocumentCard(
                                 Icons.Outlined.AutoAwesome,
                                 contentDescription = null,
                                 modifier = Modifier.size(14.dp),
-                                tint = VaultBrass
+                                tint = StashBlue
                             )
-                            Text("Indexing...", style = MaterialTheme.typography.labelSmall, color = VaultBrass)
+                            Text("Indexing...", style = MaterialTheme.typography.labelSmall, color = StashBlue)
                         }
                         
                         labels.take(2).forEach { label ->
@@ -130,7 +149,7 @@ fun DocumentCard(
                     modifier = Modifier
                         .padding(16.dp)
                         .align(Alignment.CenterVertically),
-                    tint = VaultBrass
+                    tint = StashBlue
                 )
             }
         }
@@ -152,7 +171,7 @@ fun highlightText(text: String, query: String): AnnotatedString {
                 break
             }
             append(text.substring(start, index))
-            withStyle(SpanStyle(background = VaultBrass.copy(alpha = 0.3f), fontWeight = FontWeight.Bold)) {
+            withStyle(SpanStyle(background = StashBlue.copy(alpha = 0.2f), fontWeight = FontWeight.Bold, color = StashBlue)) {
                 append(text.substring(index, index + query.length))
             }
             start = index + query.length
@@ -164,6 +183,6 @@ private fun parseColor(colorString: String): Color {
     return try {
         Color(android.graphics.Color.parseColor(colorString))
     } catch (e: Exception) {
-        Color.Gray
+        StashBlue
     }
 }

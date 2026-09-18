@@ -7,10 +7,20 @@ data class HomeUiState(
     val documents: List<DocumentUiModel> = emptyList(),
     val searchQuery: String = "",
     val stats: HomeStats = HomeStats(),
+    val viewMode: ViewMode = ViewMode.LIST,
     val isImporting: Boolean = false,
     val importSuccess: Boolean = false,
     val importError: String? = null
 )
+
+enum class ViewMode(val label: String) {
+    LARGE_GRID("Large Icons"),
+    MEDIUM_GRID("Medium Icons"),
+    SMALL_GRID("Small Icons"),
+    LIST("List"),
+    DETAILS("Details"),
+    TILES("Tiles")
+}
 
 data class HomeStats(
     val totalDocuments: Int = 0,

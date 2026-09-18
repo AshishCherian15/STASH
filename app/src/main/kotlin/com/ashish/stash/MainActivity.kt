@@ -4,18 +4,31 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import com.ashish.stash.core.preferences.PreferencesManager
+import com.ashish.stash.core.security.BiometricLockManager
+import com.ashish.stash.core.security.SecuritySessionManager
 import com.ashish.stash.ui.StashApp
 import com.ashish.stash.ui.theme.StashTheme
 import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+
+    @Inject lateinit var preferencesManager: PreferencesManager
+    @Inject lateinit var biometricLockManager: BiometricLockManager
+    @Inject lateinit var securitySessionManager: SecuritySessionManager
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
             StashTheme {
-                StashApp()
+                StashApp(
+                    preferencesManager = preferencesManager,
+                    biometricLockManager = biometricLockManager,
+                    securitySessionManager = securitySessionManager
+                )
             }
         }
     }

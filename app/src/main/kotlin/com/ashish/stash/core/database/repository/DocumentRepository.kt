@@ -21,6 +21,7 @@ interface DocumentRepository {
     suspend fun insertDocument(document: DocumentEntity): Long
     suspend fun updateDocument(document: DocumentEntity)
     suspend fun deleteDocument(id: Long)
+    suspend fun checkAndInjectDefaults()
     suspend fun getDocumentById(id: Long): DocumentEntity?
     suspend fun getDocumentWithMetadataById(id: Long, showLocked: Boolean = false): DocumentWithMetadata?
     fun observeAllDocuments(showLocked: Boolean = false): Flow<List<DocumentWithMetadata>>
@@ -101,6 +102,16 @@ class DocumentRepositoryImpl @Inject constructor(
 
     override suspend fun deleteDocument(id: Long) = withContext(Dispatchers.IO) {
         documentDao.deleteById(id)
+    }
+
+    override suspend fun checkAndInjectDefaults() = withContext(Dispatchers.IO) {
+        // Simple check: if no categories exist, inject all defaults
+        val existing = categoryDao.getById(1L)
+        if (existing == null) {
+            StashDefaults.Categories.forEach { categoryDao.insert(it) }
+            StashDefaults.Folders.forEach { folderDao.insert(it) }
+            StashDefaults.Labels.forEach { labelDao.insert(it) }
+        }
     }
 
     override suspend fun getDocumentById(id: Long): DocumentEntity? = withContext(Dispatchers.IO) {
