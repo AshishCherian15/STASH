@@ -27,6 +27,7 @@ import com.ashish.stash.core.notification.NotificationHelper;
 import com.ashish.stash.core.ocr.OcrService;
 import com.ashish.stash.core.preferences.PreferencesManager;
 import com.ashish.stash.core.saf.SafUriManager;
+import com.ashish.stash.core.security.BiometricLockManager;
 import com.ashish.stash.core.security.SecuritySessionManager;
 import com.ashish.stash.core.work.OcrProcessingWorker;
 import com.ashish.stash.core.work.OcrProcessingWorker_AssistedFactory;
@@ -412,6 +413,7 @@ public final class DaggerStashApplication_HiltComponents_SingletonC {
 
     @Override
     public void injectMainActivity(MainActivity mainActivity) {
+      injectMainActivity2(mainActivity);
     }
 
     @Override
@@ -444,34 +446,44 @@ public final class DaggerStashApplication_HiltComponents_SingletonC {
       return new ViewCBuilder(singletonCImpl, activityRetainedCImpl, activityCImpl);
     }
 
-    private QuickAddActivity injectQuickAddActivity2(QuickAddActivity instance) {
-      QuickAddActivity_MembersInjector.injectDocumentRepository(instance, singletonCImpl.documentRepositoryImplProvider.get());
+    private MainActivity injectMainActivity2(MainActivity instance) {
+      MainActivity_MembersInjector.injectPreferencesManager(instance, singletonCImpl.preferencesManagerProvider.get());
+      MainActivity_MembersInjector.injectBiometricLockManager(instance, singletonCImpl.biometricLockManagerProvider.get());
+      MainActivity_MembersInjector.injectSecuritySessionManager(instance, singletonCImpl.securitySessionManagerProvider.get());
       return instance;
+    }
+
+    private QuickAddActivity injectQuickAddActivity2(QuickAddActivity instance2) {
+      QuickAddActivity_MembersInjector.injectDocumentRepository(instance2, singletonCImpl.documentRepositoryImplProvider.get());
+      return instance2;
     }
 
     @IdentifierNameString
     private static final class LazyClassKeyProvider {
-      static String com_ashish_stash_ui_feature_document_DocumentDetailViewModel = "com.ashish.stash.ui.feature.document.DocumentDetailViewModel";
+      static String com_ashish_stash_ui_feature_viewer_ViewerViewModel = "com.ashish.stash.ui.feature.viewer.ViewerViewModel";
 
-      static String com_ashish_stash_ui_feature_priority_PriorityModeViewModel = "com.ashish.stash.ui.feature.priority.PriorityModeViewModel";
+      static String com_ashish_stash_ui_feature_home_HomeViewModel = "com.ashish.stash.ui.feature.home.HomeViewModel";
+
+      static String com_ashish_stash_ui_feature_splash_SplashViewModel = "com.ashish.stash.ui.feature.splash.SplashViewModel";
 
       static String com_ashish_stash_ui_feature_settings_SettingsViewModel = "com.ashish.stash.ui.feature.settings.SettingsViewModel";
 
       static String com_ashish_stash_ui_feature_onboarding_OnboardingViewModel = "com.ashish.stash.ui.feature.onboarding.OnboardingViewModel";
 
+      static String com_ashish_stash_ui_feature_priority_PriorityModeViewModel = "com.ashish.stash.ui.feature.priority.PriorityModeViewModel";
+
       static String com_ashish_stash_ui_feature_search_SearchViewModel = "com.ashish.stash.ui.feature.search.SearchViewModel";
 
-      static String com_ashish_stash_ui_feature_splash_SplashViewModel = "com.ashish.stash.ui.feature.splash.SplashViewModel";
-
-      static String com_ashish_stash_ui_feature_viewer_ViewerViewModel = "com.ashish.stash.ui.feature.viewer.ViewerViewModel";
-
-      static String com_ashish_stash_ui_feature_home_HomeViewModel = "com.ashish.stash.ui.feature.home.HomeViewModel";
+      static String com_ashish_stash_ui_feature_document_DocumentDetailViewModel = "com.ashish.stash.ui.feature.document.DocumentDetailViewModel";
 
       @KeepFieldType
-      DocumentDetailViewModel com_ashish_stash_ui_feature_document_DocumentDetailViewModel2;
+      ViewerViewModel com_ashish_stash_ui_feature_viewer_ViewerViewModel2;
 
       @KeepFieldType
-      PriorityModeViewModel com_ashish_stash_ui_feature_priority_PriorityModeViewModel2;
+      HomeViewModel com_ashish_stash_ui_feature_home_HomeViewModel2;
+
+      @KeepFieldType
+      SplashViewModel com_ashish_stash_ui_feature_splash_SplashViewModel2;
 
       @KeepFieldType
       SettingsViewModel com_ashish_stash_ui_feature_settings_SettingsViewModel2;
@@ -480,16 +492,13 @@ public final class DaggerStashApplication_HiltComponents_SingletonC {
       OnboardingViewModel com_ashish_stash_ui_feature_onboarding_OnboardingViewModel2;
 
       @KeepFieldType
+      PriorityModeViewModel com_ashish_stash_ui_feature_priority_PriorityModeViewModel2;
+
+      @KeepFieldType
       SearchViewModel com_ashish_stash_ui_feature_search_SearchViewModel2;
 
       @KeepFieldType
-      SplashViewModel com_ashish_stash_ui_feature_splash_SplashViewModel2;
-
-      @KeepFieldType
-      ViewerViewModel com_ashish_stash_ui_feature_viewer_ViewerViewModel2;
-
-      @KeepFieldType
-      HomeViewModel com_ashish_stash_ui_feature_home_HomeViewModel2;
+      DocumentDetailViewModel com_ashish_stash_ui_feature_document_DocumentDetailViewModel2;
     }
   }
 
@@ -557,30 +566,21 @@ public final class DaggerStashApplication_HiltComponents_SingletonC {
 
     @IdentifierNameString
     private static final class LazyClassKeyProvider {
-      static String com_ashish_stash_ui_feature_search_SearchViewModel = "com.ashish.stash.ui.feature.search.SearchViewModel";
-
-      static String com_ashish_stash_ui_feature_document_DocumentDetailViewModel = "com.ashish.stash.ui.feature.document.DocumentDetailViewModel";
-
-      static String com_ashish_stash_ui_feature_home_HomeViewModel = "com.ashish.stash.ui.feature.home.HomeViewModel";
-
       static String com_ashish_stash_ui_feature_settings_SettingsViewModel = "com.ashish.stash.ui.feature.settings.SettingsViewModel";
 
       static String com_ashish_stash_ui_feature_priority_PriorityModeViewModel = "com.ashish.stash.ui.feature.priority.PriorityModeViewModel";
 
-      static String com_ashish_stash_ui_feature_viewer_ViewerViewModel = "com.ashish.stash.ui.feature.viewer.ViewerViewModel";
+      static String com_ashish_stash_ui_feature_search_SearchViewModel = "com.ashish.stash.ui.feature.search.SearchViewModel";
 
       static String com_ashish_stash_ui_feature_onboarding_OnboardingViewModel = "com.ashish.stash.ui.feature.onboarding.OnboardingViewModel";
 
+      static String com_ashish_stash_ui_feature_document_DocumentDetailViewModel = "com.ashish.stash.ui.feature.document.DocumentDetailViewModel";
+
       static String com_ashish_stash_ui_feature_splash_SplashViewModel = "com.ashish.stash.ui.feature.splash.SplashViewModel";
 
-      @KeepFieldType
-      SearchViewModel com_ashish_stash_ui_feature_search_SearchViewModel2;
+      static String com_ashish_stash_ui_feature_home_HomeViewModel = "com.ashish.stash.ui.feature.home.HomeViewModel";
 
-      @KeepFieldType
-      DocumentDetailViewModel com_ashish_stash_ui_feature_document_DocumentDetailViewModel2;
-
-      @KeepFieldType
-      HomeViewModel com_ashish_stash_ui_feature_home_HomeViewModel2;
+      static String com_ashish_stash_ui_feature_viewer_ViewerViewModel = "com.ashish.stash.ui.feature.viewer.ViewerViewModel";
 
       @KeepFieldType
       SettingsViewModel com_ashish_stash_ui_feature_settings_SettingsViewModel2;
@@ -589,13 +589,22 @@ public final class DaggerStashApplication_HiltComponents_SingletonC {
       PriorityModeViewModel com_ashish_stash_ui_feature_priority_PriorityModeViewModel2;
 
       @KeepFieldType
-      ViewerViewModel com_ashish_stash_ui_feature_viewer_ViewerViewModel2;
+      SearchViewModel com_ashish_stash_ui_feature_search_SearchViewModel2;
 
       @KeepFieldType
       OnboardingViewModel com_ashish_stash_ui_feature_onboarding_OnboardingViewModel2;
 
       @KeepFieldType
+      DocumentDetailViewModel com_ashish_stash_ui_feature_document_DocumentDetailViewModel2;
+
+      @KeepFieldType
       SplashViewModel com_ashish_stash_ui_feature_splash_SplashViewModel2;
+
+      @KeepFieldType
+      HomeViewModel com_ashish_stash_ui_feature_home_HomeViewModel2;
+
+      @KeepFieldType
+      ViewerViewModel com_ashish_stash_ui_feature_viewer_ViewerViewModel2;
     }
 
     private static final class SwitchingProvider<T> implements Provider<T> {
@@ -739,9 +748,11 @@ public final class DaggerStashApplication_HiltComponents_SingletonC {
 
     private Provider<OcrProcessingWorker_AssistedFactory> ocrProcessingWorker_AssistedFactoryProvider;
 
-    private Provider<SecuritySessionManager> securitySessionManagerProvider;
-
     private Provider<PreferencesManager> preferencesManagerProvider;
+
+    private Provider<BiometricLockManager> biometricLockManagerProvider;
+
+    private Provider<SecuritySessionManager> securitySessionManagerProvider;
 
     private Provider<ThemeManager> themeManagerProvider;
 
@@ -796,10 +807,11 @@ public final class DaggerStashApplication_HiltComponents_SingletonC {
       this.backgroundScannerWorker_AssistedFactoryProvider = SingleCheck.provider(new SwitchingProvider<BackgroundScannerWorker_AssistedFactory>(singletonCImpl, 0));
       this.ocrServiceProvider = DoubleCheck.provider(new SwitchingProvider<OcrService>(singletonCImpl, 7));
       this.ocrProcessingWorker_AssistedFactoryProvider = SingleCheck.provider(new SwitchingProvider<OcrProcessingWorker_AssistedFactory>(singletonCImpl, 6));
-      this.securitySessionManagerProvider = DoubleCheck.provider(new SwitchingProvider<SecuritySessionManager>(singletonCImpl, 8));
-      this.preferencesManagerProvider = DoubleCheck.provider(new SwitchingProvider<PreferencesManager>(singletonCImpl, 9));
-      this.themeManagerProvider = DoubleCheck.provider(new SwitchingProvider<ThemeManager>(singletonCImpl, 10));
-      this.backupManagerProvider = DoubleCheck.provider(new SwitchingProvider<BackupManager>(singletonCImpl, 11));
+      this.preferencesManagerProvider = DoubleCheck.provider(new SwitchingProvider<PreferencesManager>(singletonCImpl, 8));
+      this.biometricLockManagerProvider = DoubleCheck.provider(new SwitchingProvider<BiometricLockManager>(singletonCImpl, 9));
+      this.securitySessionManagerProvider = DoubleCheck.provider(new SwitchingProvider<SecuritySessionManager>(singletonCImpl, 10));
+      this.themeManagerProvider = DoubleCheck.provider(new SwitchingProvider<ThemeManager>(singletonCImpl, 11));
+      this.backupManagerProvider = DoubleCheck.provider(new SwitchingProvider<BackupManager>(singletonCImpl, 12));
     }
 
     @Override
@@ -880,16 +892,19 @@ public final class DaggerStashApplication_HiltComponents_SingletonC {
           case 7: // com.ashish.stash.core.ocr.OcrService 
           return (T) new OcrService(ApplicationContextModule_ProvideContextFactory.provideContext(singletonCImpl.applicationContextModule));
 
-          case 8: // com.ashish.stash.core.security.SecuritySessionManager 
-          return (T) new SecuritySessionManager();
-
-          case 9: // com.ashish.stash.core.preferences.PreferencesManager 
+          case 8: // com.ashish.stash.core.preferences.PreferencesManager 
           return (T) new PreferencesManager(ApplicationContextModule_ProvideContextFactory.provideContext(singletonCImpl.applicationContextModule));
 
-          case 10: // com.ashish.stash.ui.theme.ThemeManager 
+          case 9: // com.ashish.stash.core.security.BiometricLockManager 
+          return (T) new BiometricLockManager(ApplicationContextModule_ProvideContextFactory.provideContext(singletonCImpl.applicationContextModule));
+
+          case 10: // com.ashish.stash.core.security.SecuritySessionManager 
+          return (T) new SecuritySessionManager();
+
+          case 11: // com.ashish.stash.ui.theme.ThemeManager 
           return (T) new ThemeManager();
 
-          case 11: // com.ashish.stash.core.backup.BackupManager 
+          case 12: // com.ashish.stash.core.backup.BackupManager 
           return (T) new BackupManager(ApplicationContextModule_ProvideContextFactory.provideContext(singletonCImpl.applicationContextModule), singletonCImpl.documentRepositoryImplProvider.get());
 
           default: throw new AssertionError(id);

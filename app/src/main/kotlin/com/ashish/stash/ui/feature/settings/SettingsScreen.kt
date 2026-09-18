@@ -20,11 +20,15 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.ashish.stash.core.database.entity.CategoryEntity
+import com.ashish.stash.core.database.entity.FolderEntity
+import com.ashish.stash.core.database.entity.LabelEntity
 import com.ashish.stash.ui.component.rememberSafFilePickerLauncher
 import com.ashish.stash.ui.feature.settings.tabs.CategoriesTab
 import com.ashish.stash.ui.feature.settings.tabs.FoldersTab
 import com.ashish.stash.ui.feature.settings.tabs.LabelsTab
 import com.ashish.stash.ui.theme.VaultBrass
+import com.ashish.stash.ui.theme.StashBlue
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -87,7 +91,9 @@ fun SettingsScreen(
                         onDynamicColorChange = viewModel::setDynamicColor
                     )
                     SubScreen.SECURITY -> SecurityTab(
+                        vaultPin = uiState.vaultPin,
                         preventScreenshots = uiState.preventScreenshots,
+                        onVaultPinChange = viewModel::setVaultPin,
                         onPreventScreenshotsChange = viewModel::setPreventScreenshots
                     )
                     SubScreen.BACKUP -> BackupTab(
@@ -144,7 +150,7 @@ fun SettingsItem(
     ListItem(
         headlineContent = { Text(title) },
         supportingContent = { Text(subtitle) },
-        leadingContent = { Icon(icon, contentDescription = null, tint = VaultBrass) },
+        leadingContent = { Icon(icon, contentDescription = null, tint = StashBlue) },
         trailingContent = { Icon(Icons.AutoMirrored.Filled.ArrowForwardIos, contentDescription = null, modifier = Modifier.size(16.dp)) },
         modifier = Modifier.clickable(onClick = onClick)
     )
@@ -158,29 +164,96 @@ fun AppearanceTab(
     onDynamicColorChange: (Boolean) -> Unit
 ) {
     Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
-        Text("Theme Settings", style = MaterialTheme.typography.titleMedium)
+        Text("Theme Settings", style = MaterialTheme.typography.titleMedium, color = StashBlue)
+        Spacer(Modifier.height(16.dp))
         ListItem(
             headlineContent = { Text("Dark Mode") },
-            trailingContent = { Switch(checked = darkTheme, onCheckedChange = onDarkThemeChange) }
+            supportingContent = { Text("Force high-contrast black theme") },
+            trailingContent = { Switch(checked = darkTheme, onCheckedChange = onDarkThemeChange, colors = SwitchDefaults.colors(checkedTrackColor = StashBlue)) }
         )
         ListItem(
             headlineContent = { Text("Dynamic Color") },
-            trailingContent = { Switch(checked = dynamicColor, onCheckedChange = onDynamicColorChange) }
+            supportingContent = { Text("Sync with Android system palette") },
+            trailingContent = { Switch(checked = dynamicColor, onCheckedChange = onDynamicColorChange, colors = SwitchDefaults.colors(checkedTrackColor = StashBlue)) }
         )
     }
 }
 
 @Composable
 fun SecurityTab(
+    vaultPin: String?,
     preventScreenshots: Boolean,
+    onVaultPinChange: (String?) -> Unit,
     onPreventScreenshotsChange: (Boolean) -> Unit
 ) {
+    var showPinDialog by remember { mutableStateOf(false) }
+
     Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
-        Text("Vault Security", style = MaterialTheme.typography.titleMedium)
+        Text("Vault Security", style = MaterialTheme.typography.titleMedium, color = StashBlue)
+        Spacer(Modifier.height(16.dp))
+        
+        ListItem(
+            headlineContent = { Text("PIN Lock") },
+            supportingContent = { Text(if (vaultPin != null) "PIN configured and active" else "Setup a 4-digit PIN for access") },
+            trailingContent = {
+                Button(
+                    onClick = { showPinDialog = true },
+                    colors = ButtonDefaults.buttonColors(containerColor = StashBlue)
+                ) {
+                    Text(if (vaultPin != null) "Change" else "Setup")
+                }
+            }
+        )
+        
+        if (vaultPin != null) {
+            ListItem(
+                headlineContent = { Text("Remove Lock") },
+                trailingContent = {
+                    TextButton(onClick = { onVaultPinChange(null) }) {
+                        Text("Disable", color = Color.Red)
+                    }
+                }
+            )
+        }
+
         ListItem(
             headlineContent = { Text("Prevent Screenshots") },
             supportingContent = { Text("Hide app content in Recent Apps and recordings") },
-            trailingContent = { Switch(checked = preventScreenshots, onCheckedChange = onPreventScreenshotsChange) }
+            trailingContent = { Switch(checked = preventScreenshots, onCheckedChange = onPreventScreenshotsChange, colors = SwitchDefaults.colors(checkedTrackColor = StashBlue)) }
+        )
+    }
+
+    if (showPinDialog) {
+        var pinInput by remember { mutableStateOf("") }
+        AlertDialog(
+            onDismissRequest = { showPinDialog = false },
+            title = { Text("Vault PIN") },
+            text = {
+                OutlinedTextField(
+                    value = pinInput,
+                    onValueChange = { if (it.length <= 4) pinInput = it },
+                    label = { Text("Enter 4-digit PIN") },
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = StashBlue)
+                )
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        if (pinInput.length == 4) {
+                            onVaultPinChange(pinInput)
+                            showPinDialog = false
+                        }
+                    },
+                    enabled = pinInput.length == 4,
+                    colors = ButtonDefaults.buttonColors(containerColor = StashBlue)
+                ) {
+                    Text("Save")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showPinDialog = false }) { Text("Cancel") }
+            }
         )
     }
 }
@@ -191,13 +264,21 @@ fun BackupTab(
     onImport: () -> Unit
 ) {
     Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
-        Text("Data Management", style = MaterialTheme.typography.titleMedium)
+        Text("Data Management", style = MaterialTheme.typography.titleMedium, color = StashBlue)
         Spacer(modifier = Modifier.height(16.dp))
-        Button(onClick = onExport, modifier = Modifier.fillMaxWidth()) {
+        Button(
+            onClick = onExport, 
+            modifier = Modifier.fillMaxWidth(),
+            colors = ButtonDefaults.buttonColors(containerColor = StashBlue)
+        ) {
             Text("Export Index Metadata")
         }
         Spacer(modifier = Modifier.height(8.dp))
-        OutlinedButton(onClick = onImport, modifier = Modifier.fillMaxWidth()) {
+        OutlinedButton(
+            onClick = onImport, 
+            modifier = Modifier.fillMaxWidth(),
+            colors = ButtonDefaults.outlinedButtonColors(contentColor = StashBlue)
+        ) {
             Text("Restore from Backup")
         }
     }

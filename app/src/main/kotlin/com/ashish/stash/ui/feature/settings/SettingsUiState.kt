@@ -12,5 +12,6 @@ data class SettingsUiState(
     val preventScreenshots: Boolean = false,
     val autoLockTimeoutMillis: Long = 30000,
     val darkTheme: Boolean = false,
-    val dynamicColor: Boolean = true
+    val dynamicColor: Boolean = true,
+    val vaultPin: String? = null
 )

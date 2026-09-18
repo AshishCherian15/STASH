@@ -39,7 +39,8 @@ class SettingsViewModel @Inject constructor(
             preventScreenshots = userData.preventScreenshots,
             autoLockTimeoutMillis = userData.autoLockTimeoutMillis,
             darkTheme = userData.darkTheme,
-            dynamicColor = userData.dynamicColor
+            dynamicColor = userData.dynamicColor,
+            vaultPin = userData.vaultPin
         )
     }
     .onStart { emit(SettingsUiState(isLoading = true)) }
@@ -55,15 +56,15 @@ class SettingsViewModel @Inject constructor(
         }
     }
 
-    fun deleteCategory(category: CategoryEntity) {
-        viewModelScope.launch {
-            documentRepository.deleteCategory(category)
-        }
-    }
-
     fun updateCategory(category: CategoryEntity) {
         viewModelScope.launch {
             documentRepository.updateCategory(category)
+        }
+    }
+
+    fun deleteCategory(category: CategoryEntity) {
+        viewModelScope.launch {
+            documentRepository.deleteCategory(category)
         }
     }
 
@@ -73,15 +74,15 @@ class SettingsViewModel @Inject constructor(
         }
     }
 
-    fun deleteFolder(folder: FolderEntity) {
-        viewModelScope.launch {
-            documentRepository.deleteFolder(folder)
-        }
-    }
-
     fun updateFolder(folder: FolderEntity) {
         viewModelScope.launch {
             documentRepository.updateFolder(folder)
+        }
+    }
+
+    fun deleteFolder(folder: FolderEntity) {
+        viewModelScope.launch {
+            documentRepository.deleteFolder(folder)
         }
     }
 
@@ -91,15 +92,15 @@ class SettingsViewModel @Inject constructor(
         }
     }
 
-    fun deleteLabel(label: LabelEntity) {
-        viewModelScope.launch {
-            documentRepository.deleteLabel(label)
-        }
-    }
-
     fun updateLabel(label: LabelEntity) {
         viewModelScope.launch {
             documentRepository.updateLabel(label)
+        }
+    }
+
+    fun deleteLabel(label: LabelEntity) {
+        viewModelScope.launch {
+            documentRepository.deleteLabel(label)
         }
     }
 
@@ -112,6 +113,12 @@ class SettingsViewModel @Inject constructor(
     fun setAutoLockTimeoutMillis(timeout: Long) {
         viewModelScope.launch {
             preferencesManager.setAutoLockTimeoutMillis(timeout)
+        }
+    }
+
+    fun setVaultPin(pin: String?) {
+        viewModelScope.launch {
+            preferencesManager.setVaultPin(pin)
         }
     }
 
@@ -130,15 +137,13 @@ class SettingsViewModel @Inject constructor(
 
     fun exportBackup() {
         viewModelScope.launch {
-            val result = backupManager.exportBackup()
-            _message.value = result
+            _message.value = backupManager.exportBackup()
         }
     }
 
     fun importBackup(jsonString: String) {
         viewModelScope.launch {
-            val result = backupManager.importBackup(jsonString)
-            _message.value = result
+            _message.value = backupManager.importBackup(jsonString)
         }
     }
 
