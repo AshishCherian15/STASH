@@ -13,5 +13,6 @@ data class SettingsUiState(
     val autoLockTimeoutMillis: Long = 30000,
     val darkTheme: Boolean = false,
     val dynamicColor: Boolean = true,
-    val vaultPin: String? = null
+    val vaultPin: String? = null,
+    val biometricEnabled: Boolean = true
 )

@@ -29,7 +29,12 @@ fun LockGate(
     // Check if security should be applied
     val hasSecurity = userData?.let { it.onboardingCompleted && (it.vaultPin != null) } ?: false
 
-    if (!hasSecurity || !isLocked) {
+    if (!hasSecurity) {
+        SideEffect {
+            securitySessionManager.unlock()
+        }
+        content()
+    } else if (!isLocked) {
         content()
     } else {
         if (userData?.vaultPin != null) {

@@ -18,7 +18,8 @@ data class UserData(
     val dynamicColor: Boolean,
     val preventScreenshots: Boolean,
     val autoLockTimeoutMillis: Long,
-    val vaultPin: String?
+    val vaultPin: String?,
+    val biometricEnabled: Boolean
 )
 
 @Singleton
@@ -34,6 +35,7 @@ class PreferencesManager @Inject constructor(
         val PREVENT_SCREENSHOTS = booleanPreferencesKey("prevent_screenshots")
         val AUTO_LOCK_TIMEOUT = longPreferencesKey("auto_lock_timeout")
         val VAULT_PIN = stringPreferencesKey("vault_pin")
+        val BIOMETRIC_ENABLED = booleanPreferencesKey("biometric_enabled")
     }
 
     val userData: Flow<UserData> = dataStore.data.map { prefs ->
@@ -43,7 +45,8 @@ class PreferencesManager @Inject constructor(
             dynamicColor = prefs[Keys.DYNAMIC_COLOR] ?: true,
             preventScreenshots = prefs[Keys.PREVENT_SCREENSHOTS] ?: false,
             autoLockTimeoutMillis = prefs[Keys.AUTO_LOCK_TIMEOUT] ?: 30000L,
-            vaultPin = prefs[Keys.VAULT_PIN]
+            vaultPin = prefs[Keys.VAULT_PIN],
+            biometricEnabled = prefs[Keys.BIOMETRIC_ENABLED] ?: true
         )
     }
 
@@ -67,6 +70,10 @@ class PreferencesManager @Inject constructor(
 
     suspend fun setAutoLockTimeoutMillis(timeout: Long) {
         dataStore.edit { it[Keys.AUTO_LOCK_TIMEOUT] = timeout }
+    }
+
+    suspend fun setBiometricEnabled(enabled: Boolean) {
+        dataStore.edit { it[Keys.BIOMETRIC_ENABLED] = enabled }
     }
 
     suspend fun setVaultPin(pin: String?) {

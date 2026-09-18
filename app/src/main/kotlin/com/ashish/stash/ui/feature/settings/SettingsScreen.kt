@@ -92,9 +92,13 @@ fun SettingsScreen(
                     )
                     SubScreen.SECURITY -> SecurityTab(
                         vaultPin = uiState.vaultPin,
+                        biometricEnabled = uiState.biometricEnabled,
                         preventScreenshots = uiState.preventScreenshots,
+                        autoLockTimeout = uiState.autoLockTimeoutMillis,
                         onVaultPinChange = viewModel::setVaultPin,
-                        onPreventScreenshotsChange = viewModel::setPreventScreenshots
+                        onBiometricToggle = viewModel::setBiometricEnabled,
+                        onPreventScreenshotsChange = viewModel::setPreventScreenshots,
+                        onTimeoutChange = viewModel::setAutoLockTimeoutMillis
                     )
                     SubScreen.BACKUP -> BackupTab(
                         onExport = viewModel::exportBackup,
@@ -136,7 +140,7 @@ fun SettingsMainMenu(
         item { SettingsItem("Help & FAQ", "How to use the app", Icons.Default.Help) { onNavigateToHelp() } }
         item { SettingsItem("Privacy Policy", "Your data safety", Icons.Default.PrivacyTip) { onNavigateToPrivacy() } }
         item { SettingsItem("Licenses", "Open source libraries", Icons.Default.Description) { onNavigateToLicenses() } }
-        item { SettingsItem("About Stash", "App version and developer", Icons.Default.Info) { onNavigateToAbout() } }
+        item { SettingsItem("About Stash", "App info and developer", Icons.Default.Info) { onNavigateToAbout() } }
     }
 }
 
@@ -182,11 +186,16 @@ fun AppearanceTab(
 @Composable
 fun SecurityTab(
     vaultPin: String?,
+    biometricEnabled: Boolean,
     preventScreenshots: Boolean,
+    autoLockTimeout: Long,
     onVaultPinChange: (String?) -> Unit,
-    onPreventScreenshotsChange: (Boolean) -> Unit
+    onBiometricToggle: (Boolean) -> Unit,
+    onPreventScreenshotsChange: (Boolean) -> Unit,
+    onTimeoutChange: (Long) -> Unit
 ) {
     var showPinDialog by remember { mutableStateOf(false) }
+    var showTimeoutDialog by remember { mutableStateOf(false) }
 
     Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
         Text("Vault Security", style = MaterialTheme.typography.titleMedium, color = StashBlue)
@@ -217,6 +226,28 @@ fun SecurityTab(
         }
 
         ListItem(
+            headlineContent = { Text("Biometric Unlock") },
+            supportingContent = { Text("Use fingerprint or face if available") },
+            trailingContent = { Switch(checked = biometricEnabled, onCheckedChange = onBiometricToggle, colors = SwitchDefaults.colors(checkedTrackColor = StashBlue)) }
+        )
+
+        ListItem(
+            headlineContent = { Text("Auto-Lock Timeout") },
+            supportingContent = { 
+                val label = when(autoLockTimeout) {
+                    0L -> "Immediately"
+                    15000L -> "15 seconds"
+                    30000L -> "30 seconds"
+                    60000L -> "1 minute"
+                    300000L -> "5 minutes"
+                    else -> "Custom"
+                }
+                Text("Lock app after $label") 
+            },
+            modifier = Modifier.clickable { showTimeoutDialog = true }
+        )
+
+        ListItem(
             headlineContent = { Text("Prevent Screenshots") },
             supportingContent = { Text("Hide app content in Recent Apps and recordings") },
             trailingContent = { Switch(checked = preventScreenshots, onCheckedChange = onPreventScreenshotsChange, colors = SwitchDefaults.colors(checkedTrackColor = StashBlue)) }
@@ -231,7 +262,7 @@ fun SecurityTab(
             text = {
                 OutlinedTextField(
                     value = pinInput,
-                    onValueChange = { if (it.length <= 4) pinInput = it },
+                    onValueChange = { if (it.length <= 4 && it.all { c -> c.isDigit() }) pinInput = it },
                     label = { Text("Enter 4-digit PIN") },
                     modifier = Modifier.fillMaxWidth(),
                     colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = StashBlue)
@@ -254,6 +285,38 @@ fun SecurityTab(
             dismissButton = {
                 TextButton(onClick = { showPinDialog = false }) { Text("Cancel") }
             }
+        )
+    }
+
+    if (showTimeoutDialog) {
+        val options = listOf(
+            0L to "Immediately",
+            15000L to "15 seconds",
+            30000L to "30 seconds",
+            60000L to "1 minute",
+            300000L to "5 minutes"
+        )
+        AlertDialog(
+            onDismissRequest = { showTimeoutDialog = false },
+            title = { Text("Auto-Lock Timeout") },
+            text = {
+                Column {
+                    options.forEach { (time, label) ->
+                        Row(
+                            Modifier.fillMaxWidth().clickable { 
+                                onTimeoutChange(time)
+                                showTimeoutDialog = false
+                            }.padding(16.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            RadioButton(selected = autoLockTimeout == time, onClick = null)
+                            Spacer(Modifier.width(8.dp))
+                            Text(label)
+                        }
+                    }
+                }
+            },
+            confirmButton = {}
         )
     }
 }

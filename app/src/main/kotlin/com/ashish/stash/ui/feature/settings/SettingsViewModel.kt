@@ -40,7 +40,8 @@ class SettingsViewModel @Inject constructor(
             autoLockTimeoutMillis = userData.autoLockTimeoutMillis,
             darkTheme = userData.darkTheme,
             dynamicColor = userData.dynamicColor,
-            vaultPin = userData.vaultPin
+            vaultPin = userData.vaultPin,
+            biometricEnabled = userData.biometricEnabled
         )
     }
     .onStart { emit(SettingsUiState(isLoading = true)) }
@@ -119,6 +120,12 @@ class SettingsViewModel @Inject constructor(
     fun setVaultPin(pin: String?) {
         viewModelScope.launch {
             preferencesManager.setVaultPin(pin)
+        }
+    }
+
+    fun setBiometricEnabled(enabled: Boolean) {
+        viewModelScope.launch {
+            preferencesManager.setBiometricEnabled(enabled)
         }
     }
 

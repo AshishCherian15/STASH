@@ -1,9 +1,9 @@
 package com.ashish.stash
 
 import android.os.Bundle
-import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.fragment.app.FragmentActivity
 import com.ashish.stash.core.preferences.PreferencesManager
 import com.ashish.stash.core.security.BiometricLockManager
 import com.ashish.stash.core.security.SecuritySessionManager
@@ -13,7 +13,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class MainActivity : ComponentActivity() {
+class MainActivity : FragmentActivity() {
 
     @Inject lateinit var preferencesManager: PreferencesManager
     @Inject lateinit var biometricLockManager: BiometricLockManager
