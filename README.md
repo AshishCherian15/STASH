@@ -77,6 +77,6 @@ Explore the detailed specifications in the `docs/` folder:
 
 Distributed under the MIT License. See `LICENSE` for more information.
 
-Developed with ❤️ by **[Ashish Cherian](https://github.com/AshishCherian15/)**
+Developed with by **[Ashish Cherian](https://github.com/AshishCherian15/)**
 - **GitHub:** [https://github.com/AshishCherian15/STASH](https://github.com/AshishCherian15/STASH)
 - **Email:** [ashishcherian15@gmail.com](mailto:ashishcherian15@gmail.com)
