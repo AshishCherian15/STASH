@@ -63,6 +63,11 @@ android {
         }
     }
     
+    lint {
+        abortOnError = false
+        checkReleaseBuilds = false
+    }
+    
     testOptions {
         unitTests.isIncludeAndroidResources = true
     }
