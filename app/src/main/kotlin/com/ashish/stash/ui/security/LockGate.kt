@@ -1,5 +1,7 @@
 package com.ashish.stash.ui.security
 
+import android.content.Context
+import android.content.ContextWrapper
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.CircularProgressIndicator
@@ -24,7 +26,7 @@ fun LockGate(
     val isLocked by securitySessionManager.isLocked.collectAsStateWithLifecycle()
     val userData by preferencesManager.userData.collectAsStateWithLifecycle(initialValue = null)
     
-    val context = LocalContext.current as FragmentActivity
+    val context = LocalContext.current
     
     // Check if security should be applied
     val hasSecurity = userData?.let { it.onboardingCompleted && (it.vaultPin != null) } ?: false
@@ -43,7 +45,9 @@ fun LockGate(
                 savedPin = userData?.vaultPin ?: ""
             )
         } else {
-            // Default to immediate unlock if no PIN configured but security triggered
+            // Priority 2: Biometric (if PIN is not set but security is active)
+            // Implementation note: If PIN is null, we might want to trigger biometric here.
+            // But currently hasSecurity requires vaultPin != null.
             SideEffect {
                 securitySessionManager.unlock()
             }
@@ -52,4 +56,13 @@ fun LockGate(
             }
         }
     }
+}
+
+fun Context.findActivity(): FragmentActivity? {
+    var context = this
+    while (context is ContextWrapper) {
+        if (context is FragmentActivity) return context
+        context = context.baseContext
+    }
+    return null
 }

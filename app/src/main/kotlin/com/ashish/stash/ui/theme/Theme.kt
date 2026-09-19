@@ -6,35 +6,36 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
 
 private val DarkColorScheme = darkColorScheme(
-    primary = VaultBrass,
+    primary = StashBlue,
     secondary = LedgerSlate,
     tertiary = VerifiedSage,
-    background = InkNavy,
-    surface = InkNavy,
-    onPrimary = Limestone,
-    onSecondary = Limestone,
-    onTertiary = Limestone,
-    onBackground = Limestone,
-    onSurface = Limestone,
+    background = Color(0xFF1A1C1E),
+    surface = Color(0xFF1A1C1E),
+    onPrimary = Color.White,
+    onSecondary = Color.White,
+    onTertiary = Color.White,
+    onBackground = Color(0xFFE2E2E6),
+    onSurface = Color(0xFFE2E2E6),
 )
 
 private val LightColorScheme = lightColorScheme(
-    primary = VaultBrass,
+    primary = StashBlue,
     secondary = LedgerSlate,
     tertiary = VerifiedSage,
-    background = Limestone,
-    surface = Limestone,
-    onPrimary = InkNavy,
-    onSecondary = InkNavy,
-    onTertiary = InkNavy,
-    onBackground = InkNavy,
-    onSurface = InkNavy,
+    background = Color.White,
+    surface = Color.White,
+    onPrimary = Color.White,
+    onSecondary = Color.White,
+    onTertiary = Color.White,
+    onBackground = Color(0xFF1C2733),
+    onSurface = Color(0xFF1C2733),
 )
 
 @Composable
@@ -56,8 +57,9 @@ fun StashTheme(
     if (!view.isInEditMode) {
         SideEffect {
             val window = (view.context as Activity).window
-            window.statusBarColor = colorScheme.primary.toArgb()
-            WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = darkTheme
+            // Set status bar color to match background for a clean look
+            window.statusBarColor = colorScheme.surface.toArgb()
+            WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = !darkTheme
         }
     }
 
