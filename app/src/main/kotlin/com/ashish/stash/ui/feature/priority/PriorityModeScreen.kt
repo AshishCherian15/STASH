@@ -19,6 +19,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ashish.stash.core.database.entity.DocumentWithMetadata
+import com.ashish.stash.core.database.entity.Importance
 import com.ashish.stash.ui.feature.home.DocumentCard
 import com.ashish.stash.ui.theme.Limestone
 import com.ashish.stash.ui.theme.SignalRust
@@ -40,7 +41,7 @@ fun PriorityModeScreen(
             CenterAlignedTopAppBar(
                 title = { Text("Priority Mode", fontWeight = FontWeight.Bold) },
                 navigationIcon = {
-                    IconButton(onClick = onOpenDrawer) {
+                    IconButton(onClick = { onOpenDrawer() }) {
                         Icon(Icons.Default.Menu, contentDescription = "Menu")
                     }
                 },
@@ -74,8 +75,8 @@ private fun PriorityContent(
     documents: List<DocumentWithMetadata>,
     onDocumentClick: (Long) -> Unit
 ) {
-    val criticalDocs = documents.filter { it.document.importance == "CRITICAL" }
-    val highDocs = documents.filter { it.document.importance == "HIGH" }
+    val criticalDocs = documents.filter { it.document.importance == Importance.CRITICAL }
+    val highDocs = documents.filter { it.document.importance == Importance.HIGH }
 
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
@@ -86,10 +87,10 @@ private fun PriorityContent(
             item {
                 PriorityHeader("Critical Attention", SignalRust)
             }
-            items(items = criticalDocs, key = { it.document.documentId }) { doc ->
+            items(items = criticalDocs, key = { it.document.documentId }) { docWithMetadata ->
                 DocumentCard(
-                    documentWithMetadata = doc,
-                    onClick = { onDocumentClick(doc.document.documentId) }
+                    documentWithMetadata = docWithMetadata,
+                    onClick = { onDocumentClick(docWithMetadata.document.documentId) }
                 )
             }
         }
@@ -99,10 +100,10 @@ private fun PriorityContent(
                 Spacer(modifier = Modifier.height(16.dp))
                 PriorityHeader("High Priority", VaultBrass)
             }
-            items(items = highDocs, key = { it.document.documentId }) { doc ->
+            items(items = highDocs, key = { it.document.documentId }) { docWithMetadata ->
                 DocumentCard(
-                    documentWithMetadata = doc,
-                    onClick = { onDocumentClick(doc.document.documentId) }
+                    documentWithMetadata = docWithMetadata,
+                    onClick = { onDocumentClick(docWithMetadata.document.documentId) }
                 )
             }
         }

@@ -116,11 +116,12 @@ fun SettingsScreen(
                         onFontSizeChange = viewModel::setFontSizeScale
                     )
                     SubScreen.SECURITY -> SecurityTab(
-                        vaultPin = uiState.vaultPin,
+                        isPinSet = uiState.isPinSet,
                         biometricEnabled = uiState.biometricEnabled,
                         preventScreenshots = uiState.preventScreenshots,
                         autoLockTimeout = uiState.autoLockTimeoutMillis,
-                        onVaultPinChange = viewModel::setVaultPin,
+                        onUpdatePin = viewModel::updatePin,
+                        onDisablePin = viewModel::disablePin,
                         onBiometricToggle = viewModel::setBiometricEnabled,
                         onPreventScreenshotsChange = viewModel::setPreventScreenshots,
                         onTimeoutChange = viewModel::setAutoLockTimeoutMillis
@@ -257,11 +258,12 @@ fun AppearanceTab(
 
 @Composable
 fun SecurityTab(
-    vaultPin: String?,
+    isPinSet: Boolean,
     biometricEnabled: Boolean,
     preventScreenshots: Boolean,
     autoLockTimeout: Long,
-    onVaultPinChange: (String?) -> Unit,
+    onUpdatePin: (String?, String) -> Unit,
+    onDisablePin: (String) -> Unit,
     onBiometricToggle: (Boolean) -> Unit,
     onPreventScreenshotsChange: (Boolean) -> Unit,
     onTimeoutChange: (Long) -> Unit
@@ -275,23 +277,44 @@ fun SecurityTab(
         
         ListItem(
             headlineContent = { Text("PIN Lock") },
-            supportingContent = { Text(if (vaultPin != null) "PIN configured and active" else "Setup a 4-digit PIN for access") },
+            supportingContent = { Text(if (isPinSet) "PIN configured and active" else "Setup a 4-digit PIN for access") },
             trailingContent = {
                 Button(
                     onClick = { showPinDialog = true },
                     colors = ButtonDefaults.buttonColors(containerColor = StashBlue)
                 ) {
-                    Text(if (vaultPin != null) "Change" else "Setup")
+                    Text(if (isPinSet) "Change" else "Setup")
                 }
             }
         )
         
-        if (vaultPin != null) {
+        if (isPinSet) {
             ListItem(
                 headlineContent = { Text("Remove Lock") },
                 trailingContent = {
-                    TextButton(onClick = { onVaultPinChange(null) }) {
+                    var showDisableDialog by remember { mutableStateOf(false) }
+                    TextButton(onClick = { showDisableDialog = true }) {
                         Text("Disable", color = Color.Red)
+                    }
+                    if (showDisableDialog) {
+                        var pinInput by remember { mutableStateOf("") }
+                        AlertDialog(
+                            onDismissRequest = { showDisableDialog = false },
+                            title = { Text("Disable PIN") },
+                            text = {
+                                OutlinedTextField(
+                                    value = pinInput,
+                                    onValueChange = { if (it.length <= 4 && it.all { c -> c.isDigit() }) pinInput = it },
+                                    label = { Text("Confirm current PIN") }
+                                )
+                            },
+                            confirmButton = {
+                                Button(onClick = { onDisablePin(pinInput); showDisableDialog = false }, enabled = pinInput.length == 4) {
+                                    Text("Disable")
+                                }
+                            },
+                            dismissButton = { TextButton(onClick = { showDisableDialog = false }) { Text("Cancel") } }
+                        )
                     }
                 }
             )
@@ -327,28 +350,34 @@ fun SecurityTab(
     }
 
     if (showPinDialog) {
-        var pinInput by remember { mutableStateOf("") }
+        var oldPinInput by remember { mutableStateOf("") }
+        var newPinInput by remember { mutableStateOf("") }
         AlertDialog(
             onDismissRequest = { showPinDialog = false },
-            title = { Text("Vault PIN") },
+            title = { Text(if (isPinSet) "Change PIN" else "Setup PIN") },
             text = {
-                OutlinedTextField(
-                    value = pinInput,
-                    onValueChange = { if (it.length <= 4 && it.all { c -> c.isDigit() }) pinInput = it },
-                    label = { Text("Enter 4-digit PIN") },
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = StashBlue)
-                )
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    if (isPinSet) {
+                        OutlinedTextField(
+                            value = oldPinInput,
+                            onValueChange = { if (it.length <= 4 && it.all { c -> c.isDigit() }) oldPinInput = it },
+                            label = { Text("Current PIN") }
+                        )
+                    }
+                    OutlinedTextField(
+                        value = newPinInput,
+                        onValueChange = { if (it.length <= 4 && it.all { c -> c.isDigit() }) newPinInput = it },
+                        label = { Text("New 4-digit PIN") }
+                    )
+                }
             },
             confirmButton = {
                 Button(
                     onClick = {
-                        if (pinInput.length == 4) {
-                            onVaultPinChange(pinInput)
-                            showPinDialog = false
-                        }
+                        onUpdatePin(if (isPinSet) oldPinInput else null, newPinInput)
+                        showPinDialog = false
                     },
-                    enabled = pinInput.length == 4,
+                    enabled = newPinInput.length == 4 && (!isPinSet || oldPinInput.length == 4),
                     colors = ButtonDefaults.buttonColors(containerColor = StashBlue)
                 ) {
                     Text("Save")

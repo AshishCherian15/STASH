@@ -71,6 +71,7 @@ dependencies {
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.lifecycle.process)
     implementation(libs.androidx.activity.compose)
+    implementation(libs.androidx.documentfile)
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.kotlinx.coroutines.play)
 

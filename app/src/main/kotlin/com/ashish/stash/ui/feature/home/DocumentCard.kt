@@ -18,6 +18,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import com.ashish.stash.core.database.entity.DocumentWithMetadata
+import com.ashish.stash.core.database.entity.Importance
 import com.ashish.stash.ui.theme.StashBlue
 import com.ashish.stash.ui.theme.LedgerSlate
 import com.ashish.stash.ui.theme.VaultBrass
@@ -93,7 +94,7 @@ fun DocumentCard(
                         )
                     }
                     
-                    if (document.importance == "HIGH" || document.importance == "CRITICAL") {
+                    if (document.importance == Importance.HIGH || document.importance == Importance.CRITICAL) {
                         Icon(
                             imageVector = Icons.Outlined.Star,
                             contentDescription = null,
@@ -113,7 +114,6 @@ fun DocumentCard(
                     overflow = TextOverflow.Ellipsis
                 )
                 
-                // Show resource links preview directly on home screen
                 if (resourceLinks.isNotEmpty()) {
                     Row(
                         modifier = Modifier.padding(top = 4.dp),
@@ -156,7 +156,7 @@ fun DocumentCard(
                 }
             }
 
-            if (document.isLocked == 1) {
+            if (document.isLocked) {
                 Icon(
                     imageVector = Icons.Outlined.Lock,
                     contentDescription = "Locked",
