@@ -1,20 +1,23 @@
 package com.ashish.stash.ui.security
 
-import android.content.Context
-import android.content.ContextWrapper
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ashish.stash.core.preferences.PreferencesManager
 import com.ashish.stash.core.security.BiometricLockManager
+import com.ashish.stash.core.security.LockState
 import com.ashish.stash.core.security.SecuritySessionManager
 import com.ashish.stash.ui.theme.StashBlue
+import kotlinx.coroutines.flow.first
 
 @Composable
 fun LockGate(
@@ -23,46 +26,44 @@ fun LockGate(
     securitySessionManager: SecuritySessionManager,
     content: @Composable () -> Unit
 ) {
-    val isLocked by securitySessionManager.isLocked.collectAsStateWithLifecycle()
-    val userData by preferencesManager.userData.collectAsStateWithLifecycle(initialValue = null)
-    
-    val context = LocalContext.current
-    
-    // Check if security should be applied
-    val hasSecurity = userData?.let { it.onboardingCompleted && (it.vaultPin != null) } ?: false
+    val lockState by securitySessionManager.lockState.collectAsStateWithLifecycle()
+    val context = LocalContext.current as FragmentActivity
 
-    if (!hasSecurity) {
-        SideEffect {
-            securitySessionManager.unlock()
-        }
-        content()
-    } else if (!isLocked) {
-        content()
-    } else {
-        if (userData?.vaultPin != null) {
-            PinLockScreen(
-                onCorrectPin = { securitySessionManager.unlock() },
-                savedPin = userData?.vaultPin ?: ""
+    LaunchedEffect(Unit) {
+        val userData = preferencesManager.userData.first()
+        val isConfigured = userData.isPinSet || (userData.biometricEnabled && biometricLockManager.canAuthenticate())
+        securitySessionManager.markLoadingComplete(isConfigured)
+        
+        // Auto-trigger biometric if enabled
+        if (userData.biometricEnabled && lockState == LockState.Locked) {
+            biometricLockManager.authenticate(
+                activity = context,
+                onSuccess = { securitySessionManager.unlock() },
+                onError = { _, _ -> }
             )
-        } else {
-            // Priority 2: Biometric (if PIN is not set but security is active)
-            // Implementation note: If PIN is null, we might want to trigger biometric here.
-            // But currently hasSecurity requires vaultPin != null.
-            SideEffect {
-                securitySessionManager.unlock()
-            }
-            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+        }
+    }
+
+    when (lockState) {
+        LockState.Loading -> {
+            Box(modifier = Modifier.fillMaxSize().background(Color.White), contentAlignment = Alignment.Center) {
                 CircularProgressIndicator(color = StashBlue)
             }
         }
+        LockState.Locked -> {
+            PinLockScreen(
+                onCorrectPin = { securitySessionManager.unlock() },
+                onBiometricRequest = {
+                    biometricLockManager.authenticate(
+                        activity = context,
+                        onSuccess = { securitySessionManager.unlock() },
+                        onError = { _, _ -> }
+                    )
+                }
+            )
+        }
+        LockState.Unlocked -> {
+            content()
+        }
     }
-}
-
-fun Context.findActivity(): FragmentActivity? {
-    var context = this
-    while (context is ContextWrapper) {
-        if (context is FragmentActivity) return context
-        context = context.baseContext
-    }
-    return null
 }

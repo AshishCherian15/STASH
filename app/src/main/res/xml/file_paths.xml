@@ -1,4 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <paths>
-    <external-path name="external_files" path="." />
+    <!-- Specifically for files received via share and copied to internal storage -->
+    <files-path name="imports" path="imports/" />
+    <!-- For files indexed from cache -->
+    <cache-path name="cache" path="." />
 </paths>

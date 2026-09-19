@@ -1,14 +1,14 @@
 package com.ashish.stash.core.security
 
 import android.content.Context
-import android.security.keystore.KeyGenParameterSpec
-import android.security.keystore.KeyProperties
 import androidx.biometric.BiometricManager
 import androidx.biometric.BiometricManager.Authenticators.BIOMETRIC_STRONG
 import androidx.biometric.BiometricManager.Authenticators.DEVICE_CREDENTIAL
+import androidx.biometric.BiometricPrompt
+import androidx.core.content.ContextCompat
+import androidx.fragment.app.FragmentActivity
 import dagger.hilt.android.qualifiers.ApplicationContext
-import java.security.KeyStore
-import javax.crypto.KeyGenerator
+import java.util.concurrent.Executor
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -16,39 +16,37 @@ import javax.inject.Singleton
 class BiometricLockManager @Inject constructor(
     @ApplicationContext private val context: Context
 ) {
-    private val keyStoreAlias = "stash_biometric_key"
-
-    fun canAuthenticate(): Int {
+    fun canAuthenticate(): Boolean {
         val biometricManager = BiometricManager.from(context)
-        return biometricManager.canAuthenticate(BIOMETRIC_STRONG or DEVICE_CREDENTIAL)
+        return biometricManager.canAuthenticate(BIOMETRIC_STRONG) == BiometricManager.BIOMETRIC_SUCCESS
     }
 
-    fun isHardwareAvailable(): Boolean {
-        return canAuthenticate() != BiometricManager.BIOMETRIC_ERROR_NO_HARDWARE
-    }
+    fun authenticate(
+        activity: FragmentActivity,
+        onSuccess: () -> Unit,
+        onError: (Int, CharSequence) -> Unit
+    ) {
+        val executor: Executor = ContextCompat.getMainExecutor(activity)
+        val biometricPrompt = BiometricPrompt(activity, executor,
+            object : BiometricPrompt.AuthenticationCallback() {
+                override fun onAuthenticationError(errorCode: Int, errString: CharSequence) {
+                    super.onAuthenticationError(errorCode, errString)
+                    onError(errorCode, errString)
+                }
 
-    fun isEnrolled(): Boolean {
-        return canAuthenticate() == BiometricManager.BIOMETRIC_SUCCESS
-    }
+                override fun onAuthenticationSucceeded(result: BiometricPrompt.AuthenticationResult) {
+                    super.onAuthenticationSucceeded(result)
+                    onSuccess()
+                }
+            })
 
-    fun ensureKeystoreReady() {
-        val keyStore = KeyStore.getInstance("AndroidKeyStore").apply { load(null) }
-        if (!keyStore.containsAlias(keyStoreAlias)) {
-            val keyGenerator = KeyGenerator.getInstance(
-                KeyProperties.KEY_ALGORITHM_AES, "AndroidKeyStore"
-            )
-            val builder = KeyGenParameterSpec.Builder(
-                keyStoreAlias,
-                KeyProperties.PURPOSE_ENCRYPT or KeyProperties.PURPOSE_DECRYPT
-            )
-                .setBlockModes(KeyProperties.BLOCK_MODE_GCM)
-                .setEncryptionPaddings(KeyProperties.ENCRYPTION_PADDING_NONE)
-                .setKeySize(256)
-                .setUserAuthenticationRequired(true)
-                .setInvalidatedByBiometricEnrollment(true)
-            
-            keyGenerator.init(builder.build())
-            keyGenerator.generateKey()
-        }
+        val promptInfo = BiometricPrompt.PromptInfo.Builder()
+            .setTitle("Unlock Vault")
+            .setSubtitle("Authenticate to access your documents")
+            .setAllowedAuthenticators(BIOMETRIC_STRONG)
+            .setNegativeButtonText("Use PIN")
+            .build()
+
+        biometricPrompt.authenticate(promptInfo)
     }
 }

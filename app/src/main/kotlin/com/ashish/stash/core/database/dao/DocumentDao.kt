@@ -27,10 +27,6 @@ interface DocumentDao {
     """)
     suspend fun getWithMetadataById(id: Long, showLocked: Int = 0): DocumentWithMetadata?
 
-    /**
-     * Observes all documents, respecting both Document-level and Folder-level lock states.
-     * Fixes the "Folder Lock Gap" identified in audit.
-     */
     @Transaction
     @Query("""
         SELECT * FROM documents 
@@ -51,10 +47,13 @@ interface DocumentDao {
     """)
     fun observePriorityWithMetadata(showLocked: Int = 0): Flow<List<DocumentWithMetadata>>
 
-    @Query("SELECT COUNT(*) FROM documents WHERE is_locked = 0")
+    @Query("""
+        SELECT COUNT(*) FROM documents 
+        WHERE (is_locked = 0 AND (folder_id IS NULL OR (SELECT is_locked FROM folders WHERE folder_id = documents.folder_id) = 0))
+    """)
     fun observeUnlockedCount(): Flow<Int>
 
-    @Query("SELECT COUNT(*) FROM documents WHERE is_locked = 1")
+    @Query("SELECT COUNT(*) FROM documents WHERE is_locked = 1 OR (folder_id IS NOT NULL AND (SELECT is_locked FROM folders WHERE folder_id = documents.folder_id) = 1)")
     fun observeLockedCount(): Flow<Int>
 
     @Query("UPDATE documents SET last_opened_at = :timestamp WHERE document_id = :id")
@@ -69,8 +68,11 @@ interface DocumentDao {
     @Query("UPDATE documents SET color_tag = :colorTag WHERE document_id = :id")
     suspend fun updateColorTag(id: Long, colorTag: String?): Int
 
-    @Query("SELECT SUM(file_size) FROM documents")
-    fun observeTotalSizeBytes(): Flow<Long?>
+    @Query("""
+        SELECT SUM(file_size) FROM documents 
+        WHERE (:showLocked = 1 OR (is_locked = 0 AND (folder_id IS NULL OR (SELECT is_locked FROM folders WHERE folder_id = documents.folder_id) = 0)))
+    """)
+    fun observeTotalSizeBytes(showLocked: Int = 0): Flow<Long?>
 
     @Query("DELETE FROM documents WHERE document_id = :id")
     suspend fun deleteById(id: Long)

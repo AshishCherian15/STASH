@@ -18,7 +18,9 @@ data class UserData(
     val dynamicColor: Boolean,
     val preventScreenshots: Boolean,
     val autoLockTimeoutMillis: Long,
-    val vaultPin: String?,
+    val isPinSet: Boolean,
+    val pinHash: String?,
+    val pinSalt: String?,
     val biometricEnabled: Boolean,
     val themeColor: String,
     val fontFamily: String,
@@ -37,7 +39,8 @@ class PreferencesManager @Inject constructor(
         val DYNAMIC_COLOR = booleanPreferencesKey("dynamic_color")
         val PREVENT_SCREENSHOTS = booleanPreferencesKey("prevent_screenshots")
         val AUTO_LOCK_TIMEOUT = longPreferencesKey("auto_lock_timeout")
-        val VAULT_PIN = stringPreferencesKey("vault_pin")
+        val PIN_HASH = stringPreferencesKey("pin_hash")
+        val PIN_SALT = stringPreferencesKey("pin_salt")
         val BIOMETRIC_ENABLED = booleanPreferencesKey("biometric_enabled")
         val THEME_COLOR = stringPreferencesKey("theme_color")
         val FONT_FAMILY = stringPreferencesKey("font_family")
@@ -49,10 +52,12 @@ class PreferencesManager @Inject constructor(
             onboardingCompleted = prefs[Keys.ONBOARDING_COMPLETED] ?: false,
             darkTheme = prefs[Keys.DARK_THEME] ?: false,
             dynamicColor = prefs[Keys.DYNAMIC_COLOR] ?: true,
-            preventScreenshots = prefs[Keys.PREVENT_SCREENSHOTS] ?: false,
+            preventScreenshots = prefs[Keys.PREVENT_SCREENSHOTS] ?: true,
             autoLockTimeoutMillis = prefs[Keys.AUTO_LOCK_TIMEOUT] ?: 30000L,
-            vaultPin = prefs[Keys.VAULT_PIN],
-            biometricEnabled = prefs[Keys.BIOMETRIC_ENABLED] ?: true,
+            isPinSet = prefs[Keys.PIN_HASH] != null,
+            pinHash = prefs[Keys.PIN_HASH],
+            pinSalt = prefs[Keys.PIN_SALT],
+            biometricEnabled = prefs[Keys.BIOMETRIC_ENABLED] ?: false,
             themeColor = prefs[Keys.THEME_COLOR] ?: "BLUE",
             fontFamily = prefs[Keys.FONT_FAMILY] ?: "SANS_SERIF",
             fontSizeScale = prefs[Keys.FONT_SIZE_SCALE] ?: 1.0f
@@ -97,10 +102,15 @@ class PreferencesManager @Inject constructor(
         dataStore.edit { it[Keys.FONT_SIZE_SCALE] = scale }
     }
 
-    suspend fun setVaultPin(pin: String?) {
+    suspend fun setPin(hash: String?, salt: String?) {
         dataStore.edit { prefs ->
-            if (pin == null) prefs.remove(Keys.VAULT_PIN)
-            else prefs[Keys.VAULT_PIN] = pin
+            if (hash == null || salt == null) {
+                prefs.remove(Keys.PIN_HASH)
+                prefs.remove(Keys.PIN_SALT)
+            } else {
+                prefs[Keys.PIN_HASH] = hash
+                prefs[Keys.PIN_SALT] = salt
+            }
         }
     }
 }

@@ -2,31 +2,47 @@ package com.ashish.stash.ui.security
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.ashish.stash.ui.component.PinIndicators
+import com.ashish.stash.ui.component.PinKeypad
 import com.ashish.stash.ui.theme.StashBlue
 
 @Composable
 fun PinLockScreen(
     onCorrectPin: () -> Unit,
-    savedPin: String
+    onBiometricRequest: () -> Unit,
+    viewModel: SecurityViewModel = hiltViewModel()
 ) {
-    var pinInput by remember { mutableStateOf("") }
-    var isError by remember { mutableStateOf(false) }
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
+    val title = when (uiState.flow) {
+        PinFlow.UNLOCK -> "Vault Locked"
+        PinFlow.SETUP -> "Setup Vault PIN"
+        PinFlow.CHANGE -> "Change Vault PIN"
+    }
+
+    val subtitle = when {
+        uiState.lockoutSeconds > 0 -> "Locked for ${uiState.lockoutSeconds}s"
+        uiState.isError -> uiState.errorMessage ?: "Error"
+        uiState.isConfirming -> "Confirm your 4-digit PIN"
+        uiState.flow == PinFlow.UNLOCK -> "Enter your PIN to access Stash"
+        else -> "Create a 4-digit PIN"
+    }
 
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
+            .background(Color.White)
             .padding(32.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
@@ -39,48 +55,30 @@ fun PinLockScreen(
         )
         Spacer(modifier = Modifier.height(24.dp))
         Text(
-            text = "Vault Locked",
+            text = title,
             style = MaterialTheme.typography.headlineMedium,
-            fontWeight = FontWeight.Bold
+            fontWeight = FontWeight.Bold,
+            color = StashBlue
         )
         Text(
-            text = "Enter your PIN to access Stash",
+            text = subtitle,
             style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
+            color = if (uiState.isError) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant
         )
         
-        Spacer(modifier = Modifier.height(32.dp))
+        Spacer(modifier = Modifier.height(48.dp))
 
-        OutlinedTextField(
-            value = pinInput,
-            onValueChange = {
-                if (it.length <= 4) {
-                    pinInput = it
-                    isError = false
-                    if (it == savedPin) {
-                        onCorrectPin()
-                    }
-                }
-            },
-            label = { Text("Enter 4-digit PIN") },
-            visualTransformation = PasswordVisualTransformation(),
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.NumberPassword),
-            isError = isError,
-            singleLine = true,
-            modifier = Modifier.width(200.dp),
-            colors = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor = StashBlue,
-                focusedLabelColor = StashBlue
-            )
+        PinIndicators(
+            pinLength = uiState.enteredPin.length,
+            isError = uiState.isError,
+            modifier = Modifier.padding(bottom = 48.dp)
         )
 
-        if (isError) {
-            Text(
-                "Incorrect PIN",
-                color = MaterialTheme.colorScheme.error,
-                style = MaterialTheme.typography.bodySmall,
-                modifier = Modifier.padding(top = 8.dp)
-            )
-        }
+        PinKeypad(
+            onDigitClick = viewModel::onDigit,
+            onDeleteClick = viewModel::onDelete,
+            onBiometricClick = if (uiState.flow == PinFlow.UNLOCK) onBiometricRequest else null,
+            modifier = Modifier.fillMaxWidth(0.8f)
+        )
     }
 }
