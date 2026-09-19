@@ -5,6 +5,9 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ArrowForwardIos
@@ -14,6 +17,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
@@ -42,8 +46,17 @@ fun SettingsScreen(
     viewModel: SettingsViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val message by viewModel.message.collectAsStateWithLifecycle()
     val context = LocalContext.current
+    val snackbarHostState = remember { SnackbarHostState() }
     var currentSubScreen by remember { mutableStateOf<SubScreen?>(null) }
+
+    LaunchedEffect(message) {
+        message?.let {
+            snackbarHostState.showSnackbar(it)
+            viewModel.clearMessage()
+        }
+    }
 
     val backupPicker = rememberSafFilePickerLauncher(
         onFileSelected = { uri ->
@@ -66,9 +79,15 @@ fun SettingsScreen(
                     }) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
                     }
-                }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.surface,
+                    titleContentColor = StashBlue,
+                    navigationIconContentColor = StashBlue
+                )
             )
-        }
+        },
+        snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
     ) { padding ->
         Box(modifier = Modifier.padding(padding).fillMaxSize()) {
             if (currentSubScreen == null) {
@@ -87,8 +106,14 @@ fun SettingsScreen(
                     SubScreen.APPEARANCE -> AppearanceTab(
                         darkTheme = uiState.darkTheme,
                         dynamicColor = uiState.dynamicColor,
+                        themeColor = uiState.themeColor,
+                        fontFamily = uiState.fontFamily,
+                        fontSizeScale = uiState.fontSizeScale,
                         onDarkThemeChange = viewModel::setDarkTheme,
-                        onDynamicColorChange = viewModel::setDynamicColor
+                        onDynamicColorChange = viewModel::setDynamicColor,
+                        onThemeColorChange = viewModel::setThemeColor,
+                        onFontFamilyChange = viewModel::setFontFamily,
+                        onFontSizeChange = viewModel::setFontSizeScale
                     )
                     SubScreen.SECURITY -> SecurityTab(
                         vaultPin = uiState.vaultPin,
@@ -164,12 +189,19 @@ fun SettingsItem(
 fun AppearanceTab(
     darkTheme: Boolean,
     dynamicColor: Boolean,
+    themeColor: String,
+    fontFamily: String,
+    fontSizeScale: Float,
     onDarkThemeChange: (Boolean) -> Unit,
-    onDynamicColorChange: (Boolean) -> Unit
+    onDynamicColorChange: (Boolean) -> Unit,
+    onThemeColorChange: (String) -> Unit,
+    onFontFamilyChange: (String) -> Unit,
+    onFontSizeChange: (Float) -> Unit
 ) {
-    Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
+    Column(modifier = Modifier.fillMaxSize().padding(16.dp).verticalScroll(rememberScrollState())) {
         Text("Theme Settings", style = MaterialTheme.typography.titleMedium, color = StashBlue)
         Spacer(Modifier.height(16.dp))
+        
         ListItem(
             headlineContent = { Text("Dark Mode") },
             supportingContent = { Text("Force high-contrast black theme") },
@@ -179,6 +211,46 @@ fun AppearanceTab(
             headlineContent = { Text("Dynamic Color") },
             supportingContent = { Text("Sync with Android system palette") },
             trailingContent = { Switch(checked = dynamicColor, onCheckedChange = onDynamicColorChange, colors = SwitchDefaults.colors(checkedTrackColor = StashBlue)) }
+        )
+
+        Spacer(Modifier.height(24.dp))
+        Text("Primary Color", style = MaterialTheme.typography.labelLarge, color = StashBlue)
+        Spacer(Modifier.height(8.dp))
+        val colors = listOf("BLUE" to StashBlue, "GREEN" to Color(0xFF4CAF50), "RED" to Color(0xFFF44336), "ORANGE" to Color(0xFFFF9800))
+        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            colors.forEach { (name, color) ->
+                Box(
+                    modifier = Modifier
+                        .size(40.dp)
+                        .background(color, CircleShape)
+                        .clickable { onThemeColorChange(name) }
+                        .let { if (themeColor == name) it.background(Color.Black.copy(alpha = 0.2f)) else it }
+                )
+            }
+        }
+
+        Spacer(Modifier.height(24.dp))
+        Text("Font Family", style = MaterialTheme.typography.labelLarge, color = StashBlue)
+        val fonts = listOf("SANS_SERIF" to "Inter (Sans)", "SERIF" to "Fraunces (Serif)", "MONOSPACE" to "JetBrains (Mono)")
+        fonts.forEach { (id, name) ->
+            Row(
+                Modifier.fillMaxWidth().clickable { onFontFamilyChange(id) }.padding(vertical = 12.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                RadioButton(selected = fontFamily == id, onClick = null, colors = RadioButtonDefaults.colors(selectedColor = StashBlue))
+                Spacer(Modifier.width(12.dp))
+                Text(name)
+            }
+        }
+
+        Spacer(Modifier.height(24.dp))
+        Text("Font Size: ${(fontSizeScale * 100).toInt()}%", style = MaterialTheme.typography.labelLarge, color = StashBlue)
+        Slider(
+            value = fontSizeScale,
+            onValueChange = onFontSizeChange,
+            valueRange = 0.8f..1.5f,
+            steps = 6,
+            colors = SliderDefaults.colors(thumbColor = StashBlue, activeTrackColor = StashBlue)
         )
     }
 }
@@ -309,7 +381,7 @@ fun SecurityTab(
                             }.padding(16.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            RadioButton(selected = autoLockTimeout == time, onClick = null)
+                            RadioButton(selected = autoLockTimeout == time, onClick = null, colors = RadioButtonDefaults.colors(selectedColor = StashBlue))
                             Spacer(Modifier.width(8.dp))
                             Text(label)
                         }

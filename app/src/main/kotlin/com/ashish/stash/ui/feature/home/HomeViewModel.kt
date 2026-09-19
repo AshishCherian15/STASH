@@ -28,6 +28,10 @@ class HomeViewModel @Inject constructor(
     private val _viewMode = MutableStateFlow(ViewMode.LIST)
     val viewMode = _viewMode.asStateFlow()
 
+    private val _filterCategory = MutableStateFlow<Long?>(null)
+    private val _filterFolder = MutableStateFlow<Long?>(null)
+    private val _filterLabel = MutableStateFlow<Long?>(null)
+
     private val _importSuccess = MutableStateFlow(false)
     val importSuccess = _importSuccess.asStateFlow()
 
@@ -40,15 +44,17 @@ class HomeViewModel @Inject constructor(
     val uiState: StateFlow<HomeUiState> = combine(
         securitySessionManager.isLocked,
         _searchQuery,
-        _viewMode
-    ) { isLocked, query, mode ->
-        Triple(isLocked, query, mode)
-    }.flatMapLatest { (isLocked, query, mode) ->
-        val showLocked = !isLocked
-        val documentsFlow = if (query.isEmpty()) {
-            repository.observeAllDocuments(showLocked)
+        _viewMode,
+        combine(_filterCategory, _filterFolder, _filterLabel) { c, f, l -> Triple(c, f, l) }
+    ) { isLocked, query, mode, filters ->
+        FilterState(isLocked, query, mode, filters.first, filters.second, filters.third)
+    }.flatMapLatest { filters ->
+        val showLocked = !filters.isLocked
+        
+        val documentsFlow = if (filters.query.isNotEmpty()) {
+            repository.searchDocuments(filters.query, showLocked)
         } else {
-            repository.searchDocuments(query, showLocked)
+            repository.observeAllDocuments(showLocked)
         }
         
         combine(
@@ -57,17 +63,23 @@ class HomeViewModel @Inject constructor(
             repository.observeLockedDocumentsCount(),
             repository.observeTotalSizeBytes()
         ) { documents, unlocked, locked, totalSize ->
-            val uiDocs = documents.map { metadata ->
+            val filteredDocs = documents.filter { doc ->
+                val categoryMatch = filters.categoryId == null || doc.category?.categoryId == filters.categoryId
+                val folderMatch = filters.folderId == null || doc.folder?.folderId == filters.folderId
+                val labelMatch = filters.labelId == null || doc.labels.any { it.labelId == filters.labelId }
+                categoryMatch && folderMatch && labelMatch
+            }.map { metadata ->
                 DocumentUiModel(
                     data = metadata,
                     isAccessible = safUriManager.isUriAccessible(Uri.parse(metadata.document.uri))
                 )
             }
+            
             HomeUiState(
                 isLoading = false,
-                documents = uiDocs,
-                searchQuery = query,
-                viewMode = mode,
+                documents = filteredDocs,
+                searchQuery = filters.query,
+                viewMode = filters.mode,
                 stats = HomeStats(
                     totalDocuments = unlocked + locked,
                     unlockedDocuments = unlocked,
@@ -82,12 +94,39 @@ class HomeViewModel @Inject constructor(
         initialValue = HomeUiState()
     )
 
+    private data class FilterState(
+        val isLocked: Boolean,
+        val query: String,
+        val mode: ViewMode,
+        val categoryId: Long?,
+        val folderId: Long?,
+        val labelId: Long?
+    )
+
     fun onSearchQueryChanged(query: String) {
         _searchQuery.value = query
     }
 
     fun setViewMode(mode: ViewMode) {
         _viewMode.value = mode
+    }
+
+    fun setCategoryFilter(id: Long?) {
+        _filterCategory.value = id
+        _filterFolder.value = null
+        _filterLabel.value = null
+    }
+
+    fun setFolderFilter(id: Long?) {
+        _filterFolder.value = id
+        _filterCategory.value = null
+        _filterLabel.value = null
+    }
+
+    fun setLabelFilter(id: Long?) {
+        _filterLabel.value = id
+        _filterCategory.value = null
+        _filterFolder.value = null
     }
 
     fun importDocument(uri: Uri) {

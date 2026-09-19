@@ -33,12 +33,12 @@
     <string name="widget_documents">%d documents</string>
     <string name="widget_loading">Loading…</string>
     <string name="widget_title">Stash</string>
-    <style name="Theme.Stash" parent="android:Theme.Material.Light.NoActionBar">
+    <style name="Theme.Stash" parent="Theme.AppCompat.Light.NoActionBar">
         <item name="android:windowBackground">@color/limestone</item>
         <item name="android:statusBarColor">@android:color/transparent</item>
         <item name="android:navigationBarColor">@android:color/transparent</item>
     </style>
-    <style name="Theme.Stash.Transparent" parent="android:Theme.Material.Light.NoActionBar">
+    <style name="Theme.Stash.Transparent" parent="Theme.AppCompat.Light.NoActionBar">
         <item name="android:windowBackground">@android:color/transparent</item>
         <item name="android:windowIsTranslucent">true</item>
         <item name="android:windowContentOverlay">@null</item>

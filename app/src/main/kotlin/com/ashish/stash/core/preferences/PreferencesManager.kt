@@ -19,7 +19,10 @@ data class UserData(
     val preventScreenshots: Boolean,
     val autoLockTimeoutMillis: Long,
     val vaultPin: String?,
-    val biometricEnabled: Boolean
+    val biometricEnabled: Boolean,
+    val themeColor: String,
+    val fontFamily: String,
+    val fontSizeScale: Float
 )
 
 @Singleton
@@ -36,6 +39,9 @@ class PreferencesManager @Inject constructor(
         val AUTO_LOCK_TIMEOUT = longPreferencesKey("auto_lock_timeout")
         val VAULT_PIN = stringPreferencesKey("vault_pin")
         val BIOMETRIC_ENABLED = booleanPreferencesKey("biometric_enabled")
+        val THEME_COLOR = stringPreferencesKey("theme_color")
+        val FONT_FAMILY = stringPreferencesKey("font_family")
+        val FONT_SIZE_SCALE = floatPreferencesKey("font_size_scale")
     }
 
     val userData: Flow<UserData> = dataStore.data.map { prefs ->
@@ -46,7 +52,10 @@ class PreferencesManager @Inject constructor(
             preventScreenshots = prefs[Keys.PREVENT_SCREENSHOTS] ?: false,
             autoLockTimeoutMillis = prefs[Keys.AUTO_LOCK_TIMEOUT] ?: 30000L,
             vaultPin = prefs[Keys.VAULT_PIN],
-            biometricEnabled = prefs[Keys.BIOMETRIC_ENABLED] ?: true
+            biometricEnabled = prefs[Keys.BIOMETRIC_ENABLED] ?: true,
+            themeColor = prefs[Keys.THEME_COLOR] ?: "BLUE",
+            fontFamily = prefs[Keys.FONT_FAMILY] ?: "SANS_SERIF",
+            fontSizeScale = prefs[Keys.FONT_SIZE_SCALE] ?: 1.0f
         )
     }
 
@@ -74,6 +83,18 @@ class PreferencesManager @Inject constructor(
 
     suspend fun setBiometricEnabled(enabled: Boolean) {
         dataStore.edit { it[Keys.BIOMETRIC_ENABLED] = enabled }
+    }
+
+    suspend fun setThemeColor(color: String) {
+        dataStore.edit { it[Keys.THEME_COLOR] = color }
+    }
+
+    suspend fun setFontFamily(font: String) {
+        dataStore.edit { it[Keys.FONT_FAMILY] = font }
+    }
+
+    suspend fun setFontSizeScale(scale: Float) {
+        dataStore.edit { it[Keys.FONT_SIZE_SCALE] = scale }
     }
 
     suspend fun setVaultPin(pin: String?) {

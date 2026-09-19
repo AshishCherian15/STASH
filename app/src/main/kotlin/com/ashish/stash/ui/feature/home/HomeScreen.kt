@@ -174,7 +174,7 @@ fun HomeScreen(
                 },
                 floatingActionButton = {
                     FloatingActionButton(
-                        onClick = { filePicker.launch(arrayOf("*/*")) },
+                        onClick = { multiFilePicker.launch(arrayOf("*/*")) },
                         containerColor = StashBlue,
                         contentColor = Color.White,
                         elevation = FloatingActionButtonDefaults.elevation(0.dp)

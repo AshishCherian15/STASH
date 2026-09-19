@@ -5,13 +5,14 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.ashish.stash.ui.theme.VaultBrass
+import com.ashish.stash.ui.theme.StashBlue
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -24,118 +25,78 @@ fun HelpFaqScreen(onNavigateBack: () -> Unit) {
                     IconButton(onClick = onNavigateBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
                     }
-                }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.surface,
+                    titleContentColor = StashBlue,
+                    navigationIconContentColor = StashBlue
+                )
             )
         }
     ) { padding ->
         Column(
             modifier = Modifier
                 .padding(padding)
-                .padding(16.dp)
                 .fillMaxSize()
-                .verticalScroll(rememberScrollState()),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+                .verticalScroll(rememberScrollState())
+                .padding(24.dp),
+            verticalArrangement = Arrangement.spacedBy(24.dp)
         ) {
-            Text(
-                "Welcome to Stash! Here is a guide on how to navigate and use the app features effectively.",
-                style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+            HelpItem(
+                icon = Icons.Default.QuestionMark,
+                title = "What is Stash?",
+                content = "Stash is a high-performance document vault that indexes your existing device storage in-place. It uses AI to read text inside images (OCR) and provides desktop-class search speeds."
             )
 
-            HelpSection(
-                title = "1. Navigation Guide",
-                items = listOf(
-                    "Home Dashboard: The main screen where you see all your unlocked documents and vault stats.",
-                    "Sidebar Menu: Tap the 'Hamburger' icon (top-left) to access Home, Search, Priority Mode, and Settings.",
-                    "Settings Hub: A vertical menu to manage Categories, Folders, Labels, Appearance, and Security."
-                )
+            HelpItem(
+                icon = Icons.Default.Search,
+                title = "Deep Search Intelligence",
+                content = "You can search for documents not just by filename, but by the text *inside* them. Our smart ranking engine prioritizes documents based on relevance, your importance flags, and recent usage."
             )
 
-            HelpSection(
-                title = "2. Adding Documents",
-                items = listOf(
-                    "Single Import: Tap the '+' button on the Home screen to pick a file from your device.",
-                    "Batch Import: Tap the 'Folder+' icon in the Top Bar to index an entire directory at once.",
-                    "Quick Add: Share any file from another app (like WhatsApp or File Manager) directly to Stash."
-                )
+            HelpItem(
+                icon = Icons.Default.Security,
+                title = "Is my data safe?",
+                content = "Stash is 100% offline. We do not have internet permission and cannot upload your data. Documents are secured behind Biometric or PIN locks, and sensitive metadata is stored in an encrypted sandbox."
             )
 
-            HelpSection(
-                title = "3. Smart Search & OCR",
-                items = listOf(
-                    "Instant Search: Use the Search screen to find files by title, notes, or category.",
-                    "Automatic OCR: Stash reads text from images/scans automatically. You can search for text *inside* images!",
-                    "Offline-First: All search and OCR processing happens locally on your device for maximum privacy."
-                )
+            HelpItem(
+                icon = Icons.Default.FolderZip,
+                title = "In-Place Indexing",
+                content = "Unlike other apps, Stash does not copy or move your files. It creates a lightweight index, meaning it takes up virtually zero extra storage on your device."
             )
 
-            HelpSection(
-                title = "4. Security & Vault",
-                items = listOf(
-                    "Biometric Lock: Secure the app or individual files behind your fingerprint or face unlock.",
-                    "Private Mode: Locked files are hidden from search and the main list until you authenticate.",
-                    "Privacy Guard: Enable 'Prevent Screenshots' in Settings to hide your vault from recent apps previews."
-                )
+            HelpItem(
+                icon = Icons.Default.TipsAndUpdates,
+                title = "Pro Tip: Multi-Select",
+                content = "Long-press any document on the Home screen to enter selection mode. You can then bulk-share case files or delete multiple indices at once."
             )
 
-            HelpSection(
-                title = "5. Organization & Edits",
-                items = listOf(
-                    "Categories: Group files with custom colors. You can now EDIT category names and colors in Settings.",
-                    "Folders: Manage virtual folders to mirror your physical storage hierarchy.",
-                    "Labels: Add and manage searchable tags for detailed organization.",
-                    "Priority Mode: Focus on high-importance files (HIGH/CRITICAL) in a dedicated dashboard."
-                )
-            )
-
-            HelpSection(
-                title = "6. Document Previews",
-                items = listOf(
-                    "Direct Viewing: Tap any document on the Home screen to open the built-in high-quality viewer.",
-                    "Details: View full metadata, rename, or delete the file from the detail screen inside the app."
-                )
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-            
             Surface(
-                color = MaterialTheme.colorScheme.primaryContainer,
+                color = StashBlue.copy(alpha = 0.05f),
                 shape = MaterialTheme.shapes.medium,
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
-                    Text(
-                        "Privacy Tip",
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(
-                        "Stash indexes files in-place. We do not move or copy your files. If you delete the original file, Stash will show an 'Access Lost' status.",
-                        style = MaterialTheme.typography.bodyMedium
-                    )
+                    Text("Need more help?", style = MaterialTheme.typography.titleSmall, color = StashBlue)
+                    Text("Contact the developer at ashishcherian15@gmail.com for technical support.", style = MaterialTheme.typography.bodySmall)
                 }
             }
             
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(Modifier.height(32.dp))
         }
     }
 }
 
 @Composable
-private fun HelpSection(title: String, items: List<String>) {
-    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        Text(
-            text = title,
-            style = MaterialTheme.typography.titleLarge,
-            fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.primary
-        )
-        items.forEach { item ->
-            Row(verticalAlignment = Alignment.Top) {
-                Text("• ", fontWeight = FontWeight.Bold, color = VaultBrass)
-                Text(text = item, style = MaterialTheme.typography.bodyMedium)
-            }
+private fun HelpItem(icon: ImageVector, title: String, content: String) {
+    Row(modifier = Modifier.fillMaxWidth()) {
+        Icon(icon, null, tint = StashBlue, modifier = Modifier.size(24.dp))
+        Spacer(Modifier.width(16.dp))
+        Column {
+            Text(title, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+            Spacer(Modifier.height(4.dp))
+            Text(content, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
     }
 }

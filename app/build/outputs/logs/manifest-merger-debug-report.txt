@@ -19,11 +19,22 @@ MERGED from [androidx.startup:startup-runtime:1.1.1] C:\Users\ASHISH\.gradle\cac
 		ADDED from [androidx.emoji2:emoji2:1.3.0] C:\Users\ASHISH\.gradle\caches\9.7.1\transforms\41a8d0771073191028c7accdc6cfa307\transformed\emoji2-1.3.0\AndroidManifest.xml:27:13-37
 	android:name
 		ADDED from C:\Users\ASHISH\Desktop\Stash\app\src\main\AndroidManifest.xml:21:13-67
+provider#androidx.core.content.FileProvider
+INJECTED from C:\Users\ASHISH\Desktop\Stash\app\src\main\AndroidManifest.xml:72:9-80:20
+	android:grantUriPermissions
+		ADDED from C:\Users\ASHISH\Desktop\Stash\app\src\main\AndroidManifest.xml:76:13-47
+	android:authorities
+		INJECTED from C:\Users\ASHISH\Desktop\Stash\app\src\main\AndroidManifest.xml
+		ADDED from C:\Users\ASHISH\Desktop\Stash\app\src\main\AndroidManifest.xml:74:13-64
+	android:exported
+		ADDED from C:\Users\ASHISH\Desktop\Stash\app\src\main\AndroidManifest.xml:75:13-37
+	android:name
+		ADDED from C:\Users\ASHISH\Desktop\Stash\app\src\main\AndroidManifest.xml:73:13-62
 manifest
-ADDED from C:\Users\ASHISH\Desktop\Stash\app\src\main\AndroidManifest.xml:2:1-73:12
-INJECTED from C:\Users\ASHISH\Desktop\Stash\app\src\main\AndroidManifest.xml:2:1-73:12
-INJECTED from C:\Users\ASHISH\Desktop\Stash\app\src\main\AndroidManifest.xml:2:1-73:12
-INJECTED from C:\Users\ASHISH\Desktop\Stash\app\src\main\AndroidManifest.xml:2:1-73:12
+ADDED from C:\Users\ASHISH\Desktop\Stash\app\src\main\AndroidManifest.xml:2:1-83:12
+INJECTED from C:\Users\ASHISH\Desktop\Stash\app\src\main\AndroidManifest.xml:2:1-83:12
+INJECTED from C:\Users\ASHISH\Desktop\Stash\app\src\main\AndroidManifest.xml:2:1-83:12
+INJECTED from C:\Users\ASHISH\Desktop\Stash\app\src\main\AndroidManifest.xml:2:1-83:12
 MERGED from [androidx.biometric:biometric:1.1.0] C:\Users\ASHISH\.gradle\caches\9.7.1\transforms\0afaf56016fc9211145efa3b57c058d3\transformed\biometric-1.1.0\AndroidManifest.xml:17:1-29:12
 MERGED from [com.google.mlkit:text-recognition:16.0.1] C:\Users\ASHISH\.gradle\caches\9.7.1\transforms\9a0ad271ae40a05d30a52a5da8285221\transformed\text-recognition-16.0.1\AndroidManifest.xml:2:1-7:12
 MERGED from [com.google.android.gms:play-services-mlkit-text-recognition:19.0.1] C:\Users\ASHISH\.gradle\caches\9.7.1\transforms\39704527939312484c725ce33676fc78\transformed\play-services-mlkit-text-recognition-19.0.1\AndroidManifest.xml:2:1-8:12
@@ -156,8 +167,8 @@ ADDED from C:\Users\ASHISH\Desktop\Stash\app\src\main\AndroidManifest.xml:7:5-11
 	android:name
 		ADDED from C:\Users\ASHISH\Desktop\Stash\app\src\main\AndroidManifest.xml:7:22-79
 application
-ADDED from C:\Users\ASHISH\Desktop\Stash\app\src\main\AndroidManifest.xml:9:5-71:19
-INJECTED from C:\Users\ASHISH\Desktop\Stash\app\src\main\AndroidManifest.xml:9:5-71:19
+ADDED from C:\Users\ASHISH\Desktop\Stash\app\src\main\AndroidManifest.xml:9:5-81:19
+INJECTED from C:\Users\ASHISH\Desktop\Stash\app\src\main\AndroidManifest.xml:9:5-81:19
 MERGED from [com.google.android.gms:play-services-mlkit-text-recognition-common:19.1.0] C:\Users\ASHISH\.gradle\caches\9.7.1\transforms\2533f8fa91c0e56856af63c12cc0ebc4\transformed\play-services-mlkit-text-recognition-common-19.1.0\AndroidManifest.xml:8:5-16:19
 MERGED from [com.google.android.gms:play-services-mlkit-text-recognition-common:19.1.0] C:\Users\ASHISH\.gradle\caches\9.7.1\transforms\2533f8fa91c0e56856af63c12cc0ebc4\transformed\play-services-mlkit-text-recognition-common-19.1.0\AndroidManifest.xml:8:5-16:19
 MERGED from [com.google.mlkit:vision-common:17.3.0] C:\Users\ASHISH\.gradle\caches\9.7.1\transforms\5b0aa760ad8814859dc77bb14b57c53a\transformed\vision-common-17.3.0\AndroidManifest.xml:8:5-16:19
@@ -286,6 +297,12 @@ ADDED from C:\Users\ASHISH\Desktop\Stash\app\src\main\AndroidManifest.xml:67:13-
 		ADDED from C:\Users\ASHISH\Desktop\Stash\app\src\main\AndroidManifest.xml:69:17-58
 	android:name
 		ADDED from C:\Users\ASHISH\Desktop\Stash\app\src\main\AndroidManifest.xml:68:17-58
+meta-data#android.support.FILE_PROVIDER_PATHS
+ADDED from C:\Users\ASHISH\Desktop\Stash\app\src\main\AndroidManifest.xml:77:13-79:54
+	android:resource
+		ADDED from C:\Users\ASHISH\Desktop\Stash\app\src\main\AndroidManifest.xml:79:17-51
+	android:name
+		ADDED from C:\Users\ASHISH\Desktop\Stash\app\src\main\AndroidManifest.xml:78:17-67
 uses-sdk
 INJECTED from C:\Users\ASHISH\Desktop\Stash\app\src\main\AndroidManifest.xml reason: use-sdk injection requested
 INJECTED from C:\Users\ASHISH\Desktop\Stash\app\src\main\AndroidManifest.xml

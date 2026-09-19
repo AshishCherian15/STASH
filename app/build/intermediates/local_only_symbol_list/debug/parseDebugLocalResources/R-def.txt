@@ -48,4 +48,5 @@ style Theme.Stash
 style Theme.Stash.Transparent
 xml backup_rules
 xml data_extraction_rules
+xml file_paths
 xml stash_widget_info

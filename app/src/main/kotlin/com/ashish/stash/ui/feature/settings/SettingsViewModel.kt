@@ -41,7 +41,10 @@ class SettingsViewModel @Inject constructor(
             darkTheme = userData.darkTheme,
             dynamicColor = userData.dynamicColor,
             vaultPin = userData.vaultPin,
-            biometricEnabled = userData.biometricEnabled
+            biometricEnabled = userData.biometricEnabled,
+            themeColor = userData.themeColor,
+            fontFamily = userData.fontFamily,
+            fontSizeScale = userData.fontSizeScale
         )
     }
     .onStart { emit(SettingsUiState(isLoading = true)) }
@@ -133,6 +136,24 @@ class SettingsViewModel @Inject constructor(
         viewModelScope.launch {
             preferencesManager.setDarkTheme(enabled)
             themeManager.setDarkTheme(enabled)
+        }
+    }
+
+    fun setThemeColor(color: String) {
+        viewModelScope.launch {
+            preferencesManager.setThemeColor(color)
+        }
+    }
+
+    fun setFontFamily(font: String) {
+        viewModelScope.launch {
+            preferencesManager.setFontFamily(font)
+        }
+    }
+
+    fun setFontSizeScale(scale: Float) {
+        viewModelScope.launch {
+            preferencesManager.setFontSizeScale(scale)
         }
     }
 

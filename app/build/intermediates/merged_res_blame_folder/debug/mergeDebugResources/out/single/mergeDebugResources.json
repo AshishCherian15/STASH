@@ -1,82 +1,86 @@
 [
     {
-        "merged": "com.ashish.stash.app-debug-76:/mipmap-mdpi_ic_launcher_round.webp.flat",
-        "source": "com.ashish.stash.app-main-78:/mipmap-mdpi/ic_launcher_round.webp"
+        "merged": "C:\\Users\\ASHISH\\.gradle\\daemon\\9.7.1\\com.ashish.stash.app-debug-76:\\mipmap-xhdpi_ic_launcher.webp.flat",
+        "source": "C:\\Users\\ASHISH\\.gradle\\daemon\\9.7.1\\com.ashish.stash.app-main-78:\\mipmap-xhdpi\\ic_launcher.webp"
     },
     {
-        "merged": "com.ashish.stash.app-debug-76:/mipmap-xxxhdpi_ic_launcher_round.webp.flat",
-        "source": "com.ashish.stash.app-main-78:/mipmap-xxxhdpi/ic_launcher_round.webp"
+        "merged": "C:\\Users\\ASHISH\\.gradle\\daemon\\9.7.1\\com.ashish.stash.app-debug-76:\\xml_data_extraction_rules.xml.flat",
+        "source": "C:\\Users\\ASHISH\\.gradle\\daemon\\9.7.1\\com.ashish.stash.app-main-78:\\xml\\data_extraction_rules.xml"
     },
     {
-        "merged": "com.ashish.stash.app-debug-76:/mipmap-xhdpi_ic_launcher_round.webp.flat",
-        "source": "com.ashish.stash.app-main-78:/mipmap-xhdpi/ic_launcher_round.webp"
+        "merged": "C:\\Users\\ASHISH\\.gradle\\daemon\\9.7.1\\com.ashish.stash.app-debug-76:\\mipmap-hdpi_ic_launcher.webp.flat",
+        "source": "C:\\Users\\ASHISH\\.gradle\\daemon\\9.7.1\\com.ashish.stash.app-main-78:\\mipmap-hdpi\\ic_launcher.webp"
     },
     {
-        "merged": "com.ashish.stash.app-debug-76:/mipmap-hdpi_ic_launcher_round.webp.flat",
-        "source": "com.ashish.stash.app-main-78:/mipmap-hdpi/ic_launcher_round.webp"
+        "merged": "C:\\Users\\ASHISH\\.gradle\\daemon\\9.7.1\\com.ashish.stash.app-debug-76:\\drawable_ic_launcher_foreground.xml.flat",
+        "source": "C:\\Users\\ASHISH\\.gradle\\daemon\\9.7.1\\com.ashish.stash.app-main-78:\\drawable\\ic_launcher_foreground.xml"
     },
     {
-        "merged": "com.ashish.stash.app-debug-76:/mipmap-xhdpi_ic_launcher.webp.flat",
-        "source": "com.ashish.stash.app-main-78:/mipmap-xhdpi/ic_launcher.webp"
+        "merged": "C:\\Users\\ASHISH\\.gradle\\daemon\\9.7.1\\com.ashish.stash.app-debug-76:\\drawable_ic_launcher_background.xml.flat",
+        "source": "C:\\Users\\ASHISH\\.gradle\\daemon\\9.7.1\\com.ashish.stash.app-main-78:\\drawable\\ic_launcher_background.xml"
     },
     {
-        "merged": "com.ashish.stash.app-debug-76:/layout_stash_widget.xml.flat",
-        "source": "com.ashish.stash.app-main-78:/layout/stash_widget.xml"
+        "merged": "C:\\Users\\ASHISH\\.gradle\\daemon\\9.7.1\\com.ashish.stash.app-debug-76:\\layout_stash_widget_preview.xml.flat",
+        "source": "C:\\Users\\ASHISH\\.gradle\\daemon\\9.7.1\\com.ashish.stash.app-main-78:\\layout\\stash_widget_preview.xml"
     },
     {
-        "merged": "com.ashish.stash.app-debug-76:/layout_stash_widget_preview.xml.flat",
-        "source": "com.ashish.stash.app-main-78:/layout/stash_widget_preview.xml"
+        "merged": "C:\\Users\\ASHISH\\.gradle\\daemon\\9.7.1\\com.ashish.stash.app-debug-76:\\layout_stash_widget.xml.flat",
+        "source": "C:\\Users\\ASHISH\\.gradle\\daemon\\9.7.1\\com.ashish.stash.app-main-78:\\layout\\stash_widget.xml"
     },
     {
-        "merged": "com.ashish.stash.app-debug-76:/mipmap-mdpi_ic_launcher.webp.flat",
-        "source": "com.ashish.stash.app-main-78:/mipmap-mdpi/ic_launcher.webp"
+        "merged": "com.ashish.stash.app-debug-76:/xml_file_paths.xml.flat",
+        "source": "com.ashish.stash.app-main-78:/xml/file_paths.xml"
     },
     {
-        "merged": "com.ashish.stash.app-debug-76:/xml_data_extraction_rules.xml.flat",
-        "source": "com.ashish.stash.app-main-78:/xml/data_extraction_rules.xml"
+        "merged": "C:\\Users\\ASHISH\\.gradle\\daemon\\9.7.1\\com.ashish.stash.app-debug-76:\\mipmap-mdpi_ic_launcher_round.webp.flat",
+        "source": "C:\\Users\\ASHISH\\.gradle\\daemon\\9.7.1\\com.ashish.stash.app-main-78:\\mipmap-mdpi\\ic_launcher_round.webp"
     },
     {
-        "merged": "com.ashish.stash.app-debug-76:/mipmap-anydpi-v26_ic_launcher_round.xml.flat",
-        "source": "com.ashish.stash.app-main-78:/mipmap-anydpi-v26/ic_launcher_round.xml"
+        "merged": "C:\\Users\\ASHISH\\.gradle\\daemon\\9.7.1\\com.ashish.stash.app-debug-76:\\xml_backup_rules.xml.flat",
+        "source": "C:\\Users\\ASHISH\\.gradle\\daemon\\9.7.1\\com.ashish.stash.app-main-78:\\xml\\backup_rules.xml"
     },
     {
-        "merged": "com.ashish.stash.app-debug-76:/xml_backup_rules.xml.flat",
-        "source": "com.ashish.stash.app-main-78:/xml/backup_rules.xml"
+        "merged": "C:\\Users\\ASHISH\\.gradle\\daemon\\9.7.1\\com.ashish.stash.app-debug-76:\\xml_stash_widget_info.xml.flat",
+        "source": "C:\\Users\\ASHISH\\.gradle\\daemon\\9.7.1\\com.ashish.stash.app-main-78:\\xml\\stash_widget_info.xml"
     },
     {
-        "merged": "com.ashish.stash.app-debug-76:/drawable_ic_launcher_foreground.xml.flat",
-        "source": "com.ashish.stash.app-main-78:/drawable/ic_launcher_foreground.xml"
+        "merged": "C:\\Users\\ASHISH\\.gradle\\daemon\\9.7.1\\com.ashish.stash.app-debug-76:\\mipmap-xxxhdpi_ic_launcher.webp.flat",
+        "source": "C:\\Users\\ASHISH\\.gradle\\daemon\\9.7.1\\com.ashish.stash.app-main-78:\\mipmap-xxxhdpi\\ic_launcher.webp"
     },
     {
-        "merged": "com.ashish.stash.app-debug-76:/xml_stash_widget_info.xml.flat",
-        "source": "com.ashish.stash.app-main-78:/xml/stash_widget_info.xml"
+        "merged": "C:\\Users\\ASHISH\\.gradle\\daemon\\9.7.1\\com.ashish.stash.app-debug-76:\\mipmap-xhdpi_ic_launcher_round.webp.flat",
+        "source": "C:\\Users\\ASHISH\\.gradle\\daemon\\9.7.1\\com.ashish.stash.app-main-78:\\mipmap-xhdpi\\ic_launcher_round.webp"
     },
     {
-        "merged": "com.ashish.stash.app-debug-76:/drawable_ic_launcher_background.xml.flat",
-        "source": "com.ashish.stash.app-main-78:/drawable/ic_launcher_background.xml"
+        "merged": "C:\\Users\\ASHISH\\.gradle\\daemon\\9.7.1\\com.ashish.stash.app-debug-76:\\mipmap-hdpi_ic_launcher_round.webp.flat",
+        "source": "C:\\Users\\ASHISH\\.gradle\\daemon\\9.7.1\\com.ashish.stash.app-main-78:\\mipmap-hdpi\\ic_launcher_round.webp"
     },
     {
-        "merged": "com.ashish.stash.app-debug-76:/mipmap-xxhdpi_ic_launcher.webp.flat",
-        "source": "com.ashish.stash.app-main-78:/mipmap-xxhdpi/ic_launcher.webp"
+        "merged": "C:\\Users\\ASHISH\\.gradle\\daemon\\9.7.1\\com.ashish.stash.app-debug-76:\\mipmap-xxhdpi_ic_launcher_round.webp.flat",
+        "source": "C:\\Users\\ASHISH\\.gradle\\daemon\\9.7.1\\com.ashish.stash.app-main-78:\\mipmap-xxhdpi\\ic_launcher_round.webp"
     },
     {
-        "merged": "com.ashish.stash.app-debug-76:/mipmap-hdpi_ic_launcher.webp.flat",
-        "source": "com.ashish.stash.app-main-78:/mipmap-hdpi/ic_launcher.webp"
+        "merged": "C:\\Users\\ASHISH\\.gradle\\daemon\\9.7.1\\com.ashish.stash.app-debug-76:\\mipmap-anydpi-v26_ic_launcher.xml.flat",
+        "source": "C:\\Users\\ASHISH\\.gradle\\daemon\\9.7.1\\com.ashish.stash.app-main-78:\\mipmap-anydpi-v26\\ic_launcher.xml"
     },
     {
-        "merged": "com.ashish.stash.app-debug-76:/mipmap-xxhdpi_ic_launcher_round.webp.flat",
-        "source": "com.ashish.stash.app-main-78:/mipmap-xxhdpi/ic_launcher_round.webp"
+        "merged": "C:\\Users\\ASHISH\\.gradle\\daemon\\9.7.1\\com.ashish.stash.app-debug-76:\\mipmap-xxxhdpi_ic_launcher_round.webp.flat",
+        "source": "C:\\Users\\ASHISH\\.gradle\\daemon\\9.7.1\\com.ashish.stash.app-main-78:\\mipmap-xxxhdpi\\ic_launcher_round.webp"
     },
     {
-        "merged": "com.ashish.stash.app-debug-76:/drawable_stash_logo.xml.flat",
-        "source": "com.ashish.stash.app-main-78:/drawable/stash_logo.xml"
+        "merged": "C:\\Users\\ASHISH\\.gradle\\daemon\\9.7.1\\com.ashish.stash.app-debug-76:\\mipmap-xxhdpi_ic_launcher.webp.flat",
+        "source": "C:\\Users\\ASHISH\\.gradle\\daemon\\9.7.1\\com.ashish.stash.app-main-78:\\mipmap-xxhdpi\\ic_launcher.webp"
     },
     {
-        "merged": "com.ashish.stash.app-debug-76:/mipmap-xxxhdpi_ic_launcher.webp.flat",
-        "source": "com.ashish.stash.app-main-78:/mipmap-xxxhdpi/ic_launcher.webp"
+        "merged": "C:\\Users\\ASHISH\\.gradle\\daemon\\9.7.1\\com.ashish.stash.app-debug-76:\\drawable_stash_logo.xml.flat",
+        "source": "C:\\Users\\ASHISH\\.gradle\\daemon\\9.7.1\\com.ashish.stash.app-main-78:\\drawable\\stash_logo.xml"
     },
     {
-        "merged": "com.ashish.stash.app-debug-76:/mipmap-anydpi-v26_ic_launcher.xml.flat",
-        "source": "com.ashish.stash.app-main-78:/mipmap-anydpi-v26/ic_launcher.xml"
+        "merged": "C:\\Users\\ASHISH\\.gradle\\daemon\\9.7.1\\com.ashish.stash.app-debug-76:\\mipmap-mdpi_ic_launcher.webp.flat",
+        "source": "C:\\Users\\ASHISH\\.gradle\\daemon\\9.7.1\\com.ashish.stash.app-main-78:\\mipmap-mdpi\\ic_launcher.webp"
+    },
+    {
+        "merged": "C:\\Users\\ASHISH\\.gradle\\daemon\\9.7.1\\com.ashish.stash.app-debug-76:\\mipmap-anydpi-v26_ic_launcher_round.xml.flat",
+        "source": "C:\\Users\\ASHISH\\.gradle\\daemon\\9.7.1\\com.ashish.stash.app-main-78:\\mipmap-anydpi-v26\\ic_launcher_round.xml"
     }
 ]

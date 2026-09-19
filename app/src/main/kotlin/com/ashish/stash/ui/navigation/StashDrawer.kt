@@ -19,9 +19,8 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavDestination
 import androidx.navigation.NavDestination.Companion.hasRoute
-import com.ashish.stash.core.database.entity.CategoryEntity
-import com.ashish.stash.core.database.entity.FolderEntity
 import com.ashish.stash.ui.component.StashLogo
+import com.ashish.stash.ui.feature.home.HomeViewModel
 import com.ashish.stash.ui.feature.settings.SettingsViewModel
 import com.ashish.stash.ui.theme.StashBlue
 
@@ -30,6 +29,7 @@ fun StashDrawer(
     currentDestination: NavDestination?,
     onNavigate: (Destination) -> Unit,
     modifier: Modifier = Modifier,
+    homeViewModel: HomeViewModel = hiltViewModel(),
     settingsViewModel: SettingsViewModel = hiltViewModel()
 ) {
     val settingsState by settingsViewModel.uiState.collectAsState()
@@ -45,23 +45,19 @@ fun StashDrawer(
             modifier = Modifier.padding(horizontal = 28.dp, vertical = 16.dp)
         ) {
             StashLogo(modifier = Modifier.size(60.dp))
-            Spacer(Modifier.width(12.dp))
-            Text(
-                text = "Stash",
-                style = MaterialTheme.typography.headlineMedium,
-                color = StashBlue,
-                fontWeight = FontWeight.Bold
-            )
         }
         HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp), color = StashBlue.copy(alpha = 0.1f))
         
         LazyColumn(modifier = Modifier.weight(1f)) {
             item {
                 DrawerItem(
-                    label = "Home",
+                    label = "All Documents",
                     icon = Icons.Outlined.Home,
                     selected = currentDestination?.hasRoute(Destination.Home::class) == true,
-                    onClick = { onNavigate(Destination.Home) }
+                    onClick = { 
+                        homeViewModel.setCategoryFilter(null)
+                        onNavigate(Destination.Home) 
+                    }
                 )
             }
             item {
@@ -89,7 +85,10 @@ fun StashDrawer(
                         label = category.name,
                         icon = Icons.Outlined.Category,
                         color = category.color,
-                        onClick = { /* Future: Navigate to Category specific view */ }
+                        onClick = { 
+                            homeViewModel.setCategoryFilter(category.categoryId)
+                            onNavigate(Destination.Home)
+                        }
                     )
                 }
             }
@@ -101,7 +100,25 @@ fun StashDrawer(
                     DrawerSubItem(
                         label = folder.name,
                         icon = Icons.Outlined.Folder,
-                        onClick = { /* Future: Navigate to Folder specific view */ }
+                        onClick = { 
+                            homeViewModel.setFolderFilter(folder.folderId)
+                            onNavigate(Destination.Home)
+                        }
+                    )
+                }
+            }
+
+            // Labels Section
+            if (settingsState.labels.isNotEmpty()) {
+                item { DrawerSectionHeader("Labels") }
+                items(settingsState.labels) { label ->
+                    DrawerSubItem(
+                        label = label.name,
+                        icon = Icons.Outlined.Bookmarks,
+                        onClick = { 
+                            homeViewModel.setLabelFilter(label.labelId)
+                            onNavigate(Destination.Home)
+                        }
                     )
                 }
             }
@@ -130,7 +147,8 @@ private fun DrawerSectionHeader(text: String) {
     Text(
         text = text,
         style = MaterialTheme.typography.labelLarge,
-        color = MaterialTheme.colorScheme.primary,
+        color = StashBlue,
+        fontWeight = FontWeight.Bold,
         modifier = Modifier.padding(horizontal = 28.dp, vertical = 8.dp)
     )
 }
@@ -174,6 +192,7 @@ private fun DrawerSubItem(
         modifier = Modifier
             .clickable(onClick = onClick)
             .padding(start = 12.dp)
-            .fillMaxWidth()
+            .fillMaxWidth(),
+        colors = ListItemDefaults.colors(containerColor = androidx.compose.ui.graphics.Color.Transparent)
     )
 }

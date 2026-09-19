@@ -3,6 +3,8 @@ package com.ashish.stash
 import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.fragment.app.FragmentActivity
 import com.ashish.stash.core.preferences.PreferencesManager
 import com.ashish.stash.core.security.BiometricLockManager
@@ -23,7 +25,9 @@ class MainActivity : FragmentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            StashTheme {
+            val userData by preferencesManager.userData.collectAsState(null)
+            
+            StashTheme(userData = userData) {
                 StashApp(
                     preferencesManager = preferencesManager,
                     biometricLockManager = biometricLockManager,

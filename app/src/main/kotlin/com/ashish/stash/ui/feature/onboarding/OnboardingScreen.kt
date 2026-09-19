@@ -5,9 +5,11 @@ import android.net.Uri
 import android.os.Build
 import android.os.Environment
 import android.provider.Settings
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
@@ -15,12 +17,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import com.ashish.stash.ui.theme.VaultBrass
+import com.ashish.stash.ui.theme.StashBlue
 import kotlinx.coroutines.launch
 
 @Composable
@@ -34,32 +38,53 @@ fun OnboardingScreen(
 
     Scaffold(
         modifier = modifier.fillMaxSize(),
+        containerColor = Color.White,
         bottomBar = {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(24.dp)
-                    .navigationBarsPadding(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                TextButton(
-                    onClick = { onComplete() }
+            Column {
+                // Page Indicator
+                Row(
+                    Modifier.height(40.dp).fillMaxWidth(),
+                    horizontalArrangement = Arrangement.Center
                 ) {
-                    Text("Skip")
+                    repeat(5) { iteration ->
+                        val color = if (pagerState.currentPage == iteration) StashBlue else StashBlue.copy(alpha = 0.2f)
+                        Box(
+                            modifier = Modifier
+                                .padding(4.dp)
+                                .clip(CircleShape)
+                                .background(color)
+                                .size(8.dp)
+                        )
+                    }
                 }
-
-                Button(
-                    onClick = {
-                        if (pagerState.currentPage < 4) {
-                            scope.launch { pagerState.animateScrollToPage(pagerState.currentPage + 1) }
-                        } else {
-                            onComplete()
-                        }
-                    },
-                    colors = ButtonDefaults.buttonColors(containerColor = VaultBrass)
+                
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(24.dp)
+                        .navigationBarsPadding(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text(if (pagerState.currentPage < 4) "Next" else "Get Started")
+                    TextButton(
+                        onClick = { onComplete() },
+                        colors = ButtonDefaults.textButtonColors(contentColor = StashBlue)
+                    ) {
+                        Text("Skip")
+                    }
+
+                    Button(
+                        onClick = {
+                            if (pagerState.currentPage < 4) {
+                                scope.launch { pagerState.animateScrollToPage(pagerState.currentPage + 1) }
+                            } else {
+                                onComplete()
+                            }
+                        },
+                        colors = ButtonDefaults.buttonColors(containerColor = StashBlue)
+                    ) {
+                        Text(if (pagerState.currentPage < 4) "Next" else "Get Started")
+                    }
                 }
             }
         }
@@ -82,8 +107,8 @@ fun OnboardingScreen(
                     icon = Icons.Default.Shield
                 )
                 2 -> OnboardingPage(
-                    title = "How It Works",
-                    description = "Stash indexes your documents in place. We don't copy them, we just make them easier to find and secure.",
+                    title = "Smart Indexing",
+                    description = "Stash indexes your documents in place. Search by content, labels, and categories instantly.",
                     icon = Icons.Default.Inventory
                 )
                 3 -> OnboardingPage(
@@ -109,9 +134,9 @@ fun OnboardingScreen(
                     }
                 )
                 4 -> OnboardingPage(
-                    title = "Folder Access",
-                    description = "Stash uses Android's Storage Access Framework. You choose which folders we can see. We never ask for full storage permission.",
-                    icon = Icons.Default.Folder,
+                    title = "Organized Workflow",
+                    description = "Group files with professional colors. Categorize by Legal, Financial, or Medical records.",
+                    icon = Icons.Default.Category,
                     isExplainer = true
                 )
             }
@@ -138,15 +163,16 @@ private fun OnboardingPage(
         Icon(
             imageVector = icon,
             contentDescription = null,
-            modifier = Modifier.size(120.dp),
-            tint = VaultBrass
+            modifier = Modifier.size(140.dp),
+            tint = StashBlue
         )
         Spacer(modifier = Modifier.height(48.dp))
         Text(
             text = title,
             style = MaterialTheme.typography.headlineMedium,
             fontWeight = FontWeight.Bold,
-            textAlign = TextAlign.Center
+            textAlign = TextAlign.Center,
+            color = StashBlue
         )
         Spacer(modifier = Modifier.height(16.dp))
         Text(
@@ -158,14 +184,14 @@ private fun OnboardingPage(
         if (isExplainer) {
             Spacer(modifier = Modifier.height(24.dp))
             Surface(
-                color = MaterialTheme.colorScheme.surfaceVariant,
+                color = StashBlue.copy(alpha = 0.1f),
                 shape = MaterialTheme.shapes.medium
             ) {
                 Text(
-                    text = "You're in control of your data.",
+                    text = "Professional Grade Organization.",
                     modifier = Modifier.padding(16.dp),
                     style = MaterialTheme.typography.labelLarge,
-                    color = VaultBrass
+                    color = StashBlue
                 )
             }
         }
@@ -173,7 +199,7 @@ private fun OnboardingPage(
             Spacer(modifier = Modifier.height(24.dp))
             Button(
                 onClick = onActionClick,
-                colors = ButtonDefaults.buttonColors(containerColor = VaultBrass)
+                colors = ButtonDefaults.buttonColors(containerColor = StashBlue)
             ) {
                 Text("Grant Full Access")
             }

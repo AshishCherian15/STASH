@@ -12,17 +12,13 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.ashish.stash.core.database.entity.CategoryEntity
-import com.ashish.stash.core.database.entity.FolderEntity
-import com.ashish.stash.core.database.entity.LabelEntity
 import com.ashish.stash.ui.feature.settings.SettingsViewModel
 import com.ashish.stash.ui.theme.StashBlue
-import java.text.SimpleDateFormat
-import java.util.Date
 import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -36,14 +32,13 @@ fun DocumentDetailScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val settingsState by settingsViewModel.uiState.collectAsStateWithLifecycle()
-    
+
     var showRenameDialog by remember { mutableStateOf(false) }
     var showDeleteDialog by remember { mutableStateOf(false) }
     var showPriorityDialog by remember { mutableStateOf(false) }
-    var showAddLinkDialog by remember { mutableStateOf(false) }
     
-    var showCategoryMenu by remember { mutableStateOf(false) }
-    var showFolderMenu by remember { mutableStateOf(false) }
+    var categoryMenuExpanded by remember { mutableStateOf(false) }
+    var folderMenuExpanded by remember { mutableStateOf(false) }
 
     LaunchedEffect(uiState.isDeleted) {
         if (uiState.isDeleted) {
@@ -54,7 +49,7 @@ fun DocumentDetailScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Document Details") },
+                title = { Text("Details") },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
@@ -74,7 +69,6 @@ fun DocumentDetailScreen(
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surface,
                     titleContentColor = StashBlue,
                     navigationIconContentColor = StashBlue
                 )
@@ -97,7 +91,7 @@ fun DocumentDetailScreen(
                         .padding(16.dp),
                     verticalArrangement = Arrangement.spacedBy(24.dp)
                 ) {
-                    // Header Section
+                    // Header Card
                     Card(
                         modifier = Modifier.fillMaxWidth(),
                         colors = CardDefaults.cardColors(containerColor = StashBlue.copy(alpha = 0.05f))
@@ -108,10 +102,9 @@ fun DocumentDetailScreen(
                                     text = doc.displayTitle,
                                     style = MaterialTheme.typography.headlineMedium,
                                     fontWeight = FontWeight.Bold,
-                                    color = StashBlue,
-                                    modifier = Modifier.weight(1f)
+                                    modifier = Modifier.weight(1f),
+                                    color = StashBlue
                                 )
-                                // Pencil icon for editing details (Renaming)
                                 IconButton(onClick = { showRenameDialog = true }) {
                                     Icon(Icons.Outlined.Edit, contentDescription = "Rename", tint = StashBlue)
                                 }
@@ -121,61 +114,55 @@ fun DocumentDetailScreen(
                                 modifier = Modifier.fillMaxWidth().padding(top = 16.dp),
                                 colors = ButtonDefaults.buttonColors(containerColor = StashBlue)
                             ) {
-                                Icon(Icons.Default.Visibility, contentDescription = null)
+                                Icon(Icons.Default.Visibility, null)
                                 Spacer(Modifier.width(8.dp))
-                                Text("Open Document")
+                                Text("Open Preview")
                             }
                         }
                     }
-
-                    // Organization (Dropdown Selection)
-                    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                        Text("Organization", style = MaterialTheme.typography.titleMedium, color = StashBlue)
+                    
+                    // Metadata Section
+                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Text("Metadata & Organization", style = MaterialTheme.typography.titleMedium, color = StashBlue)
                         
-                        // Category Selection
+                        // Category Dropdown
                         Box {
-                            DetailItem(
-                                label = "Category", 
-                                value = docWithMetadata.category?.name ?: "Uncategorized",
-                                onClick = { showCategoryMenu = true }
-                            )
-                            DropdownMenu(expanded = showCategoryMenu, onDismissRequest = { showCategoryMenu = false }) {
+                            DetailItem(label = "Category", value = docWithMetadata.category?.name ?: "None", onClick = { categoryMenuExpanded = true })
+                            DropdownMenu(expanded = categoryMenuExpanded, onDismissRequest = { categoryMenuExpanded = false }) {
                                 settingsState.categories.forEach { category ->
                                     DropdownMenuItem(
                                         text = { Text(category.name) },
                                         onClick = {
                                             viewModel.setCategory(category.categoryId)
-                                            showCategoryMenu = false
+                                            categoryMenuExpanded = false
                                         }
                                     )
                                 }
                             }
                         }
 
-                        // Folder Selection
+                        // Folder Dropdown
                         Box {
-                            DetailItem(
-                                label = "Folder", 
-                                value = docWithMetadata.folder?.name ?: "Vault Root",
-                                onClick = { showFolderMenu = true }
-                            )
-                            DropdownMenu(expanded = showFolderMenu, onDismissRequest = { showFolderMenu = false }) {
+                            DetailItem(label = "Folder", value = docWithMetadata.folder?.name ?: "Root", onClick = { folderMenuExpanded = true })
+                            DropdownMenu(expanded = folderMenuExpanded, onDismissRequest = { folderMenuExpanded = false }) {
                                 settingsState.folders.forEach { folder ->
                                     DropdownMenuItem(
                                         text = { Text(folder.name) },
                                         onClick = {
                                             viewModel.setFolder(folder.folderId)
-                                            showFolderMenu = false
+                                            folderMenuExpanded = false
                                         }
                                     )
                                 }
                             }
                         }
 
-                        DetailItem(label = "Priority", value = doc.importance, onClick = { showPriorityDialog = true })
+                        DetailItem(label = "Importance", value = doc.importance, onClick = { showPriorityDialog = true })
+                        DetailItem(label = "MIME Type", value = doc.mimeType)
+                        DetailItem(label = "File Size", value = formatFileSize(doc.fileSize))
                     }
 
-                    // Description Section (Renamed from Notes)
+                    // Description (Notes) Section
                     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                         Text("Description", style = MaterialTheme.typography.titleMedium, color = StashBlue)
                         OutlinedTextField(
@@ -183,49 +170,17 @@ fun DocumentDetailScreen(
                             onValueChange = { viewModel.updateNotes(it) },
                             modifier = Modifier.fillMaxWidth(),
                             minLines = 3,
-                            placeholder = { Text("Add private description here...") },
-                            colors = OutlinedTextFieldDefaults.colors(
-                                focusedBorderColor = StashBlue,
-                                focusedLabelColor = StashBlue
-                            )
+                            placeholder = { Text("Add private description...") },
+                            colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = StashBlue, focusedLabelColor = StashBlue)
                         )
                     }
 
-                    // Resource Links Section
-                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text("Resource Links", style = MaterialTheme.typography.titleMedium, color = StashBlue)
-                            IconButton(onClick = { showAddLinkDialog = true }) {
-                                Icon(Icons.Default.AddLink, contentDescription = "Add Link", tint = StashBlue)
-                            }
-                        }
-                        if (docWithMetadata.resourceLinks.isEmpty()) {
-                            Text("No links added yet.", style = MaterialTheme.typography.bodySmall)
-                        } else {
-                            docWithMetadata.resourceLinks.forEach { link ->
-                                ListItem(
-                                    headlineContent = { Text(link.urlOrNote) },
-                                    trailingContent = {
-                                        IconButton(onClick = { viewModel.deleteResourceLink(link) }) {
-                                            Icon(Icons.Default.Close, contentDescription = "Remove", tint = MaterialTheme.colorScheme.error)
-                                        }
-                                    }
-                                )
-                            }
-                        }
-                    }
-                    
                     Spacer(modifier = Modifier.height(40.dp))
                 }
             }
         }
     }
 
-    // Dialogs (Rename, Priority, Add Link, Delete) remain same but with StashBlue branding
     if (showRenameDialog) {
         var newTitle by remember { mutableStateOf(uiState.documentWithMetadata?.document?.displayTitle ?: "") }
         AlertDialog(
@@ -235,23 +190,16 @@ fun DocumentDetailScreen(
                 OutlinedTextField(
                     value = newTitle,
                     onValueChange = { newTitle = it },
-                    label = { Text("Title") },
+                    label = { Text("New Title") },
                     singleLine = true,
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = StashBlue,
-                        focusedLabelColor = StashBlue
-                    )
+                    modifier = Modifier.fillMaxWidth()
                 )
             },
             confirmButton = {
-                Button(
-                    onClick = {
-                        viewModel.renameDocument(newTitle)
-                        showRenameDialog = false
-                    },
-                    colors = ButtonDefaults.buttonColors(containerColor = StashBlue)
-                ) {
+                Button(onClick = {
+                    viewModel.renameDocument(newTitle)
+                    showRenameDialog = false
+                }, colors = ButtonDefaults.buttonColors(containerColor = StashBlue)) {
                     Text("Rename")
                 }
             },
@@ -266,72 +214,25 @@ fun DocumentDetailScreen(
     if (showPriorityDialog) {
         AlertDialog(
             onDismissRequest = { showPriorityDialog = false },
-            title = { Text("Set Priority") },
+            title = { Text("Set Importance") },
             text = {
                 Column {
-                    listOf("LOW", "NORMAL", "HIGH", "CRITICAL").forEach { priority ->
+                    listOf("LOW", "NORMAL", "HIGH", "CRITICAL").forEach { level ->
                         Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clickable {
-                                    viewModel.setPriority(priority)
-                                    showPriorityDialog = false
-                                }
-                                .padding(vertical = 12.dp)
+                            Modifier.fillMaxWidth().clickable { 
+                                viewModel.setPriority(level)
+                                showPriorityDialog = false
+                            }.padding(16.dp),
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
-                            RadioButton(
-                                selected = uiState.documentWithMetadata?.document?.importance == priority,
-                                onClick = null,
-                                colors = RadioButtonDefaults.colors(selectedColor = StashBlue)
-                            )
+                            RadioButton(selected = uiState.documentWithMetadata?.document?.importance == level, onClick = null, colors = RadioButtonDefaults.colors(selectedColor = StashBlue))
                             Spacer(Modifier.width(12.dp))
-                            Text(priority)
+                            Text(level)
                         }
                     }
                 }
             },
-            confirmButton = {
-                TextButton(onClick = { showPriorityDialog = false }) {
-                    Text("Close", color = StashBlue)
-                }
-            }
-        )
-    }
-
-    if (showAddLinkDialog) {
-        var linkUrl by remember { mutableStateOf("") }
-        AlertDialog(
-            onDismissRequest = { showAddLinkDialog = false },
-            title = { Text("Add Resource Link") },
-            text = {
-                OutlinedTextField(
-                    value = linkUrl,
-                    onValueChange = { linkUrl = it },
-                    label = { Text("URL or Reference") },
-                    singleLine = true,
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = StashBlue,
-                        focusedLabelColor = StashBlue
-                    )
-                )
-            },
-            confirmButton = {
-                Button(
-                    onClick = {
-                        viewModel.addResourceLink(linkUrl)
-                        showAddLinkDialog = false
-                    },
-                    colors = ButtonDefaults.buttonColors(containerColor = StashBlue)
-                ) {
-                    Text("Add")
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { showAddLinkDialog = false }) {
-                    Text("Cancel", color = StashBlue)
-                }
-            }
+            confirmButton = {}
         )
     }
 
@@ -339,14 +240,14 @@ fun DocumentDetailScreen(
         AlertDialog(
             onDismissRequest = { showDeleteDialog = false },
             title = { Text("Delete Document") },
-            text = { Text("Are you sure you want to delete this document? This action cannot be undone.") },
+            text = { Text("Permanently remove this document index from Stash? The physical file will not be deleted.") },
             confirmButton = {
                 Button(
                     onClick = {
                         viewModel.deleteDocument()
                         showDeleteDialog = false
                     },
-                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
+                    colors = ButtonDefaults.buttonColors(containerColor = Color.Red)
                 ) {
                     Text("Delete")
                 }
@@ -372,12 +273,18 @@ fun DetailItem(label: String, value: String, onClick: (() -> Unit)? = null) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text(text = value, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.weight(1f))
             if (onClick != null) {
-                Icon(Icons.Default.Edit, contentDescription = null, modifier = Modifier.size(16.dp), tint = StashBlue.copy(alpha = 0.6f))
+                Icon(Icons.Default.ArrowDropDown, contentDescription = null, tint = StashBlue)
             }
+        }
+        if (onClick != null) {
+            HorizontalDivider(modifier = Modifier.padding(top = 4.dp), thickness = 0.5.dp, color = StashBlue.copy(alpha = 0.1f))
         }
     }
 }
 
-fun formatDate(timestamp: Long): String = SimpleDateFormat("dd MMM yyyy", Locale.getDefault()).format(
-    Date(timestamp)
-)
+fun formatFileSize(size: Long): String {
+    if (size <= 0) return "0 B"
+    val units = arrayOf("B", "KB", "MB", "GB", "TB")
+    val digitGroups = (Math.log10(size.toDouble()) / Math.log10(1024.0)).toInt()
+    return String.format(Locale.US, "%.1f %s", size / Math.pow(1024.0, digitGroups.toDouble()), units[digitGroups])
+}

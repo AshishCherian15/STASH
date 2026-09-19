@@ -116,9 +116,10 @@ private fun CategoryDialog(
                     value = name, 
                     onValueChange = { name = it }, 
                     label = { Text("Category Name") },
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = StashBlue, focusedLabelColor = StashBlue)
                 )
-                Text("Select Professional Tone", style = MaterialTheme.typography.labelLarge)
+                Text("Select Professional Tone", style = MaterialTheme.typography.labelLarge, color = StashBlue)
                 FlowRow(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -139,10 +140,10 @@ private fun CategoryDialog(
             }
         },
         confirmButton = {
-            Button(onClick = { onConfirm(name, color) }, enabled = name.isNotBlank()) { Text("Save") }
+            Button(onClick = { onConfirm(name, color) }, enabled = name.isNotBlank(), colors = ButtonDefaults.buttonColors(containerColor = StashBlue)) { Text("Save") }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) { Text("Cancel") }
+            TextButton(onClick = onDismiss) { Text("Cancel", color = StashBlue) }
         }
     )
 }

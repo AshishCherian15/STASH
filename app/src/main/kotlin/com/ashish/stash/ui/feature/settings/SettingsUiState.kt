@@ -14,5 +14,8 @@ data class SettingsUiState(
     val darkTheme: Boolean = false,
     val dynamicColor: Boolean = true,
     val vaultPin: String? = null,
-    val biometricEnabled: Boolean = true
+    val biometricEnabled: Boolean = true,
+    val themeColor: String = "BLUE",
+    val fontFamily: String = "SANS_SERIF",
+    val fontSizeScale: Float = 1.0f
 )

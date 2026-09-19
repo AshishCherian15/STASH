@@ -18,7 +18,7 @@ fun rememberSafMultiFilePickerLauncher(
     onFilesSelected: (List<Uri>) -> Unit
 ) = rememberLauncherForActivityResult(
     contract = ActivityResultContracts.OpenMultipleDocuments(),
-    onResult = onFilesSelected
+    onResult = { uris -> if (uris.isNotEmpty()) onFilesSelected(uris) }
 )
 
 @Composable
