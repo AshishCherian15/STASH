@@ -25,7 +25,8 @@ data class UserData(
     val themeColor: String,
     val fontFamily: String,
     val fontSizeScale: Float,
-    val defaultsSeeded: Boolean
+    val defaultsSeeded: Boolean,
+    val vaultRootUri: String?
 )
 
 @Singleton
@@ -47,6 +48,7 @@ class PreferencesManager @Inject constructor(
         val FONT_FAMILY = stringPreferencesKey("font_family")
         val FONT_SIZE_SCALE = floatPreferencesKey("font_size_scale")
         val DEFAULTS_SEEDED = booleanPreferencesKey("defaults_seeded")
+        val VAULT_ROOT_URI = stringPreferencesKey("vault_root_uri")
     }
 
     val userData: Flow<UserData> = dataStore.data.map { prefs ->
@@ -63,7 +65,8 @@ class PreferencesManager @Inject constructor(
             themeColor = prefs[Keys.THEME_COLOR] ?: "BLUE",
             fontFamily = prefs[Keys.FONT_FAMILY] ?: "SANS_SERIF",
             fontSizeScale = prefs[Keys.FONT_SIZE_SCALE] ?: 1.0f,
-            defaultsSeeded = prefs[Keys.DEFAULTS_SEEDED] ?: false
+            defaultsSeeded = prefs[Keys.DEFAULTS_SEEDED] ?: false,
+            vaultRootUri = prefs[Keys.VAULT_ROOT_URI]
         )
     }
 
@@ -107,6 +110,13 @@ class PreferencesManager @Inject constructor(
 
     suspend fun setFontSizeScale(scale: Float) {
         dataStore.edit { it[Keys.FONT_SIZE_SCALE] = scale }
+    }
+
+    suspend fun setVaultRootUri(uri: String?) {
+        dataStore.edit { prefs ->
+            if (uri == null) prefs.remove(Keys.VAULT_ROOT_URI)
+            else prefs[Keys.VAULT_ROOT_URI] = uri
+        }
     }
 
     suspend fun setPin(hash: String?, salt: String?) {

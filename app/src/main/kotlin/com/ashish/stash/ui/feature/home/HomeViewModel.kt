@@ -4,7 +4,6 @@ import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ashish.stash.core.database.entity.DocumentWithMetadata
-import com.ashish.stash.core.database.entity.Importance
 import com.ashish.stash.core.database.repository.DocumentRepository
 import com.ashish.stash.core.saf.SafUriManager
 import com.ashish.stash.core.security.LockState

@@ -49,7 +49,8 @@ class SettingsViewModel @Inject constructor(
             biometricEnabled = userData.biometricEnabled,
             themeColor = userData.themeColor,
             fontFamily = userData.fontFamily,
-            fontSizeScale = userData.fontSizeScale
+            fontSizeScale = userData.fontSizeScale,
+            vaultRootUri = userData.vaultRootUri
         )
     }
     .onStart { 
@@ -71,9 +72,8 @@ class SettingsViewModel @Inject constructor(
 
     fun submitFeedback(text: String, rating: Int) {
         viewModelScope.launch {
-            // Title including rating for context
             val title = "User Feedback ($rating Stars)"
-            val success = githubManager.submitFeedback(title, text, "REPLACE_WITH_YOUR_TOKEN") // User must provide token in real flow
+            val success = githubManager.submitFeedback(title, text, "REPLACE_WITH_YOUR_TOKEN")
             _message.value = if (success) "Feedback submitted to GitHub!" else "Submission failed"
         }
     }
@@ -204,6 +204,12 @@ class SettingsViewModel @Inject constructor(
     fun setDynamicColor(enabled: Boolean) {
         viewModelScope.launch {
             preferencesManager.setDynamicColor(enabled)
+        }
+    }
+
+    fun setVaultRootUri(uri: String?) {
+        viewModelScope.launch {
+            preferencesManager.setVaultRootUri(uri)
         }
     }
 

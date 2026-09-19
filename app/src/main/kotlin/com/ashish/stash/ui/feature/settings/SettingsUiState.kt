@@ -17,5 +17,6 @@ data class SettingsUiState(
     val biometricEnabled: Boolean = false,
     val themeColor: String = "BLUE",
     val fontFamily: String = "SANS_SERIF",
-    val fontSizeScale: Float = 1.0f
+    val fontSizeScale: Float = 1.0f,
+    val vaultRootUri: String? = null
 )

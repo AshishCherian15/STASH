@@ -5,12 +5,12 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
 import com.ashish.stash.core.database.entity.DocumentLabelEntity
-import com.ashish.stash.core.database.entity.DocumentWithMetadata
 import com.ashish.stash.core.database.entity.Importance
 import com.ashish.stash.core.database.entity.LabelEntity
 import com.ashish.stash.core.database.entity.ResourceLinkEntity
 import com.ashish.stash.core.database.repository.DocumentRepository
 import com.ashish.stash.core.security.SecuritySessionManager
+import com.ashish.stash.domain.usecase.PhysicalLockDocumentUseCase
 import com.ashish.stash.ui.navigation.Destination
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -18,25 +18,18 @@ import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-data class DocumentDetailUiState(
-    val documentWithMetadata: DocumentWithMetadata? = null,
-    val allLabels: List<LabelEntity> = emptyList(),
-    val isLoading: Boolean = false,
-    val isDeleted: Boolean = false,
-    val isAccessDenied: Boolean = false
-)
-
 @OptIn(ExperimentalCoroutinesApi::class)
 @HiltViewModel
 class DocumentDetailViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val documentRepository: DocumentRepository,
-    private val securitySessionManager: SecuritySessionManager
+    private val securitySessionManager: SecuritySessionManager,
+    private val physicalLockDocumentUseCase: PhysicalLockDocumentUseCase
 ) : ViewModel() {
 
     private val documentId = savedStateHandle.toRoute<Destination.DocumentDetail>().documentId
 
-    private val _uiState = MutableStateFlow(DocumentDetailUiState(isLoading = true))
+    private val _uiState = MutableStateFlow<DocumentDetailUiState>(DocumentDetailUiState(isLoading = true))
     val uiState = _uiState.asStateFlow()
 
     init {
@@ -153,7 +146,7 @@ class DocumentDetailViewModel @Inject constructor(
     fun toggleLock() {
         viewModelScope.launch {
             val current = _uiState.value.documentWithMetadata?.document ?: return@launch
-            documentRepository.updateDocumentLockStatus(documentId, !current.isLocked)
+            physicalLockDocumentUseCase(documentId, !current.isLocked)
             refreshDocument()
         }
     }
