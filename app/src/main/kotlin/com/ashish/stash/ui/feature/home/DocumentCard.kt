@@ -2,7 +2,6 @@ package com.ashish.stash.ui.feature.home
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
@@ -21,7 +20,6 @@ import com.ashish.stash.core.database.entity.DocumentWithMetadata
 import com.ashish.stash.core.database.entity.Importance
 import com.ashish.stash.core.database.entity.OcrStatus
 import com.ashish.stash.ui.theme.StashBlue
-import com.ashish.stash.ui.theme.LedgerSlate
 import com.ashish.stash.ui.theme.VaultBrass
 
 @Composable

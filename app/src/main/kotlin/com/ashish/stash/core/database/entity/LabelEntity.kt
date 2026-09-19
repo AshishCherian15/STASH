@@ -16,5 +16,7 @@ data class LabelEntity(
     @ColumnInfo(name = "label_id")
     val labelId: Long = 0,
     @ColumnInfo(name = "name")
-    val name: String
+    val name: String,
+    @ColumnInfo(name = "color")
+    val color: String = "#748393" // Default slate color
 )

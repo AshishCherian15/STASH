@@ -16,7 +16,7 @@ import com.ashish.stash.core.database.entity.*
         DocumentLabelEntity::class,
         ResourceLinkEntity::class
     ],
-    version = 3,
+    version = 4,
     exportSchema = true
 )
 @TypeConverters(StashTypeConverters::class)

@@ -37,10 +37,6 @@ class SecuritySessionManager @Inject constructor(
 
     private var lastStopTimestamp: Long = 0L
 
-    /**
-     * Start observing process lifecycle.
-     * Separated from init for testability and to avoid Main thread enforcement in tests.
-     */
     fun startObserving() {
         scope.launch {
             ProcessLifecycleOwner.get().lifecycle.addObserver(this@SecuritySessionManager)

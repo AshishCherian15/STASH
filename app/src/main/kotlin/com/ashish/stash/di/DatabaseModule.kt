@@ -6,6 +6,7 @@ import androidx.room.RoomDatabase
 import androidx.sqlite.db.SupportSQLiteDatabase
 import com.ashish.stash.core.database.MIGRATION_1_2
 import com.ashish.stash.core.database.MIGRATION_2_3
+import com.ashish.stash.core.database.MIGRATION_3_4
 import com.ashish.stash.core.database.StashDatabase
 import com.ashish.stash.core.database.dao.*
 import dagger.Module
@@ -29,7 +30,7 @@ object DatabaseModule {
             StashDatabase::class.java,
             "stash_database"
         )
-        .addMigrations(MIGRATION_1_2, MIGRATION_2_3)
+        .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4)
         .build()
     }
 

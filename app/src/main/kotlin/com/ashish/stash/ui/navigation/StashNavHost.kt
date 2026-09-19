@@ -88,7 +88,8 @@ fun StashNavHost(
         composable<Destination.DocumentDetail> {
             DocumentDetailScreen(
                 onNavigateBack = { navController.popBackStack() },
-                onViewDocument = { id -> navController.navigate(Destination.Viewer(id)) }
+                onViewDocument = { id -> navController.navigate(Destination.Viewer(id)) },
+                onNavigateToSettings = { navController.navigate(Destination.Settings) }
             )
         }
         

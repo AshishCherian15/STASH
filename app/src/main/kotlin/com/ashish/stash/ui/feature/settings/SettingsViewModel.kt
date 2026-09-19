@@ -96,9 +96,9 @@ class SettingsViewModel @Inject constructor(
         }
     }
 
-    fun addFolder(name: String) {
+    fun addFolder(name: String, color: String = "#246EE9") {
         viewModelScope.launch {
-            documentRepository.insertFolder(FolderEntity(name = name))
+            documentRepository.insertFolder(FolderEntity(name = name, color = color))
         }
     }
 
@@ -114,9 +114,9 @@ class SettingsViewModel @Inject constructor(
         }
     }
 
-    fun addLabel(name: String) {
+    fun addLabel(name: String, color: String = "#748393") {
         viewModelScope.launch {
-            documentRepository.insertLabel(LabelEntity(name = name))
+            documentRepository.insertLabel(LabelEntity(name = name, color = color))
         }
     }
 

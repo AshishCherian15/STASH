@@ -17,13 +17,13 @@ val MIGRATION_1_2 = object : Migration(1, 2) {
 
 val MIGRATION_2_3 = object : Migration(2, 3) {
     override fun migrate(db: SupportSQLiteDatabase) {
-        // Rename notes to description
-        // SQLite doesn't support RENAME COLUMN in older versions, so we use the table recreation pattern if needed.
-        // But for minSdk 26 (Android 8.0), it supports ALTER TABLE RENAME COLUMN (API 27+).
-        // Stash minSdk is 26. To be safe, we'll check API or use the traditional way.
-        // Actually, Room handles simple renames if using the recreate pattern.
-        
-        // Manual migration logic for renaming column:
         db.execSQL("ALTER TABLE documents RENAME COLUMN notes TO description")
+    }
+}
+
+val MIGRATION_3_4 = object : Migration(3, 4) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL("ALTER TABLE labels ADD COLUMN color TEXT NOT NULL DEFAULT '#748393'")
+        db.execSQL("ALTER TABLE folders ADD COLUMN color TEXT NOT NULL DEFAULT '#246EE9'")
     }
 }

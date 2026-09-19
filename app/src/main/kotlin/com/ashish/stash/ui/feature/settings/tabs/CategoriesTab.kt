@@ -5,6 +5,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
@@ -12,6 +13,7 @@ import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.ashish.stash.core.database.entity.CategoryEntity
@@ -46,7 +48,8 @@ fun CategoriesTab(
                         Box(
                             modifier = Modifier
                                 .size(24.dp)
-                                .background(parseColor(category.color), shape = MaterialTheme.shapes.small)
+                                .clip(CircleShape)
+                                .background(parseColor(category.color))
                         )
                     },
                     trailingContent = {
@@ -55,7 +58,7 @@ fun CategoriesTab(
                                 Icon(Icons.Outlined.Edit, contentDescription = "Edit")
                             }
                             IconButton(onClick = { onDelete(category) }) {
-                                Icon(Icons.Default.Delete, contentDescription = "Delete")
+                                Icon(Icons.Default.Delete, contentDescription = "Delete", tint = Color.Red.copy(alpha = 0.7f))
                             }
                         }
                     }
@@ -119,7 +122,7 @@ private fun CategoryDialog(
                     modifier = Modifier.fillMaxWidth(),
                     colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = StashBlue, focusedLabelColor = StashBlue)
                 )
-                Text("Select Professional Tone", style = MaterialTheme.typography.labelLarge, color = StashBlue)
+                Text("Select Tone", style = MaterialTheme.typography.labelLarge, color = StashBlue)
                 FlowRow(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -129,10 +132,12 @@ private fun CategoryDialog(
                         Box(
                             modifier = Modifier
                                 .size(40.dp)
-                                .background(parseColor(hex), shape = MaterialTheme.shapes.small)
+                                .clip(CircleShape)
+                                .background(parseColor(hex))
                                 .clickable { color = hex }
                                 .let { 
-                                    if (color == hex) it.background(Color.Black.copy(alpha = 0.2f)) else it 
+                                    if (color == hex) it.padding(2.dp).background(Color.Black, CircleShape).padding(2.dp).background(parseColor(hex), CircleShape) 
+                                    else it 
                                 }
                         )
                     }

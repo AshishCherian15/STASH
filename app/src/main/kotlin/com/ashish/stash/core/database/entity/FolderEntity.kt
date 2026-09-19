@@ -29,5 +29,7 @@ data class FolderEntity(
     @ColumnInfo(name = "parent_folder_id")
     val parentFolderId: Long? = null,
     @ColumnInfo(name = "is_locked")
-    val isLocked: Int = 0
+    val isLocked: Int = 0,
+    @ColumnInfo(name = "color")
+    val color: String = "#246EE9" // Default Stash Blue
 )

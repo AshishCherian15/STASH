@@ -29,7 +29,7 @@ import com.ashish.stash.ui.theme.StashBlue
 fun StashDrawer(
     currentDestination: NavDestination?,
     onNavigate: (Destination) -> Unit,
-    securitySessionManager: SecuritySessionManager, // Passed from StashApp
+    securitySessionManager: SecuritySessionManager,
     modifier: Modifier = Modifier,
     homeViewModel: HomeViewModel = hiltViewModel(),
     settingsViewModel: SettingsViewModel = hiltViewModel()
@@ -52,7 +52,6 @@ fun StashDrawer(
             Text("Stash", style = MaterialTheme.typography.headlineMedium, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold)
         }
         
-        // Vault Unlock Button
         Button(
             onClick = { 
                 if (itemsUnlocked) securitySessionManager.lockItems() 
@@ -99,7 +98,6 @@ fun StashDrawer(
                 )
             }
 
-            // Categories Section
             if (settingsState.categories.isNotEmpty()) {
                 item { DrawerSectionHeader("Categories") }
                 items(settingsState.categories) { category ->
@@ -115,13 +113,13 @@ fun StashDrawer(
                 }
             }
 
-            // Folders Section
             if (settingsState.folders.isNotEmpty()) {
                 item { DrawerSectionHeader("Folders") }
                 items(settingsState.folders) { folder ->
                     DrawerSubItem(
                         label = folder.name,
                         icon = Icons.Outlined.Folder,
+                        color = folder.color,
                         onClick = { 
                             homeViewModel.setFolderFilter(folder.folderId)
                             onNavigate(Destination.Home)

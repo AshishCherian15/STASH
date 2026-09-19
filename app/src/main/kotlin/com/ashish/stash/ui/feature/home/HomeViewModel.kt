@@ -153,7 +153,7 @@ class HomeViewModel @Inject constructor(
     fun setFolderFilter(id: Long?) { _filterFolder.value = id; _filterCategory.value = null; _filterLabel.value = null }
     fun setLabelFilter(id: Long?) { _filterLabel.value = id; _filterCategory.value = null; _filterFolder.value = null }
 
-    fun importDocuments(uris: List<Uri>) {
+    fun importDocuments(uris: List<Uri>, categoryId: Long? = null) {
         viewModelScope.launch {
             _importState.value = ImportState.Processing("0/${uris.size}")
             var successCount = 0
@@ -163,11 +163,16 @@ class HomeViewModel @Inject constructor(
             uris.forEachIndexed { index, uri ->
                 _importState.value = ImportState.Processing("${index + 1}/${uris.size}")
                 try {
-                    val result = importDocumentUseCase(uri)
-                    when (result) {
-                        -2L -> duplicateCount++
-                        -1L -> errorCount++
-                        else -> successCount++
+                    val resultId = importDocumentUseCase(uri)
+                    if (resultId >= 0) {
+                        if (categoryId != null) {
+                            repository.updateDocumentCategory(resultId, categoryId)
+                        }
+                        successCount++
+                    } else if (resultId == -2L) {
+                        duplicateCount++
+                    } else {
+                        errorCount++
                     }
                 } catch (e: Exception) {
                     errorCount++
@@ -186,6 +191,18 @@ class HomeViewModel @Inject constructor(
             } else {
                 ImportState.Success(summary.trim())
             }
+        }
+    }
+
+    fun bulkUpdateCategory(docIds: Set<Long>, categoryId: Long?) {
+        viewModelScope.launch {
+            docIds.forEach { repository.updateDocumentCategory(it, categoryId) }
+        }
+    }
+
+    fun bulkUpdateFolder(docIds: Set<Long>, folderId: Long?) {
+        viewModelScope.launch {
+            docIds.forEach { repository.updateDocumentFolder(it, folderId) }
         }
     }
 

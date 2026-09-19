@@ -17,6 +17,7 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.DriveFileMove
 import androidx.compose.material.icons.automirrored.filled.InsertDriveFile
 import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.automirrored.filled.Sort
@@ -38,6 +39,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.ashish.stash.core.database.entity.CategoryEntity
 import com.ashish.stash.core.database.entity.DocumentWithMetadata
+import com.ashish.stash.core.database.entity.FolderEntity
 import com.ashish.stash.core.saf.ShareHelper
 import com.ashish.stash.ui.component.rememberSafMultiFilePickerLauncher
 import com.ashish.stash.ui.feature.settings.SettingsViewModel
@@ -62,19 +64,24 @@ fun HomeScreen(
     val snackbarHostState = remember { SnackbarHostState() }
     val context = LocalContext.current
     var showSortMenu by remember { mutableStateOf(false) }
+    
+    var pendingUris by remember { mutableStateOf<List<Uri>?>(null) }
+    var showImportCategoryDialog by remember { mutableStateOf(false) }
+    var showMoveDialog by remember { mutableStateOf(false) }
 
     var selectedDocIds by rememberSaveable { mutableStateOf(setOf<Long>()) }
     val isSelectionMode = selectedDocIds.isNotEmpty()
 
     val multiFilePicker = rememberSafMultiFilePickerLauncher { uris -> 
-        viewModel.importDocuments(uris) 
+        pendingUris = uris
+        showImportCategoryDialog = true
     }
 
     BackHandler(enabled = isSelectionMode) { selectedDocIds = emptySet() }
 
     LaunchedEffect(uiState.importSuccess) {
         if (uiState.importSuccess) {
-            snackbarHostState.showSnackbar("Documents imported successfully")
+            snackbarHostState.showSnackbar("Batch operation completed")
             viewModel.clearImportSuccess()
         }
     }
@@ -94,6 +101,11 @@ fun HomeScreen(
                             val docs = uiState.documents.filter { it.data.document.documentId in selectedDocIds }.map { it.data.document }
                             context.startActivity(Intent.createChooser(ShareHelper.createShareIntent(context, docs), "Share"))
                         }) { Icon(Icons.Default.Share, "Share") }
+                        
+                        IconButton(onClick = { showMoveDialog = true }) {
+                            Icon(Icons.AutoMirrored.Filled.DriveFileMove, "Move")
+                        }
+                        
                         IconButton(onClick = { 
                             selectedDocIds.forEach { viewModel.deleteDocument(it) }
                             selectedDocIds = emptySet()
@@ -182,6 +194,102 @@ fun HomeScreen(
             }
         }
     }
+
+    if (showImportCategoryDialog) {
+        AlertDialog(
+            onDismissRequest = { showImportCategoryDialog = false },
+            title = { Text("Set Category for Imports") },
+            text = {
+                Column {
+                    Text("Optionally choose a category for these ${pendingUris?.size ?: 0} files.")
+                    Spacer(Modifier.height(16.dp))
+                    CategoryPickerList(
+                        categories = settingsState.categories,
+                        onSelect = { catId ->
+                            pendingUris?.let { viewModel.importDocuments(it, catId) }
+                            showImportCategoryDialog = false
+                            pendingUris = null
+                        }
+                    )
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    pendingUris?.let { viewModel.importDocuments(it, null) }
+                    showImportCategoryDialog = false
+                    pendingUris = null
+                }) { Text("Import without category") }
+            }
+        )
+    }
+
+    if (showMoveDialog) {
+        AlertDialog(
+            onDismissRequest = { showMoveDialog = false },
+            title = { Text("Move ${selectedDocIds.size} files") },
+            text = {
+                Column {
+                    Text("Select target category or folder.")
+                    Spacer(Modifier.height(16.dp))
+                    Text("Categories", style = MaterialTheme.typography.labelMedium)
+                    CategoryPickerList(
+                        categories = settingsState.categories,
+                        onSelect = { catId ->
+                            viewModel.bulkUpdateCategory(selectedDocIds, catId)
+                            showMoveDialog = false
+                            selectedDocIds = emptySet()
+                        }
+                    )
+                    Spacer(Modifier.height(16.dp))
+                    Text("Folders", style = MaterialTheme.typography.labelMedium)
+                    FolderPickerList(
+                        folders = settingsState.folders,
+                        onSelect = { folderId ->
+                            viewModel.bulkUpdateFolder(selectedDocIds, folderId)
+                            showMoveDialog = false
+                            selectedDocIds = emptySet()
+                        }
+                    )
+                }
+            },
+            confirmButton = {}
+        )
+    }
+}
+
+@Composable
+fun CategoryPickerList(
+    categories: List<CategoryEntity>,
+    onSelect: (Long?) -> Unit
+) {
+    LazyColumn(modifier = Modifier.heightIn(max = 200.dp)) {
+        items(categories) { category ->
+            ListItem(
+                headlineContent = { Text(category.name) },
+                leadingContent = { Box(Modifier.size(12.dp).background(parseHexColor(category.color), CircleShape)) },
+                modifier = Modifier.clickable { onSelect(category.categoryId) }
+            )
+        }
+    }
+}
+
+@Composable
+fun FolderPickerList(
+    folders: List<FolderEntity>,
+    onSelect: (Long?) -> Unit
+) {
+    LazyColumn(modifier = Modifier.heightIn(max = 200.dp)) {
+        item {
+            ListItem(headlineContent = { Text("Root / None") }, modifier = Modifier.clickable { onSelect(null) })
+        }
+        items(folders) { folder ->
+            ListItem(
+                headlineContent = { Text(folder.name) },
+                leadingContent = { Icon(Icons.Default.Folder, null, tint = parseHexColor(folder.color)) },
+                modifier = Modifier.clickable { onSelect(folder.folderId) }
+            )
+        }
+    }
 }
 
 @Composable
@@ -212,7 +320,7 @@ fun CategoryTabRow(
                 onClick = { onCategoryClick(category.categoryId) },
                 label = { Text(category.name) },
                 leadingIcon = {
-                    Box(modifier = Modifier.size(12.dp).clip(CircleShape).background(Color(android.graphics.Color.parseColor(category.color))))
+                    Box(modifier = Modifier.size(12.dp).clip(CircleShape).background(parseHexColor(category.color)))
                 },
                 colors = FilterChipDefaults.filterChipColors(
                     selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
@@ -330,7 +438,7 @@ fun DocumentTile(documentWithMetadata: DocumentWithMetadata, onClick: () -> Unit
 
 @Composable
 private fun StatStrip(stats: HomeStats) {
-    Row(modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+    Row(modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp, start = 16.dp, end = 16.dp), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
         Text("${stats.unlockedDocuments} docs (${stats.lockedDocuments} locked)", style = MaterialTheme.typography.labelMedium, color = LedgerSlate)
         Text(formatFileSize(stats.totalSizeBytes), style = MaterialTheme.typography.labelSmall, color = LedgerSlate)
     }
@@ -363,6 +471,14 @@ private fun EmptyHomeContent() {
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
+    }
+}
+
+fun parseHexColor(hex: String): Color {
+    return try {
+        Color(android.graphics.Color.parseColor(hex))
+    } catch (e: Exception) {
+        StashBlue
     }
 }
 

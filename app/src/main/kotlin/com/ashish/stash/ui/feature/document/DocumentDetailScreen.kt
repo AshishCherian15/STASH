@@ -33,6 +33,7 @@ import java.util.Locale
 fun DocumentDetailScreen(
     onNavigateBack: () -> Unit,
     onViewDocument: (Long) -> Unit,
+    onNavigateToSettings: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: DocumentDetailViewModel = hiltViewModel(),
     settingsViewModel: SettingsViewModel = hiltViewModel()
@@ -45,6 +46,8 @@ fun DocumentDetailScreen(
     var showDeleteDialog by remember { mutableStateOf(false) }
     var showPriorityDialog by remember { mutableStateOf(false) }
     var showLabelPicker by remember { mutableStateOf(false) }
+    var showAddLinkDialog by remember { mutableStateOf(false) }
+    var showNoPinDialog by remember { mutableStateOf(false) }
     
     var categoryMenuExpanded by remember { mutableStateOf(false) }
     var folderMenuExpanded by remember { mutableStateOf(false) }
@@ -66,7 +69,13 @@ fun DocumentDetailScreen(
                 },
                 actions = {
                     if (!uiState.isAccessDenied) {
-                        IconButton(onClick = { viewModel.toggleLock() }) {
+                        IconButton(onClick = { 
+                            if (settingsState.isPinSet) {
+                                viewModel.toggleLock() 
+                            } else {
+                                showNoPinDialog = true
+                            }
+                        }) {
                             val isLocked = uiState.documentWithMetadata?.document?.isLocked == true
                             Icon(
                                 if (isLocked) Icons.Default.Lock else Icons.Default.LockOpen,
@@ -186,7 +195,51 @@ fun DocumentDetailScreen(
                         }
                     }
 
-                    // Organization (Dropdown Selection)
+                    // Links Section
+                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text("Links & Resources", style = MaterialTheme.typography.titleMedium, color = StashBlue)
+                            IconButton(onClick = { showAddLinkDialog = true }) {
+                                Icon(Icons.Default.AddLink, null, tint = StashBlue)
+                            }
+                        }
+                        
+                        docWithMetadata.resourceLinks.forEach { link ->
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 4.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Icon(Icons.Default.Link, null, tint = StashBlue, modifier = Modifier.size(20.dp))
+                                Spacer(Modifier.width(12.dp))
+                                Text(
+                                    text = link.urlOrNote,
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .clickable { 
+                                            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(link.urlOrNote))
+                                            context.startActivity(intent)
+                                        },
+                                    color = MaterialTheme.colorScheme.primary
+                                )
+                                IconButton(onClick = { viewModel.deleteResourceLink(link) }) {
+                                    Icon(Icons.Default.DeleteOutline, null, modifier = Modifier.size(20.dp), tint = Color.Gray)
+                                }
+                            }
+                        }
+                        
+                        if (docWithMetadata.resourceLinks.isEmpty()) {
+                            Text("No links added", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        }
+                    }
+
+                    // Organization
                     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                         Text("Organization", style = MaterialTheme.typography.titleMedium, color = StashBlue)
                         
@@ -242,6 +295,59 @@ fun DocumentDetailScreen(
                 }
             }
         }
+    }
+
+    if (showNoPinDialog) {
+        AlertDialog(
+            onDismissRequest = { showNoPinDialog = false },
+            title = { Text("PIN Required") },
+            text = { Text("You must set up a Vault PIN before you can lock documents. Would you like to do this now?") },
+            confirmButton = {
+                Button(onClick = {
+                    showNoPinDialog = false
+                    onNavigateToSettings()
+                }, colors = ButtonDefaults.buttonColors(containerColor = StashBlue)) {
+                    Text("Setup PIN")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showNoPinDialog = false }) {
+                    Text("Cancel")
+                }
+            }
+        )
+    }
+
+    if (showAddLinkDialog) {
+        var linkUrl by remember { mutableStateOf("") }
+        AlertDialog(
+            onDismissRequest = { showAddLinkDialog = false },
+            title = { Text("Add Link") },
+            text = {
+                OutlinedTextField(
+                    value = linkUrl,
+                    onValueChange = { linkUrl = it },
+                    label = { Text("URL (e.g., https://...)") },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            },
+            confirmButton = {
+                Button(onClick = {
+                    if (linkUrl.isNotBlank()) {
+                        viewModel.addResourceLink(linkUrl)
+                        showAddLinkDialog = false
+                    }
+                }, colors = ButtonDefaults.buttonColors(containerColor = StashBlue)) {
+                    Text("Add")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showAddLinkDialog = false }) {
+                    Text("Cancel")
+                }
+            }
+        )
     }
 
     if (showLabelPicker) {
