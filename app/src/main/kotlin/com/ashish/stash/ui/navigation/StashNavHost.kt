@@ -19,7 +19,6 @@ import com.ashish.stash.ui.component.StashLogo
 import com.ashish.stash.ui.feature.document.DocumentDetailScreen
 import com.ashish.stash.ui.feature.home.HomeScreen
 import com.ashish.stash.ui.feature.onboarding.OnboardingScreen
-import com.ashish.stash.ui.feature.onboarding.OnboardingViewModel
 import com.ashish.stash.ui.feature.priority.PriorityModeScreen
 import com.ashish.stash.ui.feature.search.SearchScreen
 import com.ashish.stash.ui.feature.settings.*
@@ -67,16 +66,12 @@ fun StashNavHost(
         }
 
         composable<Destination.Onboarding> {
-            val viewModel: OnboardingViewModel = hiltViewModel()
-            LaunchedEffect(Unit) {
-                viewModel.navigationEvent.collect {
+            OnboardingScreen(
+                onComplete = {
                     navController.navigate(Destination.Home) {
                         popUpTo<Destination.Onboarding> { inclusive = true }
                     }
                 }
-            }
-            OnboardingScreen(
-                onComplete = { viewModel.completeOnboarding() }
             )
         }
 

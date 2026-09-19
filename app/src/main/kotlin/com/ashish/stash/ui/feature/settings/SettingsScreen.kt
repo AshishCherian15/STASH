@@ -16,13 +16,18 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.ashish.stash.core.github.GitHubManager
 import com.ashish.stash.ui.component.rememberSafFilePickerLauncher
 import com.ashish.stash.ui.feature.settings.tabs.*
 import com.ashish.stash.ui.theme.StashBlue
@@ -65,7 +70,12 @@ fun SettingsScreen(
                     IconButton(onClick = {
                         if (currentSubScreen != null) currentSubScreen = null else onNavigateBack()
                     }) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back") }
-                }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.surface,
+                    titleContentColor = StashBlue,
+                    navigationIconContentColor = StashBlue
+                )
             )
         },
         snackbarHost = { SnackbarHost(snackbarHostState) }
@@ -123,7 +133,7 @@ fun SettingsScreen(
     releaseInfo?.let { info ->
         if (info.isNewer) {
             AlertDialog(
-                onDismissRequest = { viewModel.checkUpdates() /* reset check */ },
+                onDismissRequest = { viewModel.checkUpdates() },
                 title = { Text("Update Available") },
                 text = { Text("A new version (${info.tagName}) is available on GitHub. Would you like to download the APK?") },
                 confirmButton = {
@@ -133,7 +143,7 @@ fun SettingsScreen(
                     }) { Text("Download") }
                 },
                 dismissButton = {
-                    TextButton(onClick = { /* silence for now */ }) { Text("Later") }
+                    TextButton(onClick = { viewModel.checkUpdates() }) { Text("Later") }
                 }
             )
         }
@@ -191,13 +201,27 @@ fun SettingsItem(title: String, subtitle: String, icon: ImageVector, onClick: ()
 @Composable
 fun StorageTab() {
     val context = LocalContext.current
+    val lifecycleOwner = LocalLifecycleOwner.current
     var hasFullAccess by remember { mutableStateOf(if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) Environment.isExternalStorageManager() else true) }
+    
+    // Refresh status when returning to foreground
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                hasFullAccess = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) Environment.isExternalStorageManager() else true
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
+    }
+
     Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
         Text("Storage Permissions", style = MaterialTheme.typography.titleMedium, color = StashBlue)
         Spacer(Modifier.height(16.dp))
+        
         ListItem(
             headlineContent = { Text("All Files Access") },
-            supportingContent = { Text("Required for indexing documents across your entire device storage.") },
+            supportingContent = { Text("Required for deep-search and background indexing across your entire device storage.") },
             trailingContent = {
                 Switch(checked = hasFullAccess, onCheckedChange = {
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
@@ -209,6 +233,26 @@ fun StorageTab() {
                 })
             }
         )
+        
+        Spacer(Modifier.height(24.dp))
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            colors = CardDefaults.cardColors(containerColor = if (hasFullAccess) Color(0xFFE8F5E9) else Color(0xFFFDECEA))
+        ) {
+            Row(Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
+                Icon(
+                    if (hasFullAccess) Icons.Default.CheckCircle else Icons.Default.Warning,
+                    null,
+                    tint = if (hasFullAccess) Color(0xFF2E7D32) else Color(0xFFC62828)
+                )
+                Spacer(Modifier.width(12.dp))
+                Text(
+                    text = if (hasFullAccess) "Deep indexing is active." else "Full storage access needed for deep-search features.",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = if (hasFullAccess) Color(0xFF2E7D32) else Color(0xFFC62828)
+                )
+            }
+        }
     }
 }
 
@@ -219,7 +263,7 @@ fun FeedbackTab(onSubmit: (String, Int) -> Unit) {
     Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
         Text("Your Feedback", style = MaterialTheme.typography.titleMedium, color = StashBlue)
         Spacer(Modifier.height(16.dp))
-        Text("Rate STASH", style = MaterialTheme.typography.labelLarge)
+        Text("How is your experience with STASH?", style = MaterialTheme.typography.labelLarge)
         Row {
             repeat(5) { index ->
                 IconButton(onClick = { rating = index + 1 }) {
@@ -236,14 +280,16 @@ fun FeedbackTab(onSubmit: (String, Int) -> Unit) {
             value = text,
             onValueChange = { text = it },
             label = { Text("Describe your issue or suggestion") },
-            modifier = Modifier.fillMaxWidth().height(200.dp)
+            modifier = Modifier.fillMaxWidth().height(200.dp),
+            colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = StashBlue)
         )
         Spacer(Modifier.height(24.dp))
         Button(
             onClick = { onSubmit(text, rating); text = "" },
             enabled = text.isNotBlank(),
-            modifier = Modifier.fillMaxWidth()
-        ) { Text("Submit to GitHub") }
+            modifier = Modifier.fillMaxWidth(),
+            colors = ButtonDefaults.buttonColors(containerColor = StashBlue)
+        ) { Text("Submit to GitHub Issues") }
     }
 }
 
@@ -252,8 +298,16 @@ fun BackupTab(onExport: () -> Unit, onImport: () -> Unit) {
     Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
         Text("Data Management", style = MaterialTheme.typography.titleMedium, color = StashBlue)
         Spacer(modifier = Modifier.height(16.dp))
-        Button(onClick = onExport, modifier = Modifier.fillMaxWidth()) { Text("Export Index Metadata") }
+        Button(onClick = onExport, modifier = Modifier.fillMaxWidth(), colors = ButtonDefaults.buttonColors(containerColor = StashBlue)) {
+            Icon(Icons.Default.Backup, null)
+            Spacer(Modifier.width(8.dp))
+            Text("Export Index Metadata")
+        }
         Spacer(modifier = Modifier.height(8.dp))
-        OutlinedButton(onClick = onImport, modifier = Modifier.fillMaxWidth()) { Text("Restore from Backup") }
+        OutlinedButton(onClick = onImport, modifier = Modifier.fillMaxWidth()) {
+            Icon(Icons.Default.Restore, null)
+            Spacer(Modifier.width(8.dp))
+            Text("Restore from Backup")
+        }
     }
 }

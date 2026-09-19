@@ -113,11 +113,12 @@ class DocumentRepositoryImpl @Inject constructor(
         if (document != null) {
             WorkManager.getInstance(context).cancelAllWorkByTag("ocr_$id")
             
-            if (document.sourceKind == SourceKind.LOCAL_COPY) {
-                try {
-                    val file = File(Uri.parse(document.uri).path!!)
-                    if (file.exists()) file.delete()
-                } catch (e: Exception) {}
+            val uri = Uri.parse(document.uri)
+            if (uri.scheme != "file") {
+                safUriManager.releasePersistablePermission(uri)
+            } else {
+                val file = File(uri.path!!)
+                if (file.exists()) file.delete()
             }
             documentDao.deleteById(id)
         }

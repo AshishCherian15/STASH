@@ -2,21 +2,16 @@ package com.ashish.stash.ui.feature.settings
 
 import android.content.Intent
 import android.net.Uri
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Code
-import androidx.compose.material.icons.filled.Update
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
@@ -65,7 +60,7 @@ fun AboutScreen(
             Spacer(modifier = Modifier.height(32.dp))
             
             Text(
-                "A professional document vault for high-performance indexing and on-device intelligence.",
+                "Stash is a high-performance document vault for professional indexing and local intelligence. It provides desktop-class search for your mobile device.",
                 textAlign = TextAlign.Center,
                 style = MaterialTheme.typography.bodyLarge
             )
@@ -82,7 +77,7 @@ fun AboutScreen(
             ) {
                 Icon(Icons.Default.Code, null)
                 Spacer(Modifier.width(8.dp))
-                Text("View Source on GitHub")
+                Text("Source Code & Updates")
             }
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -96,8 +91,8 @@ fun AboutScreen(
 
             Spacer(modifier = Modifier.height(48.dp))
             
-            Text("Developed by Ashish Cherian", style = MaterialTheme.typography.labelLarge)
-            Text("© 2026 Stash Intelligence", style = MaterialTheme.typography.labelSmall, color = Color.Gray)
+            Text("Created with ❤️ by Ashish Cherian", style = MaterialTheme.typography.labelLarge)
+            Text("Secure. Offline. Local AI.", style = MaterialTheme.typography.labelSmall, color = Color.Gray)
         }
     }
 }

@@ -3,7 +3,6 @@ package com.ashish.stash.ui.feature.onboarding
 import android.content.Intent
 import android.net.Uri
 import android.os.Build
-import android.os.Environment
 import android.provider.Settings
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -24,6 +23,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.ashish.stash.ui.component.rememberSafFolderPickerLauncher
 import com.ashish.stash.ui.theme.StashBlue
 import kotlinx.coroutines.launch
@@ -31,7 +31,8 @@ import kotlinx.coroutines.launch
 @Composable
 fun OnboardingScreen(
     onComplete: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    viewModel: OnboardingViewModel = hiltViewModel()
 ) {
     val context = LocalContext.current
     val pagerState = rememberPagerState(pageCount = { 6 })
@@ -40,6 +41,10 @@ fun OnboardingScreen(
 
     val folderPicker = rememberSafFolderPickerLauncher { uri ->
         selectedFolderUri = uri
+    }
+
+    LaunchedEffect(Unit) {
+        viewModel.navigationEvent.collect { onComplete() }
     }
 
     Scaffold(
@@ -72,7 +77,7 @@ fun OnboardingScreen(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     TextButton(
-                        onClick = { onComplete() },
+                        onClick = { viewModel.completeOnboarding(null) },
                         colors = ButtonDefaults.textButtonColors(contentColor = StashBlue)
                     ) {
                         Text("Skip")
@@ -83,7 +88,7 @@ fun OnboardingScreen(
                             if (pagerState.currentPage < 5) {
                                 scope.launch { pagerState.animateScrollToPage(pagerState.currentPage + 1) }
                             } else {
-                                onComplete()
+                                viewModel.completeOnboarding(selectedFolderUri)
                             }
                         },
                         colors = ButtonDefaults.buttonColors(containerColor = StashBlue)

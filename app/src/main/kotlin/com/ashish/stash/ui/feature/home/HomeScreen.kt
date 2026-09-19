@@ -19,6 +19,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.InsertDriveFile
 import androidx.compose.material.icons.automirrored.filled.List
+import androidx.compose.material.icons.automirrored.filled.Sort
 import androidx.compose.material.icons.automirrored.filled.ViewQuilt
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.outlined.*
@@ -71,6 +72,13 @@ fun HomeScreen(
 
     BackHandler(enabled = isSelectionMode) { selectedDocIds = emptySet() }
 
+    LaunchedEffect(uiState.importSuccess) {
+        if (uiState.importSuccess) {
+            snackbarHostState.showSnackbar("Documents imported successfully")
+            viewModel.clearImportSuccess()
+        }
+    }
+
     Scaffold(
         topBar = {
             if (isSelectionMode) {
@@ -112,7 +120,7 @@ fun HomeScreen(
                     actions = {
                         IconButton(onClick = onNavigateToSearch) { Icon(Icons.Default.Search, "Search") }
                         Box {
-                            IconButton(onClick = { showSortMenu = true }) { Icon(Icons.Default.Sort, "Sort") }
+                            IconButton(onClick = { showSortMenu = true }) { Icon(Icons.AutoMirrored.Filled.Sort, "Sort") }
                             DropdownMenu(expanded = showSortMenu, onDismissRequest = { showSortMenu = false }) {
                                 SortOption.entries.forEach { option ->
                                     DropdownMenuItem(
@@ -138,10 +146,9 @@ fun HomeScreen(
         snackbarHost = { SnackbarHost(snackbarHostState) }
     ) { padding ->
         Column(modifier = Modifier.padding(padding).fillMaxSize()) {
-            // Category Row (Google Drive style)
             CategoryTabRow(
                 categories = settingsState.categories,
-                selectedCategoryId = null, // Will wire actual state later
+                selectedCategoryId = uiState.selectedCategoryId,
                 onCategoryClick = { id -> viewModel.setCategoryFilter(id) }
             )
 
@@ -156,15 +163,20 @@ fun HomeScreen(
                     val onDocLongClick: (Long) -> Unit = { id -> if (!isSelectionMode) selectedDocIds = setOf(id) }
 
                     when (uiState.viewMode) {
-                        ViewMode.LIST -> DocumentListView(uiState, selectedDocIds, onDocClick, onDocLongClick)
-                        ViewMode.DETAILS -> DocumentDetailedView(uiState, selectedDocIds, onDocClick, onDocLongClick)
-                        else -> DocumentGridView(uiState, selectedDocIds, onDocClick, onDocLongClick)
+                        ViewMode.LIST -> DocumentListView(uiState, selectedIds = selectedDocIds, onClick = onDocClick, onLongClick = onDocLongClick)
+                        ViewMode.DETAILS -> DocumentDetailedView(uiState, selectedIds = selectedDocIds, onClick = onDocClick, onLongClick = onDocLongClick)
+                        ViewMode.TILES -> DocumentTileView(uiState, selectedIds = selectedDocIds, onClick = onDocClick, onLongClick = onDocLongClick)
+                        else -> DocumentGridView(uiState, selectedIds = selectedDocIds, onClick = onDocClick, onLongClick = onDocLongClick)
                     }
                 }
                 
                 if (uiState.isImporting) {
                     Box(modifier = Modifier.fillMaxSize().background(Color.White.copy(alpha = 0.7f)), contentAlignment = Alignment.Center) {
-                        CircularProgressIndicator()
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            CircularProgressIndicator()
+                            Spacer(Modifier.height(16.dp))
+                            Text("Processing files...", style = MaterialTheme.typography.labelLarge)
+                        }
                     }
                 }
             }
@@ -187,7 +199,11 @@ fun CategoryTabRow(
             FilterChip(
                 selected = selectedCategoryId == null,
                 onClick = { onCategoryClick(null) },
-                label = { Text("All Files") }
+                label = { Text("All Files") },
+                colors = FilterChipDefaults.filterChipColors(
+                    selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
+                    selectedLabelColor = MaterialTheme.colorScheme.primary
+                )
             )
         }
         items(categories) { category ->
@@ -196,8 +212,12 @@ fun CategoryTabRow(
                 onClick = { onCategoryClick(category.categoryId) },
                 label = { Text(category.name) },
                 leadingIcon = {
-                    Box(modifier = Modifier.size(12.dp).background(Color(android.graphics.Color.parseColor(category.color)), CircleShape))
-                }
+                    Box(modifier = Modifier.size(12.dp).clip(CircleShape).background(Color(android.graphics.Color.parseColor(category.color))))
+                },
+                colors = FilterChipDefaults.filterChipColors(
+                    selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
+                    selectedLabelColor = MaterialTheme.colorScheme.primary
+                )
             )
         }
     }
@@ -207,6 +227,7 @@ fun CategoryTabRow(
 @Composable
 private fun DocumentListView(state: HomeUiState, selectedIds: Set<Long>, onClick: (Long) -> Unit, onLongClick: (Long) -> Unit) {
     LazyColumn(modifier = Modifier.fillMaxSize(), contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        item { StatStrip(stats = state.stats) }
         items(items = state.documents, key = { it.data.document.documentId }) { docModel ->
             val id = docModel.data.document.documentId
             DocumentCard(
@@ -223,9 +244,27 @@ private fun DocumentListView(state: HomeUiState, selectedIds: Set<Long>, onClick
 @Composable
 private fun DocumentDetailedView(state: HomeUiState, selectedIds: Set<Long>, onClick: (Long) -> Unit, onLongClick: (Long) -> Unit) {
     LazyColumn(modifier = Modifier.fillMaxSize(), contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        item { StatStrip(stats = state.stats) }
         items(items = state.documents, key = { it.data.document.documentId }) { docModel ->
             val id = docModel.data.document.documentId
             DetailedDocumentRow(
+                documentWithMetadata = docModel.data,
+                onClick = { onClick(id) },
+                modifier = Modifier.combinedClickable(onClick = { onClick(id) }, onLongClick = { onLongClick(id) })
+                    .let { if (selectedIds.contains(id)) it.background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)) else it }
+            )
+        }
+    }
+}
+
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+private fun DocumentTileView(state: HomeUiState, selectedIds: Set<Long>, onClick: (Long) -> Unit, onLongClick: (Long) -> Unit) {
+    LazyVerticalGrid(columns = GridCells.Adaptive(100.dp), modifier = Modifier.fillMaxSize(), contentPadding = PaddingValues(16.dp), horizontalArrangement = Arrangement.spacedBy(12.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        item(span = { GridItemSpan(maxCurrentLineSpan) }) { StatStrip(stats = state.stats) }
+        items(items = state.documents, key = { it.data.document.documentId }) { docModel ->
+            val id = docModel.data.document.documentId
+            DocumentTile(
                 documentWithMetadata = docModel.data,
                 onClick = { onClick(id) },
                 modifier = Modifier.combinedClickable(onClick = { onClick(id) }, onLongClick = { onLongClick(id) })
@@ -245,6 +284,7 @@ private fun DocumentGridView(state: HomeUiState, selectedIds: Set<Long>, onClick
         else -> 3
     }
     LazyVerticalGrid(columns = GridCells.Fixed(columns), modifier = Modifier.fillMaxSize(), contentPadding = PaddingValues(16.dp), horizontalArrangement = Arrangement.spacedBy(12.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        item(span = { GridItemSpan(columns) }) { StatStrip(stats = state.stats) }
         items(items = state.documents, key = { it.data.document.documentId }) { docModel ->
             val id = docModel.data.document.documentId
             DocumentCard(
@@ -270,6 +310,29 @@ fun DetailedDocumentRow(documentWithMetadata: DocumentWithMetadata, onClick: () 
             }
             if (doc.isLocked) Icon(Icons.Default.Lock, null, modifier = Modifier.size(16.dp), tint = MaterialTheme.colorScheme.primary)
         }
+    }
+}
+
+@Composable
+fun DocumentTile(documentWithMetadata: DocumentWithMetadata, onClick: () -> Unit, modifier: Modifier = Modifier) {
+    val doc = documentWithMetadata.document
+    Column(
+        modifier = modifier.width(100.dp).clickable { onClick() },
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Box(modifier = Modifier.size(80.dp).background(MaterialTheme.colorScheme.primaryContainer, MaterialTheme.shapes.medium), contentAlignment = Alignment.Center) {
+            Icon(Icons.AutoMirrored.Filled.InsertDriveFile, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(40.dp))
+            if (doc.isLocked) Icon(Icons.Default.Lock, null, modifier = Modifier.size(16.dp).align(Alignment.BottomEnd).padding(4.dp), tint = MaterialTheme.colorScheme.primary)
+        }
+        Text(doc.displayTitle, style = MaterialTheme.typography.labelSmall, maxLines = 2, textAlign = TextAlign.Center, overflow = TextOverflow.Ellipsis, modifier = Modifier.padding(top = 4.dp))
+    }
+}
+
+@Composable
+private fun StatStrip(stats: HomeStats) {
+    Row(modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+        Text("${stats.unlockedDocuments} docs (${stats.lockedDocuments} locked)", style = MaterialTheme.typography.labelMedium, color = LedgerSlate)
+        Text(formatFileSize(stats.totalSizeBytes), style = MaterialTheme.typography.labelSmall, color = LedgerSlate)
     }
 }
 

@@ -36,8 +36,6 @@ class HomeViewModel @Inject constructor(
     val searchQuery = _searchQuery.asStateFlow()
 
     private val _viewMode = MutableStateFlow(ViewMode.LIST)
-    val viewMode = _viewMode.asStateFlow()
-
     private val _filterCategory = MutableStateFlow<Long?>(null)
     private val _filterFolder = MutableStateFlow<Long?>(null)
     private val _filterLabel = MutableStateFlow<Long?>(null)
@@ -107,6 +105,9 @@ class HomeViewModel @Inject constructor(
                 documents = filteredDocs,
                 searchQuery = state.query,
                 viewMode = state.mode,
+                selectedCategoryId = state.categoryId,
+                selectedFolderId = state.folderId,
+                selectedLabelId = state.labelId,
                 isImporting = impState is ImportState.Processing,
                 importSuccess = impState is ImportState.Success,
                 importError = (impState as? ImportState.Error)?.error,

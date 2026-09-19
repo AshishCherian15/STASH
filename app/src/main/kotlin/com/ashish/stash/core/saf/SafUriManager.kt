@@ -6,6 +6,7 @@ import android.net.Uri
 import android.provider.DocumentsContract
 import android.provider.OpenableColumns
 import dagger.hilt.android.qualifiers.ApplicationContext
+import java.io.File
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -59,7 +60,19 @@ class SafUriManager @Inject constructor(
         }
     }
 
+    fun releasePersistablePermission(uri: Uri) {
+        val contentResolver = context.contentResolver
+        val releaseFlags: Int = Intent.FLAG_GRANT_READ_URI_PERMISSION or
+                Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+        try {
+            contentResolver.releasePersistableUriPermission(uri, releaseFlags)
+        } catch (e: Exception) {
+            // Handle gracefully
+        }
+    }
+
     fun isUriAccessible(uri: Uri): Boolean {
+        if (uri.scheme == "file") return File(uri.path!!).exists()
         return try {
             context.contentResolver.persistedUriPermissions.any { it.uri == uri && it.isReadPermission }
         } catch (e: Exception) {

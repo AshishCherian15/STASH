@@ -20,7 +20,10 @@ data class HomeUiState(
     val isImporting: Boolean = false,
     val importSuccess: Boolean = false,
     val importError: String? = null,
-    val stats: HomeStats = HomeStats()
+    val stats: HomeStats = HomeStats(),
+    val selectedCategoryId: Long? = null,
+    val selectedFolderId: Long? = null,
+    val selectedLabelId: Long? = null
 )
 
 data class DocumentUiModel(

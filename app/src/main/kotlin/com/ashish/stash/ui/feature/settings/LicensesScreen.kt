@@ -19,13 +19,14 @@ import com.ashish.stash.ui.theme.StashBlue
 @Composable
 fun LicensesScreen(onNavigateBack: () -> Unit) {
     val libraries = listOf(
-        LicenseItem("Jetpack Compose", "Android's modern toolkit for native UI.", Icons.Default.Layers),
-        LicenseItem("Room Database", "Fluent SQLite database access.", Icons.Default.Storage),
-        LicenseItem("Dagger Hilt", "Dependency injection for Android.", Icons.Default.Extension),
-        LicenseItem("Google ML Kit", "On-device machine learning for OCR.", Icons.Default.AutoAwesome),
-        LicenseItem("Kotlin Coroutines", "Asynchronous programming simplified.", Icons.Default.Bolt),
-        LicenseItem("Coil", "Image loading for Android backed by Coroutines.", Icons.Default.Image),
-        LicenseItem("WorkManager", "Persistent background processing.", Icons.Default.Sync)
+        LicenseItem("Jetpack Compose", "Android's modern toolkit for native UI.", Icons.Default.Layers, "Apache 2.0"),
+        LicenseItem("Room Database", "Fluent SQLite database access.", Icons.Default.Storage, "Apache 2.0"),
+        LicenseItem("Dagger Hilt", "Dependency injection for Android.", Icons.Default.Extension, "Apache 2.0"),
+        LicenseItem("Google ML Kit", "On-device machine learning for OCR.", Icons.Default.AutoAwesome, "Proprietary"),
+        LicenseItem("Kotlin Coroutines", "Asynchronous programming simplified.", Icons.Default.Bolt, "Apache 2.0"),
+        LicenseItem("Coil", "Image loading for Android backed by Coroutines.", Icons.Default.Image, "Apache 2.0"),
+        LicenseItem("WorkManager", "Persistent background processing.", Icons.Default.Sync, "Apache 2.0"),
+        LicenseItem("DataStore", "Modern data storage solution.", Icons.Default.Dataset, "Apache 2.0")
     )
 
     Scaffold(
@@ -50,6 +51,13 @@ fun LicensesScreen(onNavigateBack: () -> Unit) {
             contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
+            item {
+                Text(
+                    "Stash is built using the following high-quality open source libraries:",
+                    style = MaterialTheme.typography.bodyLarge,
+                    modifier = Modifier.padding(bottom = 8.dp)
+                )
+            }
             items(libraries) { library ->
                 LicenseCard(library)
             }
@@ -57,7 +65,7 @@ fun LicensesScreen(onNavigateBack: () -> Unit) {
     }
 }
 
-data class LicenseItem(val name: String, val description: String, val icon: ImageVector)
+data class LicenseItem(val name: String, val description: String, val icon: ImageVector, val license: String)
 
 @Composable
 private fun LicenseCard(item: LicenseItem) {
@@ -71,9 +79,12 @@ private fun LicenseCard(item: LicenseItem) {
         ) {
             Icon(item.icon, contentDescription = null, tint = StashBlue, modifier = Modifier.size(32.dp))
             Spacer(modifier = Modifier.width(16.dp))
-            Column {
+            Column(Modifier.weight(1f)) {
                 Text(item.name, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
                 Text(item.description, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+            Badge(containerColor = StashBlue.copy(alpha = 0.1f), contentColor = StashBlue) {
+                Text(item.license, style = MaterialTheme.typography.labelSmall)
             }
         }
     }
