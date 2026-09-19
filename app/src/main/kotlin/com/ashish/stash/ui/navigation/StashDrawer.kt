@@ -1,6 +1,7 @@
 package com.ashish.stash.ui.navigation
 
 import android.graphics.Color
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -45,8 +46,10 @@ fun StashDrawer(
             modifier = Modifier.padding(horizontal = 28.dp, vertical = 16.dp)
         ) {
             StashLogo(modifier = Modifier.size(60.dp))
+            Spacer(Modifier.width(16.dp))
+            Text("Stash", style = MaterialTheme.typography.headlineMedium, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold)
         }
-        HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp), color = StashBlue.copy(alpha = 0.1f))
+        HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp), color = MaterialTheme.colorScheme.outlineVariant)
         
         LazyColumn(modifier = Modifier.weight(1f)) {
             item {
@@ -124,7 +127,7 @@ fun StashDrawer(
             }
         }
         
-        HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp), color = StashBlue.copy(alpha = 0.1f))
+        HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp), color = MaterialTheme.colorScheme.outlineVariant)
         
         DrawerItem(
             label = "Settings",
@@ -147,7 +150,7 @@ private fun DrawerSectionHeader(text: String) {
     Text(
         text = text,
         style = MaterialTheme.typography.labelLarge,
-        color = StashBlue,
+        color = MaterialTheme.colorScheme.primary,
         fontWeight = FontWeight.Bold,
         modifier = Modifier.padding(horizontal = 28.dp, vertical = 8.dp)
     )
@@ -167,9 +170,9 @@ private fun DrawerItem(
         onClick = onClick,
         modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding),
         colors = NavigationDrawerItemDefaults.colors(
-            selectedContainerColor = StashBlue.copy(alpha = 0.1f),
-            selectedIconColor = StashBlue,
-            selectedTextColor = StashBlue,
+            selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
+            selectedIconColor = MaterialTheme.colorScheme.primary,
+            selectedTextColor = MaterialTheme.colorScheme.primary,
             unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
             unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant
         )

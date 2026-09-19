@@ -27,10 +27,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.ashish.stash.core.database.entity.DocumentWithMetadata
 import com.ashish.stash.core.saf.ShareHelper
-import com.ashish.stash.ui.component.rememberSafFilePickerLauncher
 import com.ashish.stash.ui.component.rememberSafMultiFilePickerLauncher
 import com.ashish.stash.ui.theme.LedgerSlate
 import com.ashish.stash.ui.theme.Limestone
@@ -53,7 +54,6 @@ fun HomeScreen(
     var viewMenuExpanded by remember { mutableStateOf(false) }
     val context = LocalContext.current
 
-    // Selection State (rememberSaveable for persistence across config changes)
     var selectedDocIds by rememberSaveable { mutableStateOf(setOf<Long>()) }
     val isSelectionMode = selectedDocIds.isNotEmpty()
 
@@ -61,22 +61,12 @@ fun HomeScreen(
         onFilesSelected = { uris -> viewModel.importDocuments(uris) }
     )
 
-    BackHandler(enabled = isSelectionMode) {
-        selectedDocIds = emptySet()
-    }
+    BackHandler(enabled = isSelectionMode) { selectedDocIds = emptySet() }
 
     LaunchedEffect(uiState.importSuccess) {
         if (uiState.importSuccess) {
-            // Summary message from VM would be better, but for now we show a toast-like snackbar
             snackbarHostState.showSnackbar("Batch operation completed")
             viewModel.clearImportSuccess()
-        }
-    }
-
-    uiState.importError?.let { error ->
-        LaunchedEffect(error) {
-            snackbarHostState.showSnackbar(error)
-            viewModel.clearImportError()
         }
     }
 
@@ -95,10 +85,8 @@ fun HomeScreen(
                             val docsToShare = uiState.documents
                                 .filter { it.data.document.documentId in selectedDocIds }
                                 .map { it.data.document }
-                            
                             val intent = ShareHelper.createShareIntent(context, docsToShare)
                             context.startActivity(Intent.createChooser(intent, "Share Documents"))
-                            // Selection cleared only after explicit action or back
                         }) {
                             Icon(Icons.Default.Share, contentDescription = "Share")
                         }
@@ -112,7 +100,7 @@ fun HomeScreen(
                 )
             } else {
                 CenterAlignedTopAppBar(
-                    title = { },
+                    title = { Text("Vault", fontWeight = FontWeight.Bold) },
                     navigationIcon = {
                         IconButton(onClick = onOpenDrawer) {
                             Icon(Icons.Default.Menu, contentDescription = "Menu")
@@ -126,17 +114,11 @@ fun HomeScreen(
                             IconButton(onClick = { viewMenuExpanded = true }) {
                                 Icon(Icons.Default.GridView, contentDescription = "View Mode")
                             }
-                            DropdownMenu(
-                                expanded = viewMenuExpanded,
-                                onDismissRequest = { viewMenuExpanded = false }
-                            ) {
+                            DropdownMenu(expanded = viewMenuExpanded, onDismissRequest = { viewMenuExpanded = false }) {
                                 ViewMode.entries.forEach { mode ->
                                     DropdownMenuItem(
                                         text = { Text(mode.label) },
-                                        onClick = {
-                                            viewModel.setViewMode(mode)
-                                            viewMenuExpanded = false
-                                        },
+                                        onClick = { viewModel.setViewMode(mode); viewMenuExpanded = false },
                                         leadingIcon = {
                                             val icon = when(mode) {
                                                 ViewMode.LIST -> Icons.AutoMirrored.Filled.List
@@ -154,20 +136,20 @@ fun HomeScreen(
                         }
                     },
                     colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                        containerColor = Limestone,
-                        navigationIconContentColor = StashBlue,
-                        actionIconContentColor = StashBlue
+                        containerColor = MaterialTheme.colorScheme.surface,
+                        navigationIconContentColor = MaterialTheme.colorScheme.primary,
+                        actionIconContentColor = MaterialTheme.colorScheme.primary,
+                        titleContentColor = MaterialTheme.colorScheme.primary
                     )
                 )
             }
         },
         bottomBar = {
             BottomAppBar(
-                containerColor = Limestone,
-                contentColor = StashBlue,
+                containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
                 actions = {
                     Text(
-                        "Vault: ${uiState.stats.totalDocuments} items",
+                        "Items: ${uiState.stats.totalDocuments}",
                         modifier = Modifier.padding(horizontal = 16.dp),
                         style = MaterialTheme.typography.labelLarge
                     )
@@ -175,8 +157,8 @@ fun HomeScreen(
                 floatingActionButton = {
                     FloatingActionButton(
                         onClick = { multiFilePicker.launch(arrayOf("*/*")) },
-                        containerColor = StashBlue,
-                        contentColor = Color.White,
+                        containerColor = MaterialTheme.colorScheme.primary,
+                        contentColor = MaterialTheme.colorScheme.onPrimary,
                         elevation = FloatingActionButtonDefaults.elevation(0.dp)
                     ) {
                         Icon(Icons.Default.Add, contentDescription = "Add Documents")
@@ -184,8 +166,7 @@ fun HomeScreen(
                 }
             )
         },
-        snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
-        containerColor = Color.White
+        snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
     ) { padding ->
         Box(modifier = Modifier.padding(padding).fillMaxSize()) {
             if (uiState.documents.isEmpty() && !uiState.isLoading) {
@@ -193,32 +174,23 @@ fun HomeScreen(
             } else {
                 val onDocClick: (Long) -> Unit = { id ->
                     if (isSelectionMode) {
-                        selectedDocIds = if (selectedDocIds.contains(id)) selectedDocIds - id
-                        else selectedDocIds + id
+                        selectedDocIds = if (selectedDocIds.contains(id)) selectedDocIds - id else selectedDocIds + id
                     } else {
                         onNavigateToViewer(id)
                     }
                 }
-                val onDocLongClick: (Long) -> Unit = { id ->
-                    if (!isSelectionMode) selectedDocIds = setOf(id)
-                }
+                val onDocLongClick: (Long) -> Unit = { id -> if (!isSelectionMode) selectedDocIds = setOf(id) }
 
                 when (uiState.viewMode) {
-                    ViewMode.LIST, ViewMode.DETAILS -> DocumentList(uiState, selectedDocIds, onDocClick, onDocLongClick)
+                    ViewMode.LIST -> DocumentList(uiState, selectedDocIds, onDocClick, onDocLongClick)
+                    ViewMode.DETAILS -> DocumentDetailedList(uiState, selectedDocIds, onDocClick, onDocLongClick)
                     else -> DocumentGrid(uiState, selectedDocIds, onDocClick, onDocLongClick)
                 }
             }
 
             if (uiState.isImporting) {
-                Box(
-                    modifier = Modifier.fillMaxSize().background(Color.White.copy(alpha = 0.7f)),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        CircularProgressIndicator(color = StashBlue)
-                        Spacer(Modifier.height(16.dp))
-                        // Progress text from VM state can be added here
-                    }
+                Box(modifier = Modifier.fillMaxSize().background(Color.White.copy(alpha = 0.7f)), contentAlignment = Alignment.Center) {
+                    CircularProgressIndicator()
                 }
             }
         }
@@ -227,31 +199,16 @@ fun HomeScreen(
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-private fun DocumentList(
-    state: HomeUiState, 
-    selectedIds: Set<Long>,
-    onClick: (Long) -> Unit,
-    onLongClick: (Long) -> Unit
-) {
-    LazyColumn(
-        modifier = Modifier.fillMaxSize(),
-        contentPadding = PaddingValues(16.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
+private fun DocumentList(state: HomeUiState, selectedIds: Set<Long>, onClick: (Long) -> Unit, onLongClick: (Long) -> Unit) {
+    LazyColumn(modifier = Modifier.fillMaxSize(), contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
         item { StatStrip(stats = state.stats) }
         items(items = state.documents, key = { it.data.document.documentId }) { docModel ->
-            val docId = docModel.data.document.documentId
+            val id = docModel.data.document.documentId
             DocumentCard(
                 documentWithMetadata = docModel.data,
-                onClick = { onClick(docId) },
-                modifier = Modifier
-                    .combinedClickable(
-                        onClick = { onClick(docId) },
-                        onLongClick = { onLongClick(docId) }
-                    )
-                    .let {
-                        if (selectedIds.contains(docId)) it.background(StashBlue.copy(alpha = 0.1f)) else it
-                    }
+                onClick = { onClick(id) },
+                modifier = Modifier.combinedClickable(onClick = { onClick(id) }, onLongClick = { onLongClick(id) })
+                    .let { if (selectedIds.contains(id)) it.background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)) else it }
             )
         }
     }
@@ -259,42 +216,55 @@ private fun DocumentList(
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-private fun DocumentGrid(
-    state: HomeUiState,
-    selectedIds: Set<Long>,
-    onClick: (Long) -> Unit,
-    onLongClick: (Long) -> Unit
-) {
+private fun DocumentDetailedList(state: HomeUiState, selectedIds: Set<Long>, onClick: (Long) -> Unit, onLongClick: (Long) -> Unit) {
+    LazyColumn(modifier = Modifier.fillMaxSize(), contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        item { StatStrip(stats = state.stats) }
+        items(items = state.documents, key = { it.data.document.documentId }) { docModel ->
+            val id = docModel.data.document.documentId
+            DetailedDocumentRow(
+                documentWithMetadata = docModel.data,
+                onClick = { onClick(id) },
+                modifier = Modifier.combinedClickable(onClick = { onClick(id) }, onLongClick = { onLongClick(id) })
+                    .let { if (selectedIds.contains(id)) it.background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)) else it }
+            )
+        }
+    }
+}
+
+@Composable
+fun DetailedDocumentRow(documentWithMetadata: DocumentWithMetadata, onClick: () -> Unit, modifier: Modifier = Modifier) {
+    val doc = documentWithMetadata.document
+    Card(onClick = onClick, modifier = modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.2f))) {
+        Row(Modifier.padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
+            Icon(Icons.Default.Description, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(32.dp))
+            Spacer(Modifier.width(12.dp))
+            Column(Modifier.weight(1f)) {
+                Text(doc.displayTitle, style = MaterialTheme.typography.titleSmall, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                Text("${formatFileSize(doc.fileSize)} • ${doc.mimeType.split("/").last().uppercase()}", style = MaterialTheme.typography.bodySmall)
+            }
+            if (doc.isLocked) Icon(Icons.Default.Lock, null, modifier = Modifier.size(16.dp), tint = MaterialTheme.colorScheme.primary)
+        }
+    }
+}
+
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+private fun DocumentGrid(state: HomeUiState, selectedIds: Set<Long>, onClick: (Long) -> Unit, onLongClick: (Long) -> Unit) {
     val columns = when (state.viewMode) {
         ViewMode.LARGE_GRID -> 2
         ViewMode.MEDIUM_GRID -> 3
         ViewMode.SMALL_GRID -> 4
-        else -> 2
+        else -> 3
     }
-    
-    LazyVerticalGrid(
-        columns = GridCells.Fixed(columns),
-        modifier = Modifier.fillMaxSize(),
-        contentPadding = PaddingValues(16.dp),
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
-    ) {
-        item(span = { GridItemSpan(columns) }) {
-            StatStrip(stats = state.stats) 
-        }
+    LazyVerticalGrid(columns = GridCells.Fixed(columns), modifier = Modifier.fillMaxSize(), contentPadding = PaddingValues(16.dp), horizontalArrangement = Arrangement.spacedBy(12.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        item(span = { GridItemSpan(columns) }) { StatStrip(stats = state.stats) }
         items(items = state.documents, key = { it.data.document.documentId }) { docModel ->
-            val docId = docModel.data.document.documentId
+            val id = docModel.data.document.documentId
             DocumentCard(
                 documentWithMetadata = docModel.data,
-                onClick = { onClick(docId) },
-                modifier = Modifier
-                    .combinedClickable(
-                        onClick = { onClick(docId) },
-                        onLongClick = { onLongClick(docId) }
-                    )
-                    .let {
-                        if (selectedIds.contains(docId)) it.background(StashBlue.copy(alpha = 0.1f)) else it
-                    }
+                onClick = { onClick(id) },
+                modifier = Modifier.combinedClickable(onClick = { onClick(id) }, onLongClick = { onLongClick(id) })
+                    .let { if (selectedIds.contains(id)) it.background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)) else it }
             )
         }
     }
@@ -302,11 +272,7 @@ private fun DocumentGrid(
 
 @Composable
 private fun StatStrip(stats: HomeStats) {
-    Row(
-        modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
+    Row(modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
         Text("${stats.unlockedDocuments} docs (${stats.lockedDocuments} locked)", style = MaterialTheme.typography.labelMedium, color = LedgerSlate)
         Text(formatFileSize(stats.totalSizeBytes), style = MaterialTheme.typography.labelSmall, color = LedgerSlate)
     }
@@ -314,27 +280,12 @@ private fun StatStrip(stats: HomeStats) {
 
 @Composable
 private fun EmptyHomeContent(onAddClick: () -> Unit) {
-    Column(
-        modifier = Modifier.fillMaxSize().padding(40.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    ) {
-        Icon(
-            imageVector = Icons.Default.Inventory2,
-            contentDescription = null,
-            tint = StashBlue,
-            modifier = Modifier.size(120.dp)
-        )
+    Column(modifier = Modifier.fillMaxSize().padding(40.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
+        Icon(imageVector = Icons.Default.Inventory2, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(120.dp))
         Spacer(modifier = Modifier.height(24.dp))
-        Text("Your vault is empty", style = MaterialTheme.typography.headlineMedium)
-        Spacer(modifier = Modifier.height(12.dp))
-        Text("Index documents already on your device without duplicating them.", textAlign = TextAlign.Center, color = LedgerSlate)
+        Text("Vault is empty", style = MaterialTheme.typography.headlineMedium)
         Spacer(modifier = Modifier.height(32.dp))
-        Button(onClick = onAddClick, colors = ButtonDefaults.buttonColors(containerColor = StashBlue)) {
-            Icon(Icons.Default.Add, null)
-            Spacer(Modifier.width(8.dp))
-            Text("Add Documents")
-        }
+        Button(onClick = onAddClick) { Text("Add Documents") }
     }
 }
 

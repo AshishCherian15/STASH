@@ -30,22 +30,22 @@ fun AppearanceTab(
     onFontSizeChange: (Float) -> Unit
 ) {
     Column(modifier = Modifier.fillMaxSize().padding(16.dp).verticalScroll(rememberScrollState())) {
-        Text("Visual Preference", style = MaterialTheme.typography.titleMedium, color = StashBlue)
+        Text("Visual Preference", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.primary)
         Spacer(Modifier.height(16.dp))
         
         ListItem(
             headlineContent = { Text("Dark Mode") },
             supportingContent = { Text("High-contrast premium black theme") },
-            trailingContent = { Switch(checked = darkTheme, onCheckedChange = onDarkThemeChange, colors = SwitchDefaults.colors(checkedTrackColor = StashBlue)) }
+            trailingContent = { Switch(checked = darkTheme, onCheckedChange = onDarkThemeChange) }
         )
         ListItem(
             headlineContent = { Text("Dynamic Color") },
             supportingContent = { Text("Match your Android system colors") },
-            trailingContent = { Switch(checked = dynamicColor, onCheckedChange = onDynamicColorChange, colors = SwitchDefaults.colors(checkedTrackColor = StashBlue)) }
+            trailingContent = { Switch(checked = dynamicColor, onCheckedChange = onDynamicColorChange) }
         )
 
         Spacer(Modifier.height(24.dp))
-        Text("App Accent Color", style = MaterialTheme.typography.labelLarge, color = StashBlue)
+        Text("App Accent Color", style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.primary)
         Spacer(Modifier.height(12.dp))
         val accentColors = listOf(
             "BLUE" to StashBlue, 
@@ -60,10 +60,7 @@ fun AppearanceTab(
                     modifier = Modifier
                         .size(44.dp)
                         .background(color, CircleShape)
-                        .clickable { onThemeColorChange(name) }
-                        .let { 
-                            if (themeColor == name) it.background(Color.Black.copy(alpha = 0.2f), CircleShape) else it 
-                        },
+                        .clickable { onThemeColorChange(name) },
                     contentAlignment = Alignment.Center
                 ) {
                     if (themeColor == name) {
@@ -74,7 +71,7 @@ fun AppearanceTab(
         }
 
         Spacer(Modifier.height(24.dp))
-        Text("Typography", style = MaterialTheme.typography.labelLarge, color = StashBlue)
+        Text("Typography", style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.primary)
         val fonts = listOf(
             "SANS_SERIF" to "Inter (Professional)", 
             "SERIF" to "Fraunces (Classic)", 
@@ -85,20 +82,19 @@ fun AppearanceTab(
                 Modifier.fillMaxWidth().clickable { onFontFamilyChange(id) }.padding(vertical = 12.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                RadioButton(selected = fontFamily == id, onClick = null, colors = RadioButtonDefaults.colors(selectedColor = StashBlue))
+                RadioButton(selected = fontFamily == id, onClick = null)
                 Spacer(Modifier.width(12.dp))
                 Text(name)
             }
         }
 
         Spacer(Modifier.height(24.dp))
-        Text("Text Scale: ${(fontSizeScale * 100).toInt()}%", style = MaterialTheme.typography.labelLarge, color = StashBlue)
+        Text("Text Scale: ${(fontSizeScale * 100).toInt()}%", style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.primary)
         Slider(
             value = fontSizeScale,
             onValueChange = onFontSizeChange,
             valueRange = 0.8f..1.5f,
-            steps = 6,
-            colors = SliderDefaults.colors(thumbColor = StashBlue, activeTrackColor = StashBlue)
+            steps = 6
         )
         
         Spacer(Modifier.height(40.dp))
