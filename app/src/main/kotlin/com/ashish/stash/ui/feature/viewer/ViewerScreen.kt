@@ -83,7 +83,17 @@ fun ViewerScreen(
                             TextViewer(uri = doc.uri)
                         }
                         else -> {
-                            Text("Unsupported file type: ${doc.mimeType}", modifier = Modifier.align(Alignment.Center))
+                            Column(
+                                modifier = Modifier.fillMaxSize(),
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                verticalArrangement = Arrangement.Center
+                            ) {
+                                Text("Preview not available for ${doc.mimeType}")
+                                Spacer(Modifier.height(16.dp))
+                                Button(onClick = { /* Could add share/open with here */ }) {
+                                    Text("Open with external app")
+                                }
+                            }
                         }
                     }
                 } else {

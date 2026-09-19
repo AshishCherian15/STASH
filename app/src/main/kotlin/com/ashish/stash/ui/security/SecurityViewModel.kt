@@ -3,20 +3,18 @@ package com.ashish.stash.ui.security
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ashish.stash.core.preferences.PreferencesManager
+import com.ashish.stash.core.security.PinFlow
 import com.ashish.stash.core.security.PinManager
 import com.ashish.stash.core.security.SecuritySessionManager
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-enum class PinFlow { UNLOCK, SETUP, CHANGE }
-
 data class SecurityUiState(
     val flow: PinFlow = PinFlow.UNLOCK,
     val enteredPin: String = "",
-    val firstPin: String = "", // For setup confirmation
+    val firstPin: String = "",
     val isConfirming: Boolean = false,
     val isError: Boolean = false,
     val errorMessage: String? = null,
@@ -34,13 +32,17 @@ class SecurityViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(SecurityUiState())
     val uiState = _uiState.asStateFlow()
 
-    private var failedAttempts = 0
-
     init {
         viewModelScope.launch {
-            preferencesManager.userData.collect { userData ->
-                _uiState.update { it.copy(isPinSet = userData.isPinSet) }
-            }
+            combine(
+                preferencesManager.userData,
+                securitySessionManager.lockoutSeconds
+            ) { userData, lockout ->
+                _uiState.update { it.copy(
+                    isPinSet = userData.isPinSet,
+                    lockoutSeconds = lockout
+                ) }
+            }.collect()
         }
     }
 
@@ -58,7 +60,7 @@ class SecurityViewModel @Inject constructor(
             when (_uiState.value.flow) {
                 PinFlow.UNLOCK -> verifyPin()
                 PinFlow.SETUP -> handleSetup()
-                PinFlow.CHANGE -> handleSetup() // Simplified
+                PinFlow.CHANGE -> handleSetup()
             }
         }
     }
@@ -92,42 +94,10 @@ class SecurityViewModel @Inject constructor(
 
     private fun verifyPin() {
         viewModelScope.launch {
-            val userData = preferencesManager.userData.first()
-            val hash = userData.pinHash
-            val salt = userData.pinSalt
-
-            if (hash != null && salt != null) {
-                if (pinManager.verifyPin(_uiState.value.enteredPin, hash, salt)) {
-                    failedAttempts = 0
-                    securitySessionManager.unlock()
-                } else {
-                    handleFailure()
-                }
-            } else {
-                securitySessionManager.unlock()
+            val success = securitySessionManager.verifyAndUnlock(_uiState.value.enteredPin)
+            if (!success) {
+                _uiState.update { it.copy(enteredPin = "", isError = true, errorMessage = "Incorrect PIN") }
             }
-        }
-    }
-
-    private fun handleFailure() {
-        failedAttempts++
-        _uiState.update { it.copy(enteredPin = "", isError = true, errorMessage = "Incorrect PIN") }
-        
-        if (failedAttempts >= 5) {
-            startLockout()
-        }
-    }
-
-    private fun startLockout() {
-        viewModelScope.launch {
-            var remaining = 30
-            while (remaining > 0) {
-                _uiState.update { it.copy(lockoutSeconds = remaining) }
-                delay(1000)
-                remaining--
-            }
-            _uiState.update { it.copy(lockoutSeconds = 0) }
-            failedAttempts = 0
         }
     }
 }

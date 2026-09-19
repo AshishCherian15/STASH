@@ -6,6 +6,7 @@ import androidx.work.Configuration
 import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
+import com.ashish.stash.core.security.SecuritySessionManager
 import com.ashish.stash.worker.scanner.BackgroundScannerWorker
 import dagger.hilt.android.HiltAndroidApp
 import java.util.concurrent.TimeUnit
@@ -16,9 +17,13 @@ class StashApplication : Application(), Configuration.Provider {
 
     @Inject
     lateinit var workerFactory: HiltWorkerFactory
+    
+    @Inject
+    lateinit var securitySessionManager: SecuritySessionManager
 
     override fun onCreate() {
         super.onCreate()
+        securitySessionManager.startObserving()
         setupBackgroundScanner()
     }
 

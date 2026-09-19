@@ -39,6 +39,8 @@ androidxTestExt = "1.2.1"
 androidxTestRunner = "1.6.1"
 androidxTestEspresso = "3.6.1"
 archTesting = "2.2.0"
+mockk = "1.13.12"
+robolectric = "4.13"
 
 [libraries]
 androidx-core-ktx = { module = "androidx.core:core-ktx", version.ref = "androidxCore" }
@@ -90,6 +92,8 @@ datastore-preferences = { group = "androidx.datastore", name = "datastore-prefer
 kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "kotlinxSerialization" }
 # Test helpers
 arch-testing = { group = "androidx.arch.core", name = "core-testing", version.ref = "archTesting" }
+mockk = { group = "io.mockk", name = "mockk", version.ref = "mockk" }
+robolectric = { group = "org.robolectric", name = "robolectric", version.ref = "robolectric" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "androidGradlePlugin" }

@@ -339,11 +339,29 @@ private fun StatStrip(stats: HomeStats) {
 @Composable
 private fun EmptyHomeContent() {
     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.padding(32.dp)) {
-            Icon(Icons.Default.Inventory2, null, modifier = Modifier.size(120.dp), tint = MaterialTheme.colorScheme.outline)
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally, 
+            modifier = Modifier.padding(32.dp)
+        ) {
+            Icon(
+                imageVector = Icons.Default.Inventory2, 
+                contentDescription = null, 
+                modifier = Modifier.size(120.dp), 
+                tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.4f)
+            )
             Spacer(modifier = Modifier.height(24.dp))
-            Text("Your vault is empty", style = MaterialTheme.typography.headlineMedium)
-            Text("Select the + button to add files or chose a folder to index.", textAlign = TextAlign.Center)
+            Text(
+                "Your vault is empty", 
+                style = MaterialTheme.typography.headlineMedium,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.primary
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                "Stash indexes files in your vault folder. Add documents to get started.", 
+                textAlign = TextAlign.Center,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
         }
     }
 }

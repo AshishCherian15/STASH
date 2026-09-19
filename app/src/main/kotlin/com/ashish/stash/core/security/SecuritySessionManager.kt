@@ -4,13 +4,8 @@ import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ProcessLifecycleOwner
 import com.ashish.stash.core.preferences.PreferencesManager
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
+import kotlinx.coroutines.flow.*
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -22,26 +17,73 @@ sealed interface LockState {
 
 @Singleton
 class SecuritySessionManager @Inject constructor(
-    private val preferencesManager: PreferencesManager
+    private val preferencesManager: PreferencesManager,
+    private val pinManager: PinManager
 ) : DefaultLifecycleObserver {
 
+    private val scope = CoroutineScope(Dispatchers.Main + SupervisorJob())
+    
     private val _lockState = MutableStateFlow<LockState>(LockState.Loading)
     val lockState: StateFlow<LockState> = _lockState.asStateFlow()
 
-    // Second level: Secure Items (Locked Documents/Folders)
     private val _itemsUnlocked = MutableStateFlow(false)
     val itemsUnlocked: StateFlow<Boolean> = _itemsUnlocked.asStateFlow()
 
+    private val _failedAttempts = MutableStateFlow(0)
+    val failedAttempts: StateFlow<Int> = _failedAttempts.asStateFlow()
+
+    private val _lockoutSeconds = MutableStateFlow(0)
+    val lockoutSeconds: StateFlow<Int> = _lockoutSeconds.asStateFlow()
+
     private var lastStopTimestamp: Long = 0L
 
-    init {
-        CoroutineScope(Dispatchers.Main).launch {
+    /**
+     * Start observing process lifecycle.
+     * Separated from init for testability and to avoid Main thread enforcement in tests.
+     */
+    fun startObserving() {
+        scope.launch {
             ProcessLifecycleOwner.get().lifecycle.addObserver(this@SecuritySessionManager)
         }
     }
 
+    suspend fun verifyAndUnlock(pin: String): Boolean {
+        if (_lockoutSeconds.value > 0) return false
+        
+        val userData = preferencesManager.userData.first()
+        val hash = userData.pinHash ?: return true
+        val salt = userData.pinSalt ?: return true
+
+        return if (pinManager.verifyPin(pin, hash, salt)) {
+            _failedAttempts.value = 0
+            unlock()
+            true
+        } else {
+            handleFailure()
+            false
+        }
+    }
+
+    private fun handleFailure() {
+        _failedAttempts.value += 1
+        if (_failedAttempts.value >= 5) {
+            startLockout()
+        }
+    }
+
+    private fun startLockout() {
+        scope.launch {
+            for (i in 30 downTo 0) {
+                _lockoutSeconds.value = i
+                delay(1000)
+            }
+            _failedAttempts.value = 0
+            _lockoutSeconds.value = 0
+        }
+    }
+
     override fun onStart(owner: LifecycleOwner) {
-        CoroutineScope(Dispatchers.IO).launch {
+        scope.launch {
             val userData = preferencesManager.userData.first()
             val now = System.currentTimeMillis()
             val timeout = userData.autoLockTimeoutMillis
@@ -55,13 +97,6 @@ class SecuritySessionManager @Inject constructor(
 
     override fun onStop(owner: LifecycleOwner) {
         lastStopTimestamp = System.currentTimeMillis()
-        CoroutineScope(Dispatchers.IO).launch {
-            val userData = preferencesManager.userData.first()
-            if (userData.autoLockTimeoutMillis == 0L) {
-                lock()
-                _itemsUnlocked.value = false
-            }
-        }
     }
 
     fun markLoadingComplete(isSecurityConfigured: Boolean) {
@@ -70,19 +105,8 @@ class SecuritySessionManager @Inject constructor(
         }
     }
 
-    fun unlock() {
-        _lockState.value = LockState.Unlocked
-    }
-
-    fun lock() {
-        _lockState.value = LockState.Locked
-    }
-
-    fun unlockItems() {
-        _itemsUnlocked.value = true
-    }
-
-    fun lockItems() {
-        _itemsUnlocked.value = false
-    }
+    fun unlock() { _lockState.value = LockState.Unlocked }
+    fun lock() { _lockState.value = LockState.Locked }
+    fun unlockItems() { _itemsUnlocked.value = true }
+    fun lockItems() { _itemsUnlocked.value = false }
 }
