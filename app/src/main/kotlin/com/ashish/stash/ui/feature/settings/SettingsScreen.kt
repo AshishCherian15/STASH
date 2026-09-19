@@ -16,8 +16,10 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -38,6 +40,7 @@ fun SettingsScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val message by viewModel.message.collectAsStateWithLifecycle()
+    val releaseInfo by viewModel.releaseInfo.collectAsStateWithLifecycle()
     val context = LocalContext.current
     val snackbarHostState = remember { SnackbarHostState() }
     var currentSubScreen by remember { mutableStateOf<SubScreen?>(null) }
@@ -49,12 +52,10 @@ fun SettingsScreen(
         }
     }
 
-    val backupPicker = rememberSafFilePickerLauncher(
-        onFileSelected = { uri ->
-            val jsonString = context.contentResolver.openInputStream(uri)?.bufferedReader()?.use { it.readText() } ?: ""
-            viewModel.importBackup(jsonString)
-        }
-    )
+    val backupPicker = rememberSafFilePickerLauncher { uri ->
+        val jsonString = context.contentResolver.openInputStream(uri)?.bufferedReader()?.use { it.readText() } ?: ""
+        viewModel.importBackup(jsonString)
+    }
 
     Scaffold(
         topBar = {
@@ -62,23 +63,12 @@ fun SettingsScreen(
                 title = { Text(currentSubScreen?.title ?: "Settings") },
                 navigationIcon = {
                     IconButton(onClick = {
-                        if (currentSubScreen != null) {
-                            currentSubScreen = null
-                        } else {
-                            onNavigateBack()
-                        }
-                    }) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surface,
-                    titleContentColor = StashBlue,
-                    navigationIconContentColor = StashBlue
-                )
+                        if (currentSubScreen != null) currentSubScreen = null else onNavigateBack()
+                    }) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back") }
+                }
             )
         },
-        snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
+        snackbarHost = { SnackbarHost(snackbarHostState) }
     ) { padding ->
         Box(modifier = Modifier.padding(padding).fillMaxSize()) {
             if (currentSubScreen == null) {
@@ -122,9 +112,30 @@ fun SettingsScreen(
                         onExport = viewModel::exportBackup,
                         onImport = { backupPicker.launch(arrayOf("application/json")) }
                     )
+                    SubScreen.FEEDBACK -> FeedbackTab(onSubmit = viewModel::submitFeedback)
                     null -> {}
                 }
             }
+        }
+    }
+
+    // Update Dialog
+    releaseInfo?.let { info ->
+        if (info.isNewer) {
+            AlertDialog(
+                onDismissRequest = { viewModel.checkUpdates() /* reset check */ },
+                title = { Text("Update Available") },
+                text = { Text("A new version (${info.tagName}) is available on GitHub. Would you like to download the APK?") },
+                confirmButton = {
+                    Button(onClick = {
+                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(info.downloadUrl))
+                        context.startActivity(intent)
+                    }) { Text("Download") }
+                },
+                dismissButton = {
+                    TextButton(onClick = { /* silence for now */ }) { Text("Later") }
+                }
+            )
         }
     }
 }
@@ -135,8 +146,9 @@ enum class SubScreen(val title: String) {
     LABELS("Labels"),
     APPEARANCE("Appearance"),
     SECURITY("Security"),
-    STORAGE("Storage & Permissions"),
-    BACKUP("Backup")
+    STORAGE("Storage"),
+    BACKUP("Backup"),
+    FEEDBACK("Feedback")
 }
 
 @Composable
@@ -157,6 +169,7 @@ fun SettingsMainMenu(
         item { SettingsItem("Storage", "File access and scanning", Icons.Default.Storage) { onNavigateToSubScreen(SubScreen.STORAGE) } }
         item { SettingsItem("Backup", "Export and restore data", Icons.Default.Backup) { onNavigateToSubScreen(SubScreen.BACKUP) } }
         item { HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp)) }
+        item { SettingsItem("Feedback", "Send issues to GitHub", Icons.Default.Feedback) { onNavigateToSubScreen(SubScreen.FEEDBACK) } }
         item { SettingsItem("Help & FAQ", "How to use the app", Icons.Default.Help) { onNavigateToHelp() } }
         item { SettingsItem("Privacy Policy", "Your data safety", Icons.Default.PrivacyTip) { onNavigateToPrivacy() } }
         item { SettingsItem("Licenses", "Open source libraries", Icons.Default.Description) { onNavigateToLicenses() } }
@@ -165,17 +178,12 @@ fun SettingsMainMenu(
 }
 
 @Composable
-fun SettingsItem(
-    title: String,
-    subtitle: String,
-    icon: ImageVector,
-    onClick: () -> Unit
-) {
+fun SettingsItem(title: String, subtitle: String, icon: ImageVector, onClick: () -> Unit) {
     ListItem(
         headlineContent = { Text(title) },
         supportingContent = { Text(subtitle) },
-        leadingContent = { Icon(icon, contentDescription = null, tint = StashBlue) },
-        trailingContent = { Icon(Icons.AutoMirrored.Filled.ArrowForwardIos, contentDescription = null, modifier = Modifier.size(16.dp)) },
+        leadingContent = { Icon(icon, null, tint = StashBlue) },
+        trailingContent = { Icon(Icons.AutoMirrored.Filled.ArrowForwardIos, null, modifier = Modifier.size(16.dp)) },
         modifier = Modifier.clickable(onClick = onClick)
     )
 }
@@ -184,62 +192,68 @@ fun SettingsItem(
 fun StorageTab() {
     val context = LocalContext.current
     var hasFullAccess by remember { mutableStateOf(if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) Environment.isExternalStorageManager() else true) }
-
     Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
         Text("Storage Permissions", style = MaterialTheme.typography.titleMedium, color = StashBlue)
         Spacer(Modifier.height(16.dp))
-        
         ListItem(
             headlineContent = { Text("All Files Access") },
-            supportingContent = { Text("Required for deep-search and background indexing across your entire device storage.") },
+            supportingContent = { Text("Required for indexing documents across your entire device storage.") },
             trailingContent = {
-                Switch(
-                    checked = hasFullAccess,
-                    onCheckedChange = {
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                            val intent = Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION).apply {
-                                data = Uri.parse("package:${context.packageName}")
-                            }
-                            context.startActivity(intent)
+                Switch(checked = hasFullAccess, onCheckedChange = {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                        val intent = Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION).apply {
+                            data = Uri.parse("package:${context.packageName}")
                         }
-                    },
-                    colors = SwitchDefaults.colors(checkedTrackColor = StashBlue)
-                )
+                        context.startActivity(intent)
+                    }
+                })
             }
-        )
-        
-        Spacer(Modifier.height(24.dp))
-        Text("Status", style = MaterialTheme.typography.labelLarge, color = StashBlue)
-        Text(
-            text = if (hasFullAccess) "Deep indexing is enabled." else "Deep indexing is disabled. Some files may not be searchable.",
-            style = MaterialTheme.typography.bodyMedium,
-            color = if (hasFullAccess) StashBlue else MaterialTheme.colorScheme.error
         )
     }
 }
 
 @Composable
-fun BackupTab(
-    onExport: () -> Unit,
-    onImport: () -> Unit
-) {
+fun FeedbackTab(onSubmit: (String, Int) -> Unit) {
+    var text by remember { mutableStateOf("") }
+    var rating by remember { mutableIntStateOf(5) }
+    Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
+        Text("Your Feedback", style = MaterialTheme.typography.titleMedium, color = StashBlue)
+        Spacer(Modifier.height(16.dp))
+        Text("Rate STASH", style = MaterialTheme.typography.labelLarge)
+        Row {
+            repeat(5) { index ->
+                IconButton(onClick = { rating = index + 1 }) {
+                    Icon(
+                        if (index < rating) Icons.Default.Star else Icons.Default.StarOutline,
+                        null,
+                        tint = if (index < rating) StashBlue else Color.Gray
+                    )
+                }
+            }
+        }
+        Spacer(Modifier.height(16.dp))
+        OutlinedTextField(
+            value = text,
+            onValueChange = { text = it },
+            label = { Text("Describe your issue or suggestion") },
+            modifier = Modifier.fillMaxWidth().height(200.dp)
+        )
+        Spacer(Modifier.height(24.dp))
+        Button(
+            onClick = { onSubmit(text, rating); text = "" },
+            enabled = text.isNotBlank(),
+            modifier = Modifier.fillMaxWidth()
+        ) { Text("Submit to GitHub") }
+    }
+}
+
+@Composable
+fun BackupTab(onExport: () -> Unit, onImport: () -> Unit) {
     Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
         Text("Data Management", style = MaterialTheme.typography.titleMedium, color = StashBlue)
         Spacer(modifier = Modifier.height(16.dp))
-        Button(
-            onClick = onExport, 
-            modifier = Modifier.fillMaxWidth(),
-            colors = ButtonDefaults.buttonColors(containerColor = StashBlue)
-        ) {
-            Text("Export Index Metadata")
-        }
+        Button(onClick = onExport, modifier = Modifier.fillMaxWidth()) { Text("Export Index Metadata") }
         Spacer(modifier = Modifier.height(8.dp))
-        OutlinedButton(
-            onClick = onImport, 
-            modifier = Modifier.fillMaxWidth(),
-            colors = ButtonDefaults.outlinedButtonColors(contentColor = StashBlue)
-        ) {
-            Text("Restore from Backup")
-        }
+        OutlinedButton(onClick = onImport, modifier = Modifier.fillMaxWidth()) { Text("Restore from Backup") }
     }
 }

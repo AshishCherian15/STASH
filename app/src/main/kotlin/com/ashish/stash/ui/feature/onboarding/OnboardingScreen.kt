@@ -13,7 +13,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -24,6 +24,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.ashish.stash.ui.component.rememberSafFolderPickerLauncher
 import com.ashish.stash.ui.theme.StashBlue
 import kotlinx.coroutines.launch
 
@@ -33,20 +34,24 @@ fun OnboardingScreen(
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
-    val pagerState = rememberPagerState(pageCount = { 5 })
+    val pagerState = rememberPagerState(pageCount = { 6 })
     val scope = rememberCoroutineScope()
+    var selectedFolderUri by remember { mutableStateOf<Uri?>(null) }
+
+    val folderPicker = rememberSafFolderPickerLauncher { uri ->
+        selectedFolderUri = uri
+    }
 
     Scaffold(
         modifier = modifier.fillMaxSize(),
         containerColor = Color.White,
         bottomBar = {
             Column {
-                // Page Indicator
                 Row(
                     Modifier.height(40.dp).fillMaxWidth(),
                     horizontalArrangement = Arrangement.Center
                 ) {
-                    repeat(5) { iteration ->
+                    repeat(6) { iteration ->
                         val color = if (pagerState.currentPage == iteration) StashBlue else StashBlue.copy(alpha = 0.2f)
                         Box(
                             modifier = Modifier
@@ -75,7 +80,7 @@ fun OnboardingScreen(
 
                     Button(
                         onClick = {
-                            if (pagerState.currentPage < 4) {
+                            if (pagerState.currentPage < 5) {
                                 scope.launch { pagerState.animateScrollToPage(pagerState.currentPage + 1) }
                             } else {
                                 onComplete()
@@ -83,7 +88,7 @@ fun OnboardingScreen(
                         },
                         colors = ButtonDefaults.buttonColors(containerColor = StashBlue)
                     ) {
-                        Text(if (pagerState.currentPage < 4) "Next" else "Get Started")
+                        Text(if (pagerState.currentPage < 5) "Next" else "Finish")
                     }
                 }
             }
@@ -98,46 +103,46 @@ fun OnboardingScreen(
             when (page) {
                 0 -> OnboardingPage(
                     title = "Secure Your Documents",
-                    description = "Stash is a private, offline vault for your sensitive files. No cloud, no tracking.",
+                    description = "STASH is a professional vault for your sensitive files. Built with a focus on privacy and speed.",
                     icon = Icons.Default.Lock
                 )
                 1 -> OnboardingPage(
-                    title = "Privacy First",
-                    description = "We promise never to upload your data. Your files stay exactly where they are on your device.",
-                    icon = Icons.Default.Shield
+                    title = "Cloud-Ready Distribution",
+                    description = "Check for updates and fetch the latest build directly from GitHub Releases.",
+                    icon = Icons.Default.CloudSync
                 )
                 2 -> OnboardingPage(
-                    title = "Smart Indexing",
-                    description = "Stash indexes your documents in place. Search by content, labels, and categories instantly.",
-                    icon = Icons.Default.Inventory
+                    title = "Intelligent Indexing",
+                    description = "Index files in place. Search text inside images and PDFs using local AI.",
+                    icon = Icons.Default.AutoAwesome
                 )
                 3 -> OnboardingPage(
-                    title = "Full Storage Access",
-                    description = "To search across all your documents instantly, Stash needs permission to scan your device storage.",
+                    title = "Storage Permissions",
+                    description = "STASH requires 'All Files Access' to scan and index documents across your device.",
                     icon = Icons.Default.Storage,
-                    isPermissionRequest = true,
-                    onActionClick = {
+                    isAction = true,
+                    actionText = "Grant Full Access",
+                    onAction = {
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                            if (!Environment.isExternalStorageManager()) {
-                                try {
-                                    val intent = Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION)
-                                    intent.addCategory("android.intent.category.DEFAULT")
-                                    intent.data = Uri.parse("package:${context.packageName}")
-                                    context.startActivity(intent)
-                                } catch (e: Exception) {
-                                    val intent = Intent()
-                                    intent.action = Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION
-                                    context.startActivity(intent)
-                                }
+                            val intent = Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION).apply {
+                                data = Uri.parse("package:${context.packageName}")
                             }
+                            context.startActivity(intent)
                         }
                     }
                 )
                 4 -> OnboardingPage(
-                    title = "Organized Workflow",
-                    description = "Group files with professional colors. Categorize by Legal, Financial, or Medical records.",
-                    icon = Icons.Default.Category,
-                    isExplainer = true
+                    title = "Choose Vault Folder",
+                    description = "Select a folder on your device where STASH should look for documents.",
+                    icon = Icons.Default.FolderOpen,
+                    isAction = true,
+                    actionText = if (selectedFolderUri == null) "Select Folder" else "Folder Selected ✅",
+                    onAction = { folderPicker.launch(null) }
+                )
+                5 -> OnboardingPage(
+                    title = "Ready to Begin",
+                    description = "Your privacy is our priority. STASH will now set up your local database.",
+                    icon = Icons.Default.VerifiedUser
                 )
             }
         }
@@ -149,9 +154,9 @@ private fun OnboardingPage(
     title: String,
     description: String,
     icon: ImageVector,
-    isExplainer: Boolean = false,
-    isPermissionRequest: Boolean = false,
-    onActionClick: () -> Unit = {}
+    isAction: Boolean = false,
+    actionText: String = "",
+    onAction: () -> Unit = {}
 ) {
     Column(
         modifier = Modifier
@@ -181,27 +186,13 @@ private fun OnboardingPage(
             textAlign = TextAlign.Center,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
-        if (isExplainer) {
-            Spacer(modifier = Modifier.height(24.dp))
-            Surface(
-                color = StashBlue.copy(alpha = 0.1f),
-                shape = MaterialTheme.shapes.medium
-            ) {
-                Text(
-                    text = "Professional Grade Organization.",
-                    modifier = Modifier.padding(16.dp),
-                    style = MaterialTheme.typography.labelLarge,
-                    color = StashBlue
-                )
-            }
-        }
-        if (isPermissionRequest) {
+        if (isAction) {
             Spacer(modifier = Modifier.height(24.dp))
             Button(
-                onClick = onActionClick,
+                onClick = onAction,
                 colors = ButtonDefaults.buttonColors(containerColor = StashBlue)
             ) {
-                Text("Grant Full Access")
+                Text(actionText)
             }
         }
     }

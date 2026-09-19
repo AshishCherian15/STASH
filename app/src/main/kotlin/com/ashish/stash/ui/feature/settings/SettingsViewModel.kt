@@ -7,6 +7,7 @@ import com.ashish.stash.core.database.entity.CategoryEntity
 import com.ashish.stash.core.database.entity.FolderEntity
 import com.ashish.stash.core.database.entity.LabelEntity
 import com.ashish.stash.core.database.repository.DocumentRepository
+import com.ashish.stash.core.github.GitHubManager
 import com.ashish.stash.core.preferences.PreferencesManager
 import com.ashish.stash.core.security.PinManager
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -19,11 +20,15 @@ class SettingsViewModel @Inject constructor(
     private val documentRepository: DocumentRepository,
     private val preferencesManager: PreferencesManager,
     private val backupManager: BackupManager,
-    private val pinManager: PinManager
+    private val pinManager: PinManager,
+    private val githubManager: GitHubManager
 ) : ViewModel() {
 
     private val _message = MutableStateFlow<String?>(null)
     val message = _message.asStateFlow()
+
+    private val _releaseInfo = MutableStateFlow<GitHubManager.ReleaseInfo?>(null)
+    val releaseInfo = _releaseInfo.asStateFlow()
 
     val uiState: StateFlow<SettingsUiState> = combine(
         documentRepository.observeAllCategories(),
@@ -47,12 +52,31 @@ class SettingsViewModel @Inject constructor(
             fontSizeScale = userData.fontSizeScale
         )
     }
-    .onStart { emit(SettingsUiState(isLoading = true)) }
+    .onStart { 
+        emit(SettingsUiState(isLoading = true))
+        checkUpdates()
+    }
     .stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5000),
         initialValue = SettingsUiState()
     )
+
+    fun checkUpdates() {
+        viewModelScope.launch {
+            val info = githubManager.getLatestRelease()
+            _releaseInfo.value = info
+        }
+    }
+
+    fun submitFeedback(text: String, rating: Int) {
+        viewModelScope.launch {
+            // Title including rating for context
+            val title = "User Feedback ($rating Stars)"
+            val success = githubManager.submitFeedback(title, text, "REPLACE_WITH_YOUR_TOKEN") // User must provide token in real flow
+            _message.value = if (success) "Feedback submitted to GitHub!" else "Submission failed"
+        }
+    }
 
     fun addCategory(name: String, color: String) {
         viewModelScope.launch {
