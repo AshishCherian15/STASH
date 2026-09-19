@@ -2,10 +2,9 @@ package com.ashish.stash.ui.feature.home
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.AutoAwesome
-import androidx.compose.material.icons.outlined.Link
-import androidx.compose.material.icons.outlined.Lock
+import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -65,28 +64,43 @@ fun DocumentCard(
                     .padding(16.dp)
                     .weight(1f)
             ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    if (category != null) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        if (category != null) {
+                            Text(
+                                text = category.name.uppercase(),
+                                style = MaterialTheme.typography.labelSmall,
+                                color = notchColor,
+                                fontWeight = FontWeight.Bold
+                            )
+                            Text(" • ", style = MaterialTheme.typography.labelSmall)
+                        }
+                        if (folder != null) {
+                            Text(
+                                text = folder.name,
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.secondary
+                            )
+                            Text(" • ", style = MaterialTheme.typography.labelSmall)
+                        }
                         Text(
-                            text = category.name.uppercase(),
-                            style = MaterialTheme.typography.labelSmall,
-                            color = notchColor,
-                            fontWeight = FontWeight.Bold
+                            text = document.mimeType.split("/").last().uppercase(),
+                            style = MaterialTheme.typography.labelSmall
                         )
-                        Text(" • ", style = MaterialTheme.typography.labelSmall)
                     }
-                    if (folder != null) {
-                        Text(
-                            text = folder.name,
-                            style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.secondary
+                    
+                    if (document.importance == "HIGH" || document.importance == "CRITICAL") {
+                        Icon(
+                            imageVector = Icons.Outlined.Star,
+                            contentDescription = null,
+                            modifier = Modifier.size(14.dp),
+                            tint = VaultBrass
                         )
-                        Text(" • ", style = MaterialTheme.typography.labelSmall)
                     }
-                    Text(
-                        text = document.mimeType.split("/").last().uppercase(),
-                        style = MaterialTheme.typography.labelSmall
-                    )
                 }
 
                 Spacer(modifier = Modifier.height(4.dp))
@@ -108,7 +122,7 @@ fun DocumentCard(
                     ) {
                         Icon(Icons.Outlined.Link, null, modifier = Modifier.size(12.dp), tint = StashBlue)
                         Text(
-                            text = "${resourceLinks.size} links attached",
+                            text = "${resourceLinks.size} links",
                             style = MaterialTheme.typography.labelSmall,
                             color = StashBlue
                         )

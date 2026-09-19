@@ -1,4 +1,4 @@
-# Stash — Private Document Vault & Intelligence Engine
+# STASH — Premium Private Document Vault & Intelligence Engine
 
 [![Android](https://img.shields.io/badge/Platform-Android-green.svg)]()
 [![Kotlin](https://img.shields.io/badge/Language-Kotlin-blue.svg)]()
@@ -6,81 +6,72 @@
 [![Privacy](https://img.shields.io/badge/Privacy-100%25%20Offline-black.svg)]()
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-**Stash** is a premium, privacy-first document discovery and management application for Android. Designed for students, researchers, and professionals, Stash allows you to index, organize, and search through thousands of documents entirely offline using local intelligence.
+**Stash** is a production-grade, privacy-first document discovery and management application for Android. Built for legal professionals, researchers, and security-conscious users, Stash allows you to index, organize, and search through thousands of local documents using on-device AI intelligence.
 
 ---
 
-## 🚀 Key Features
+## 🚀 Premium Features
 
-### 🔍 Deep Intelligence & Search
-- **Full-Text Search (FTS):** Instant search results across filenames, descriptions, and even content inside documents using SQLite FTS4.
-- **On-Device OCR:** Powered by Google ML Kit, Stash automatically reads text from images and scanned PDFs. All processing is 100% local—no data ever leaves your device.
-- **Smart Ranking:** Search results are ranked using a composite score of keyword relevance, document importance, and recent activity.
+### 🔍 Intelligence & Search
+- **Full-Text Search (FTS):** Instant sub-50ms search across filenames, custom descriptions, and document content using SQLite FTS4.
+- **On-Device OCR:** Automatically extracts text from images and scanned PDFs using Google ML Kit. 100% local processing—no cloud data leaks.
+- **Smart Ranking:** Search results are ranked using a professional scoring algorithm based on relevance, priority flags, and recent activity.
 
 ### 🔒 Vault-Grade Security
-- **Multi-Layer Locking:** Secure your entire vault, specific folders, or individual files behind a 4-digit PIN or native Biometrics (Fingerprint/Face).
-- **Privacy Invariants:** Locked documents are completely hidden from search and the main dashboard until you authenticate.
-- **Screenshot Protection:** Optional security mode that hides app content from the recent apps switcher and prevents screen recordings.
-- **Auto-Lock:** Configurable session timeouts (15s to 5m) to keep your data safe even if the app is left open.
+- **Multi-Layer Locking:** Secure your vault behind a **4-digit PIN** or native **Biometrics** (Fingerprint/Face).
+- **Auto-Lock Engine:** Configurable session timeouts (15s to 5m) that automatically lock the vault when the app is backgrounded.
+- **Privacy Invariants:** Locked documents are completely invisible to the system—hidden from search and the main dashboard until you authenticate.
+- **Screenshot Protection:** Prevents content from appearing in the recent apps switcher and blocks unauthorized screen recordings.
 
-### 📂 High-Speed Organization
-- **Index-in-Place:** Uses Android's Storage Access Framework (SAF) to index files without duplicating them, saving storage space.
-- **"Poco-Style" Browser:** Multi-select engine for bulk sharing, deleting, or re-categorizing documents with a single long-press.
-- **Professional Palette:** Preset organizational categories for Legal, Financial, Medical, and Personnel files with custom hex colors.
-- **Dynamic Views:** Switch between Large Icons, Medium Icons, Small Icons, List, Details, and Tiles to suit your workflow.
-- **Description & Links:** Attach private descriptions (renamed from Notes) and external web references to any document.
+### 📂 "Poco-Style" Browser & Organization
+- **Multi-Select Engine:** Long-press to enter a high-performance selection mode for bulk sharing, deleting, or re-categorizing.
+- **Social & External Share:** Seamlessly share multiple documents at once via the system share sheet (WhatsApp, Gmail, etc.) using a secure `FileProvider`.
+- **Professional Palette:** Industry-standard categories (Legal, Financial, Medical) with custom hex-coded identity notches.
+- **Dynamic View Modes:** Switch between **Large Icons**, **Grid**, **List**, **Details**, and **Tiles** to suit your professional workflow.
 
-### 🖼️ Seamless Viewing
-- **Built-in Previews:** High-quality in-app viewing for PDFs, Images, and Text/Markdown files.
-- **Social & External Share:** Share bulk case files directly to social media, email, or other productivity apps using the system share sheet.
+### 🖼️ Seamless In-App Previews
+- **Native Viewers:** High-quality built-in viewing for PDFs, Images, and Text/Markdown—no need to leave the secure vault environment.
+- **Deep Metadata:** Attach private markdown descriptions and external resource links to any case file.
 
 ---
 
-## 🏗️ Technical Architecture
+## 🏗️ Modern Android Architecture
 
-Stash is built using modern Android development standards:
+Stash follows the **Clean Architecture** principles and the **MVVM** pattern for maximum maintainability:
 
-- **UI Layer:** Jetpack Compose with Material 3 following the "Vault & Ledger" design system.
-- **Architecture:** MVVM + Clean Architecture with single-responsibility Use Cases.
-- **Dependency Injection:** Dagger Hilt for robust scoping and testability.
-- **Local Storage:** Room Database for metadata and SQLite FTS4 for high-performance indexing.
-- **Background Engine:** WorkManager for non-blocking OCR processing and recursive folder synchronization.
-- **Data Persistence:** DataStore for secure, thread-safe user preferences.
+- **UI:** 100% Jetpack Compose with Material 3 ("Vault & Ledger" design system).
+- **Logic:** Single-responsibility Use Cases and Hilt Dependency Injection.
+- **Storage:** Room Database (Metadata) + SQLite FTS4 (Content Index).
+- **Background:** WorkManager for non-blocking OCR and recursive storage synchronization.
+- **State:** Kotlin Coroutines & Flow for reactive, thread-safe UI updates.
 
 ---
 
 ## 🛠️ Build & Development
 
 ### Prerequisites
-- Android Studio Ladybug (2024.2.1) or newer.
-- Android SDK 35 (Build target 36).
-- Minimum Android version: Android 8.0 (Oreo / API 26).
+- **Android Studio Ladybug** (2024.2.1) or newer.
+- **Gradle 9.7.1** (included in wrapper).
+- **Android SDK 35** (Build target 36).
+- Minimum Android version: Android 8.0 (API 26).
 
-### Repository Structure
+### Project Structure
 ```text
 app/src/main/kotlin/com/ashish/stash/
-├── core/             # Core Services (OCR, Hash, SAF, Security, Database, Backup)
-├── domain/           # Business Logic (Use Cases)
+├── core/             # Services (OCR, SAF, Security, Database, Backup)
+├── domain/           # Business logic (Use Cases)
 ├── ui/               # Presentation (Compose UI, Navigation, Theme)
-│   ├── component/    # Reusable UI widgets
-│   ├── feature/      # Modules: Home, Search, Detail, Settings, etc.
-│   └── security/     # Security Gates (PIN, Biometric)
-└── worker/           # Background Synchronization & Scanning
+│   ├── feature/      # Modules: Home, Search, Detail, Settings
+│   └── security/     # PIN & Biometric Gates
+└── worker/           # Background Synchronization Engine
 ```
-
----
-
-## 📜 Full Documentation
-
-Explore the detailed specifications in the `docs/` folder:
-- [PRD](docs/PRD.md) • [TRD](docs/TRD.md) • [Architecture](docs/ARCHITECTURE.md) • [Schema](docs/SCHEMA.md) • [UI-UX](docs/UI-UX.md) • [Security Model](docs/SECURITY.md)
 
 ---
 
 ## 🛡️ License & Credits
 
-Distributed under the MIT License. See `LICENSE` for more information.
+Distributed under the **MIT License**. Created with professional Android engineering standards.
 
 Developed with ❤️ by **[Ashish Cherian](https://github.com/AshishCherian15/)**
-- **GitHub:** [https://github.com/AshishCherian15/STASH](https://github.com/AshishCherian15/STASH)
+- **GitHub Repo:** [https://github.com/AshishCherian15/STASH](https://github.com/AshishCherian15/STASH)
 - **Email:** [ashishcherian15@gmail.com](mailto:ashishcherian15@gmail.com)

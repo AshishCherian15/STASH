@@ -54,17 +54,13 @@ fun HomeScreen(
     val selectedDocIds = remember { mutableStateListOf<Long>() }
     val isSelectionMode = selectedDocIds.isNotEmpty()
 
-    val filePicker = rememberSafFilePickerLauncher(
-        onFileSelected = { uri -> viewModel.importDocument(uri) }
-    )
-
     val multiFilePicker = rememberSafMultiFilePickerLauncher(
         onFilesSelected = { uris -> viewModel.importDocuments(uris) }
     )
 
     LaunchedEffect(uiState.importSuccess, uiState.importError) {
         if (uiState.importSuccess) {
-            snackbarHostState.showSnackbar("Document imported successfully")
+            snackbarHostState.showSnackbar("Documents imported successfully")
             viewModel.clearImportSuccess()
         }
         uiState.importError?.let {
@@ -163,9 +159,6 @@ fun HomeScreen(
                 containerColor = Limestone,
                 contentColor = StashBlue,
                 actions = {
-                    IconButton(onClick = { multiFilePicker.launch(arrayOf("*/*")) }) {
-                        Icon(Icons.Default.CreateNewFolder, contentDescription = "Batch Import")
-                    }
                     Text(
                         "Vault: ${uiState.stats.totalDocuments} items",
                         modifier = Modifier.padding(horizontal = 16.dp),
@@ -179,7 +172,7 @@ fun HomeScreen(
                         contentColor = Color.White,
                         elevation = FloatingActionButtonDefaults.elevation(0.dp)
                     ) {
-                        Icon(Icons.Default.Add, contentDescription = "Add Document")
+                        Icon(Icons.Default.Add, contentDescription = "Add Documents")
                     }
                 }
             )
@@ -189,7 +182,7 @@ fun HomeScreen(
     ) { padding ->
         Box(modifier = Modifier.padding(padding).fillMaxSize()) {
             if (uiState.documents.isEmpty() && !uiState.isLoading) {
-                EmptyHomeContent(onAddClick = { filePicker.launch(arrayOf("*/*")) })
+                EmptyHomeContent(onAddClick = { multiFilePicker.launch(arrayOf("*/*")) })
             } else {
                 val onDocClick: (Long) -> Unit = { id ->
                     if (isSelectionMode) {
@@ -329,14 +322,14 @@ private fun EmptyHomeContent(onAddClick: () -> Unit) {
         Button(onClick = onAddClick, colors = ButtonDefaults.buttonColors(containerColor = StashBlue)) {
             Icon(Icons.Default.Add, null)
             Spacer(Modifier.width(8.dp))
-            Text("Add Document")
+            Text("Add Documents")
         }
     }
 }
 
 fun formatFileSize(size: Long): String {
     if (size <= 0) return "0 B"
-    val units = arrayOf("B", "KB", "MB", "GB")
+    val units = arrayOf("B", "KB", "MB", "GB", "TB")
     val digitGroups = (Math.log10(size.toDouble()) / Math.log10(1024.0)).toInt()
     return String.format(Locale.US, "%.1f %s", size / Math.pow(1024.0, digitGroups.toDouble()), units[digitGroups])
 }

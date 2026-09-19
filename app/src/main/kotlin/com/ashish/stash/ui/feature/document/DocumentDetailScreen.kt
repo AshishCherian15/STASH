@@ -1,5 +1,7 @@
 package com.ashish.stash.ui.feature.document
 
+import android.content.Intent
+import android.net.Uri
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -13,6 +15,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -32,6 +35,7 @@ fun DocumentDetailScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val settingsState by settingsViewModel.uiState.collectAsStateWithLifecycle()
+    val context = LocalContext.current
 
     var showRenameDialog by remember { mutableStateOf(false) }
     var showDeleteDialog by remember { mutableStateOf(false) }
@@ -66,6 +70,17 @@ fun DocumentDetailScreen(
                     }
                     IconButton(onClick = { showDeleteDialog = true }) {
                         Icon(Icons.Default.Delete, contentDescription = "Delete", tint = StashBlue)
+                    }
+                    IconButton(onClick = {
+                        val doc = uiState.documentWithMetadata?.document ?: return@IconButton
+                        val intent = Intent(Intent.ACTION_SEND).apply {
+                            type = doc.mimeType
+                            putExtra(Intent.EXTRA_STREAM, Uri.parse(doc.uri))
+                            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                        }
+                        context.startActivity(Intent.createChooser(intent, "Share Document"))
+                    }) {
+                        Icon(Icons.Default.Share, contentDescription = "Share", tint = StashBlue)
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -121,9 +136,9 @@ fun DocumentDetailScreen(
                         }
                     }
                     
-                    // Metadata Section
-                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        Text("Metadata & Organization", style = MaterialTheme.typography.titleMedium, color = StashBlue)
+                    // Organization (Dropdown Selection)
+                    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                        Text("Organization", style = MaterialTheme.typography.titleMedium, color = StashBlue)
                         
                         // Category Dropdown
                         Box {

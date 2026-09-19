@@ -11,7 +11,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.ashish.stash.core.security.SecuritySessionManager
 import com.ashish.stash.ui.theme.StashBlue
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -23,9 +22,6 @@ fun ViewerScreen(
     viewModel: ViewerViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    
-    // Using a simple state check for now. Full re-auth would involve nav back to Lock screen.
-    val isAppLocked by remember { mutableStateOf(false) } // Placeholder
 
     Scaffold(
         topBar = {
@@ -55,29 +51,18 @@ fun ViewerScreen(
             } else {
                 val doc = uiState.document
                 if (doc != null) {
-                    if (doc.isLocked == 1 && isAppLocked) {
-                        Column(
-                            modifier = Modifier.fillMaxSize(),
-                            verticalArrangement = Arrangement.Center,
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
-                            Icon(Icons.Default.Lock, null, modifier = Modifier.size(64.dp), tint = StashBlue)
-                            Text("This document is locked", style = MaterialTheme.typography.titleMedium)
+                    when {
+                        doc.mimeType.contains("pdf", ignoreCase = true) -> {
+                            PdfViewer(uri = doc.uri)
                         }
-                    } else {
-                        when {
-                            doc.mimeType.contains("pdf", ignoreCase = true) -> {
-                                PdfViewer(uri = doc.uri)
-                            }
-                            doc.mimeType.startsWith("image/", ignoreCase = true) -> {
-                                ImageViewer(uri = doc.uri)
-                            }
-                            doc.mimeType.startsWith("text/", ignoreCase = true) || doc.mimeType == "application/json" -> {
-                                TextViewer(uri = doc.uri)
-                            }
-                            else -> {
-                                Text("Unsupported file type: ${doc.mimeType}", modifier = Modifier.align(Alignment.Center))
-                            }
+                        doc.mimeType.startsWith("image/", ignoreCase = true) -> {
+                            ImageViewer(uri = doc.uri)
+                        }
+                        doc.mimeType.startsWith("text/", ignoreCase = true) || doc.mimeType == "application/json" -> {
+                            TextViewer(uri = doc.uri)
+                        }
+                        else -> {
+                            Text("Unsupported file type: ${doc.mimeType}", modifier = Modifier.align(Alignment.Center))
                         }
                     }
                 }

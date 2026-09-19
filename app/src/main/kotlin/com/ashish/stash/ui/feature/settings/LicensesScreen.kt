@@ -18,15 +18,14 @@ import com.ashish.stash.ui.theme.StashBlue
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LicensesScreen(onNavigateBack: () -> Unit) {
-    val licenses = listOf(
-        LicenseItem("Jetpack Compose", "Android UI Toolkit", Icons.Default.Layers),
-        LicenseItem("Kotlin Coroutines", "Asynchronous programming", Icons.Default.Terminal),
-        LicenseItem("Hilt", "Dependency Injection", Icons.Default.Extension),
-        LicenseItem("Room", "Local Database", Icons.Default.Storage),
-        LicenseItem("ML Kit", "On-device Machine Learning", Icons.Default.AutoAwesome),
-        LicenseItem("Coil", "Image Loading Library", Icons.Default.Image),
-        LicenseItem("DataStore", "User Preferences", Icons.Default.Settings),
-        LicenseItem("WorkManager", "Background Processing", Icons.Default.Sync)
+    val libraries = listOf(
+        LicenseItem("Jetpack Compose", "Android's modern toolkit for native UI.", Icons.Default.Layers),
+        LicenseItem("Room Database", "Fluent SQLite database access.", Icons.Default.Storage),
+        LicenseItem("Dagger Hilt", "Dependency injection for Android.", Icons.Default.Extension),
+        LicenseItem("Google ML Kit", "On-device machine learning for OCR.", Icons.Default.AutoAwesome),
+        LicenseItem("Kotlin Coroutines", "Asynchronous programming simplified.", Icons.Default.Bolt),
+        LicenseItem("Coil", "Image loading for Android backed by Coroutines.", Icons.Default.Image),
+        LicenseItem("WorkManager", "Persistent background processing.", Icons.Default.Sync)
     )
 
     Scaffold(
@@ -51,15 +50,8 @@ fun LicensesScreen(onNavigateBack: () -> Unit) {
             contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            item {
-                Text(
-                    "Stash is built using the following open source libraries:",
-                    style = MaterialTheme.typography.bodyLarge,
-                    modifier = Modifier.padding(bottom = 8.dp)
-                )
-            }
-            items(licenses) { license ->
-                LicenseCard(license)
+            items(libraries) { library ->
+                LicenseCard(library)
             }
         }
     }
