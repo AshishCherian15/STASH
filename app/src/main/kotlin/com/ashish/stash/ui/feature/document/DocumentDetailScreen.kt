@@ -20,11 +20,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.ashish.stash.core.database.entity.Importance
+import com.ashish.stash.ui.component.LabelPickerBottomSheet
 import com.ashish.stash.ui.feature.settings.SettingsViewModel
 import com.ashish.stash.ui.theme.StashBlue
 import java.util.Locale
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun DocumentDetailScreen(
     onNavigateBack: () -> Unit,
@@ -40,6 +42,7 @@ fun DocumentDetailScreen(
     var showRenameDialog by remember { mutableStateOf(false) }
     var showDeleteDialog by remember { mutableStateOf(false) }
     var showPriorityDialog by remember { mutableStateOf(false) }
+    var showLabelPicker by remember { mutableStateOf(false) }
     
     var categoryMenuExpanded by remember { mutableStateOf(false) }
     var folderMenuExpanded by remember { mutableStateOf(false) }
@@ -61,7 +64,7 @@ fun DocumentDetailScreen(
                 },
                 actions = {
                     IconButton(onClick = { viewModel.toggleLock() }) {
-                        val isLocked = uiState.documentWithMetadata?.document?.isLocked == 1
+                        val isLocked = uiState.documentWithMetadata?.document?.isLocked == true
                         Icon(
                             if (isLocked) Icons.Default.Lock else Icons.Default.LockOpen,
                             contentDescription = if (isLocked) "Unlock" else "Lock",
@@ -136,11 +139,40 @@ fun DocumentDetailScreen(
                         }
                     }
                     
+                    // Labels Section
+                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text("Labels", style = MaterialTheme.typography.titleMedium, color = StashBlue)
+                            IconButton(onClick = { showLabelPicker = true }) {
+                                Icon(Icons.Default.Label, null, tint = StashBlue)
+                            }
+                        }
+                        FlowRow(
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            verticalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            docWithMetadata.labels.forEach { label ->
+                                InputChip(
+                                    selected = true,
+                                    onClick = { viewModel.toggleLabel(label.labelId) },
+                                    label = { Text(label.name) },
+                                    trailingIcon = { Icon(Icons.Default.Close, null, modifier = Modifier.size(12.dp)) }
+                                )
+                            }
+                            if (docWithMetadata.labels.isEmpty()) {
+                                Text("No labels assigned", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            }
+                        }
+                    }
+
                     // Organization (Dropdown Selection)
                     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                         Text("Organization", style = MaterialTheme.typography.titleMedium, color = StashBlue)
                         
-                        // Category Dropdown
                         Box {
                             DetailItem(label = "Category", value = docWithMetadata.category?.name ?: "None", onClick = { categoryMenuExpanded = true })
                             DropdownMenu(expanded = categoryMenuExpanded, onDismissRequest = { categoryMenuExpanded = false }) {
@@ -156,7 +188,6 @@ fun DocumentDetailScreen(
                             }
                         }
 
-                        // Folder Dropdown
                         Box {
                             DetailItem(label = "Folder", value = docWithMetadata.folder?.name ?: "Root", onClick = { folderMenuExpanded = true })
                             DropdownMenu(expanded = folderMenuExpanded, onDismissRequest = { folderMenuExpanded = false }) {
@@ -172,7 +203,7 @@ fun DocumentDetailScreen(
                             }
                         }
 
-                        DetailItem(label = "Importance", value = doc.importance, onClick = { showPriorityDialog = true })
+                        DetailItem(label = "Importance", value = doc.importance.name, onClick = { showPriorityDialog = true })
                         DetailItem(label = "MIME Type", value = doc.mimeType)
                         DetailItem(label = "File Size", value = formatFileSize(doc.fileSize))
                     }
@@ -194,6 +225,16 @@ fun DocumentDetailScreen(
                 }
             }
         }
+    }
+
+    if (showLabelPicker) {
+        LabelPickerBottomSheet(
+            allLabels = uiState.allLabels,
+            selectedLabelIds = uiState.documentWithMetadata?.labels?.map { it.labelId }?.toSet() ?: emptySet(),
+            onToggleLabel = viewModel::toggleLabel,
+            onCreateLabel = viewModel::createAndAddLabel,
+            onDismiss = { showLabelPicker = false }
+        )
     }
 
     if (showRenameDialog) {
@@ -232,17 +273,17 @@ fun DocumentDetailScreen(
             title = { Text("Set Importance") },
             text = {
                 Column {
-                    listOf("LOW", "NORMAL", "HIGH", "CRITICAL").forEach { level ->
+                    Importance.entries.forEach { level ->
                         Row(
                             Modifier.fillMaxWidth().clickable { 
-                                viewModel.setPriority(level)
+                                viewModel.setPriority(level.name)
                                 showPriorityDialog = false
                             }.padding(16.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             RadioButton(selected = uiState.documentWithMetadata?.document?.importance == level, onClick = null, colors = RadioButtonDefaults.colors(selectedColor = StashBlue))
                             Spacer(Modifier.width(12.dp))
-                            Text(level)
+                            Text(level.name)
                         }
                     }
                 }
