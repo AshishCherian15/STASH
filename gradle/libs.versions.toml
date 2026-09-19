@@ -1,31 +1,44 @@
 [versions]
-androidGradlePlugin = "8.9.1"
-androidxCore = "1.13.1"
-androidxLifecycle = "2.8.6"
+# Core Infrastructure
+androidGradlePlugin = "8.7.2"
+kotlin = "2.0.21"
+ksp = "2.0.21-1.0.25"
+gradle = "9.7.1"
+
+# AndroidX Core
+androidxCore = "1.15.0"
+androidxLifecycle = "2.8.7"
 androidxActivity = "1.9.3"
-androidxComposeBom = "2024.10.00"
-androidxTest = "1.6.1"
+androidxComposeBom = "2024.10.01"
+androidxNavigation = "2.8.4"
+androidxDataStore = "1.1.1"
+androidxWork = "2.10.0"
+androidxBiometric = "1.2.0-alpha05"
+
+# Database
+room = "2.6.1"
+
+# Dependency Injection
+hilt = "2.51.1"
+hiltExt = "1.2.0"
+
+# Image Loading
+coil = "2.7.0"
+
+# AI / ML
+mlKitText = "16.0.1"
+
+# Utilities
+kotlinxSerialization = "1.7.3"
+kotlinxCoroutines = "1.9.0"
+
+# Testing
+junit = "4.13.2"
+androidxTestCore = "1.6.1"
 androidxTestExt = "1.2.1"
 androidxTestRunner = "1.6.1"
 androidxTestEspresso = "3.6.1"
-coroutines = "1.9.0"
-junit = "4.13.2"
-kotlin = "2.0.21"
-navigation = "2.8.1"
-# Added for Stash
-hilt                    = "2.52"
-hiltNavigationCompose   = "1.2.0"
-hiltWork                = "1.2.0"
-ksp                     = "2.0.21-1.0.25"
-room                    = "2.6.1"
-coil                    = "2.7.0"
-archTesting             = "2.2.0"
-mlKit                   = "16.0.1"
-workManager             = "2.9.1"
-biometric               = "1.1.0"
-dataStore               = "1.1.1"
-kotlinSerialization     = "1.7.3"
-playServicesCoroutines = "1.9.0"
+archTesting = "2.2.0"
 
 [libraries]
 androidx-core-ktx = { module = "androidx.core:core-ktx", version.ref = "androidxCore" }
@@ -41,46 +54,45 @@ androidx-compose-material-icons = { group = "androidx.compose.material", name = 
 androidx-lifecycle-viewmodel-compose = { module = "androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "androidxLifecycle" }
 androidx-lifecycle-runtime-compose = { module = "androidx.lifecycle:lifecycle-runtime-compose", version.ref = "androidxLifecycle" }
 androidx-lifecycle-runtime-ktx = { module = "androidx.lifecycle:lifecycle-runtime-ktx", version.ref = "androidxLifecycle" }
-androidx-navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version.ref = "navigation" }
-androidx-test-core = { module = "androidx.test:core", version.ref = "androidxTest" }
+androidx-navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version.ref = "androidxNavigation" }
+androidx-test-core = { module = "androidx.test:core", version.ref = "androidxTestCore" }
 androidx-test-ext-junit = { module = "androidx.test.ext:junit", version.ref = "androidxTestExt" }
 androidx-test-espresso-core = { module = "androidx.test.espresso:espresso-core", version.ref = "androidxTestEspresso" }
 androidx-test-runner = { module = "androidx.test:runner", version.ref = "androidxTestRunner" }
 junit = { module = "junit:junit", version.ref = "junit" }
-kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "coroutines" }
-kotlinx-coroutines-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-android", version.ref = "coroutines" }
-kotlinx-coroutines-play-services = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-play-services", version.ref = "playServicesCoroutines" }
+kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlinxCoroutines" }
+kotlinx-coroutines-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-android", version.ref = "kotlinxCoroutines" }
+kotlinx-coroutines-play-services = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-play-services", version.ref = "kotlinxCoroutines" }
 # Hilt
-hilt-android        = { group = "com.google.dagger", name = "hilt-android",           version.ref = "hilt" }
-hilt-compiler       = { group = "com.google.dagger", name = "hilt-android-compiler",   version.ref = "hilt" }
-hilt-navigation-compose = { group = "androidx.hilt", name = "hilt-navigation-compose", version.ref = "hiltNavigationCompose" }
-hilt-work           = { group = "androidx.hilt", name = "hilt-work",                 version.ref = "hiltWork" }
-hilt-work-compiler  = { group = "androidx.hilt", name = "hilt-compiler",             version.ref = "hiltWork" }
+hilt-android = { group = "com.google.dagger", name = "hilt-android", version.ref = "hilt" }
+hilt-compiler = { group = "com.google.dagger", name = "hilt-android-compiler", version.ref = "hilt" }
+hilt-navigation-compose = { group = "androidx.hilt", name = "hilt-navigation-compose", version.ref = "hiltExt" }
+hilt-work = { group = "androidx.hilt", name = "hilt-work", version.ref = "hiltExt" }
+hilt-work-compiler = { group = "androidx.hilt", name = "hilt-compiler", version.ref = "hiltExt" }
 # Room
-room-runtime        = { group = "androidx.room",      name = "room-runtime",           version.ref = "room" }
-room-ktx            = { group = "androidx.room",      name = "room-ktx",               version.ref = "room" }
-room-compiler       = { group = "androidx.room",      name = "room-compiler",          version.ref = "room" }
-room-testing        = { group = "androidx.room",      name = "room-testing",           version.ref = "room" }
-# Coil image loading; thumbnail use starts Week 3
-coil-compose        = { group = "io.coil-kt",         name = "coil-compose",           version.ref = "coil" }
-# ML Kit for OCR
-ml-kit-text         = { group = "com.google.mlkit",   name = "text-recognition",       version.ref = "mlKit" }
-# WorkManager for background tasks
-work-runtime        = { group = "androidx.work",      name = "work-runtime-ktx",       version.ref = "workManager" }
-# Biometric authentication
-biometric           = { group = "androidx.biometric", name = "biometric",              version.ref = "biometric" }
-# DataStore for preferences
-datastore-preferences = { group = "androidx.datastore", name = "datastore-preferences", version.ref = "dataStore" }
-# Kotlin Serialization
-kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "kotlinSerialization" }
+room-runtime = { group = "androidx.room", name = "room-runtime", version.ref = "room" }
+room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "room" }
+room-compiler = { group = "androidx.room", name = "room-compiler", version.ref = "room" }
+room-testing = { group = "androidx.room", name = "room-testing", version.ref = "room" }
+# Coil
+coil-compose = { group = "io.coil-kt", name = "coil-compose", version.ref = "coil" }
+# AI / ML
+ml-kit-text = { group = "com.google.mlkit", name = "text-recognition", version.ref = "mlKitText" }
+# WorkManager
+work-runtime = { group = "androidx.work", name = "work-runtime-ktx", version.ref = "androidxWork" }
+# Biometric
+biometric = { group = "androidx.biometric", name = "biometric", version.ref = "androidxBiometric" }
+# DataStore
+datastore-preferences = { group = "androidx.datastore", name = "datastore-preferences", version.ref = "androidxDataStore" }
+# Serialization
+kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "kotlinxSerialization" }
 # Test helpers
-arch-testing        = { group = "androidx.arch.core", name = "core-testing",           version.ref = "archTesting" }
+arch-testing = { group = "androidx.arch.core", name = "core-testing", version.ref = "archTesting" }
 
 [plugins]
-android-application  = { id = "com.android.application",              version.ref = "androidGradlePlugin" }
-compose-compiler     = { id = "org.jetbrains.kotlin.plugin.compose",  version.ref = "kotlin" }
-kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
+android-application = { id = "com.android.application", version.ref = "androidGradlePlugin" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
-# Added for Stash
-ksp  = { id = "com.google.devtools.ksp",               version.ref = "ksp" }
-hilt = { id = "com.google.dagger.hilt.android",        version.ref = "hilt" }
+compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
+kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
+ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
+hilt = { id = "com.google.dagger.hilt.android", version.ref = "hilt" }
