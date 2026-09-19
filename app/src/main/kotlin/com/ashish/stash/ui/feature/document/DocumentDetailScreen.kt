@@ -8,6 +8,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.Label
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material3.*
@@ -17,6 +18,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -63,27 +65,29 @@ fun DocumentDetailScreen(
                     }
                 },
                 actions = {
-                    IconButton(onClick = { viewModel.toggleLock() }) {
-                        val isLocked = uiState.documentWithMetadata?.document?.isLocked == true
-                        Icon(
-                            if (isLocked) Icons.Default.Lock else Icons.Default.LockOpen,
-                            contentDescription = if (isLocked) "Unlock" else "Lock",
-                            tint = StashBlue
-                        )
-                    }
-                    IconButton(onClick = { showDeleteDialog = true }) {
-                        Icon(Icons.Default.Delete, contentDescription = "Delete", tint = StashBlue)
-                    }
-                    IconButton(onClick = {
-                        val doc = uiState.documentWithMetadata?.document ?: return@IconButton
-                        val intent = Intent(Intent.ACTION_SEND).apply {
-                            type = doc.mimeType
-                            putExtra(Intent.EXTRA_STREAM, Uri.parse(doc.uri))
-                            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                    if (!uiState.isAccessDenied) {
+                        IconButton(onClick = { viewModel.toggleLock() }) {
+                            val isLocked = uiState.documentWithMetadata?.document?.isLocked == true
+                            Icon(
+                                if (isLocked) Icons.Default.Lock else Icons.Default.LockOpen,
+                                contentDescription = if (isLocked) "Unlock" else "Lock",
+                                tint = StashBlue
+                            )
                         }
-                        context.startActivity(Intent.createChooser(intent, "Share Document"))
-                    }) {
-                        Icon(Icons.Default.Share, contentDescription = "Share", tint = StashBlue)
+                        IconButton(onClick = { showDeleteDialog = true }) {
+                            Icon(Icons.Default.Delete, contentDescription = "Delete", tint = StashBlue)
+                        }
+                        IconButton(onClick = {
+                            val doc = uiState.documentWithMetadata?.document ?: return@IconButton
+                            val intent = Intent(Intent.ACTION_SEND).apply {
+                                type = doc.mimeType
+                                putExtra(Intent.EXTRA_STREAM, Uri.parse(doc.uri))
+                                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                            }
+                            context.startActivity(Intent.createChooser(intent, "Share Document"))
+                        }) {
+                            Icon(Icons.Default.Share, contentDescription = "Share", tint = StashBlue)
+                        }
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -96,6 +100,19 @@ fun DocumentDetailScreen(
         if (uiState.isLoading) {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 CircularProgressIndicator(color = StashBlue)
+            }
+        } else if (uiState.isAccessDenied) {
+            Column(
+                modifier = Modifier.fillMaxSize().padding(32.dp),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Icon(Icons.Default.Lock, null, modifier = Modifier.size(80.dp), tint = StashBlue)
+                Spacer(Modifier.height(24.dp))
+                Text("Access Denied", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+                Text("This document is locked. Unlock vault items from the main vault dashboard to view details.", textAlign = TextAlign.Center)
+                Spacer(Modifier.height(24.dp))
+                Button(onClick = onNavigateBack) { Text("Go Back") }
             }
         } else {
             val docWithMetadata = uiState.documentWithMetadata
@@ -148,7 +165,7 @@ fun DocumentDetailScreen(
                         ) {
                             Text("Labels", style = MaterialTheme.typography.titleMedium, color = StashBlue)
                             IconButton(onClick = { showLabelPicker = true }) {
-                                Icon(Icons.Default.Label, null, tint = StashBlue)
+                                Icon(Icons.AutoMirrored.Filled.Label, null, tint = StashBlue)
                             }
                         }
                         FlowRow(
@@ -208,12 +225,12 @@ fun DocumentDetailScreen(
                         DetailItem(label = "File Size", value = formatFileSize(doc.fileSize))
                     }
 
-                    // Description (Notes) Section
+                    // Description Section
                     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                         Text("Description", style = MaterialTheme.typography.titleMedium, color = StashBlue)
                         OutlinedTextField(
-                            value = doc.notes ?: "",
-                            onValueChange = { viewModel.updateNotes(it) },
+                            value = doc.description ?: "",
+                            onValueChange = { viewModel.updateDescription(it) },
                             modifier = Modifier.fillMaxWidth(),
                             minLines = 3,
                             placeholder = { Text("Add private description...") },

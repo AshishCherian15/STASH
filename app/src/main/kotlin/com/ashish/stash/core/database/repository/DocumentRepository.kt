@@ -13,6 +13,7 @@ import com.ashish.stash.core.work.OcrProcessingWorker
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
 import java.io.File
 import javax.inject.Inject
@@ -33,7 +34,7 @@ interface DocumentRepository {
     fun observeTotalSizeBytes(showLocked: Boolean = false): Flow<Long?>
     suspend fun updateDocumentLastOpened(id: Long, timestamp: Long): Int
     suspend fun updateDocumentLockStatus(id: Long, isLocked: Boolean)
-    suspend fun updateDocumentNotes(id: Long, notes: String?)
+    suspend fun updateDocumentDescription(id: Long, description: String?)
     suspend fun updateDocumentImportance(id: Long, importance: Importance)
     suspend fun updateDocumentOcrResult(id: Long, text: String?, status: OcrStatus)
     suspend fun updateDocumentCategory(id: Long, categoryId: Long?)
@@ -123,10 +124,12 @@ class DocumentRepositoryImpl @Inject constructor(
     }
 
     override suspend fun checkAndInjectDefaults() = withContext(Dispatchers.IO) {
-        // Seeding logic moved to SplashViewModel + PreferencesManager flag
-        StashDefaults.Categories.forEach { categoryDao.insert(it) }
-        StashDefaults.Folders.forEach { folderDao.insert(it) }
-        StashDefaults.Labels.forEach { labelDao.insert(it) }
+        val existing = categoryDao.observeAll().first()
+        if (existing.isEmpty()) {
+            StashDefaults.Categories.forEach { categoryDao.insert(it) }
+            StashDefaults.Folders.forEach { folderDao.insert(it) }
+            StashDefaults.Labels.forEach { labelDao.insert(it) }
+        }
     }
 
     override suspend fun getDocumentById(id: Long): DocumentEntity? = withContext(Dispatchers.IO) {
@@ -160,8 +163,8 @@ class DocumentRepositoryImpl @Inject constructor(
         Unit
     }
 
-    override suspend fun updateDocumentNotes(id: Long, notes: String?) = withContext(Dispatchers.IO) {
-        documentDao.updateNotes(id, notes)
+    override suspend fun updateDocumentDescription(id: Long, description: String?) = withContext(Dispatchers.IO) {
+        documentDao.updateDescription(id, description)
         Unit
     }
 

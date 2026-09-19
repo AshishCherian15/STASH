@@ -28,10 +28,13 @@ class SecuritySessionManager @Inject constructor(
     private val _lockState = MutableStateFlow<LockState>(LockState.Loading)
     val lockState: StateFlow<LockState> = _lockState.asStateFlow()
 
+    // Second level: Secure Items (Locked Documents/Folders)
+    private val _itemsUnlocked = MutableStateFlow(false)
+    val itemsUnlocked: StateFlow<Boolean> = _itemsUnlocked.asStateFlow()
+
     private var lastStopTimestamp: Long = 0L
 
     init {
-        // Need to use Main thread for lifecycle observer registration
         CoroutineScope(Dispatchers.Main).launch {
             ProcessLifecycleOwner.get().lifecycle.addObserver(this@SecuritySessionManager)
         }
@@ -45,6 +48,7 @@ class SecuritySessionManager @Inject constructor(
             
             if (lastStopTimestamp > 0 && now - lastStopTimestamp >= timeout) {
                 lock()
+                _itemsUnlocked.value = false
             }
         }
     }
@@ -55,6 +59,7 @@ class SecuritySessionManager @Inject constructor(
             val userData = preferencesManager.userData.first()
             if (userData.autoLockTimeoutMillis == 0L) {
                 lock()
+                _itemsUnlocked.value = false
             }
         }
     }
@@ -71,5 +76,13 @@ class SecuritySessionManager @Inject constructor(
 
     fun lock() {
         _lockState.value = LockState.Locked
+    }
+
+    fun unlockItems() {
+        _itemsUnlocked.value = true
+    }
+
+    fun lockItems() {
+        _itemsUnlocked.value = false
     }
 }

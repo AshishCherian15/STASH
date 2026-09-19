@@ -10,8 +10,10 @@ import com.ashish.stash.core.database.entity.Importance
 import com.ashish.stash.core.database.entity.LabelEntity
 import com.ashish.stash.core.database.entity.ResourceLinkEntity
 import com.ashish.stash.core.database.repository.DocumentRepository
+import com.ashish.stash.core.security.SecuritySessionManager
 import com.ashish.stash.ui.navigation.Destination
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -20,13 +22,16 @@ data class DocumentDetailUiState(
     val documentWithMetadata: DocumentWithMetadata? = null,
     val allLabels: List<LabelEntity> = emptyList(),
     val isLoading: Boolean = false,
-    val isDeleted: Boolean = false
+    val isDeleted: Boolean = false,
+    val isAccessDenied: Boolean = false
 )
 
+@OptIn(ExperimentalCoroutinesApi::class)
 @HiltViewModel
 class DocumentDetailViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
-    private val documentRepository: DocumentRepository
+    private val documentRepository: DocumentRepository,
+    private val securitySessionManager: SecuritySessionManager
 ) : ViewModel() {
 
     private val documentId = savedStateHandle.toRoute<Destination.DocumentDetail>().documentId
@@ -40,15 +45,25 @@ class DocumentDetailViewModel @Inject constructor(
 
     private fun loadData() {
         viewModelScope.launch {
-            combine(
-                documentRepository.observeAllLabels(),
-                flow { emit(documentRepository.getDocumentWithMetadataById(documentId, showLocked = true)) }
-            ) { labels, doc ->
-                DocumentDetailUiState(
-                    documentWithMetadata = doc,
-                    allLabels = labels,
-                    isLoading = false
-                )
+            securitySessionManager.itemsUnlocked.flatMapLatest { itemsUnlocked ->
+                combine(
+                    documentRepository.observeAllLabels(),
+                    flow { emit(documentRepository.getDocumentWithMetadataById(documentId, showLocked = itemsUnlocked)) }
+                ) { labels, doc ->
+                    if (doc == null && !itemsUnlocked) {
+                        val rawDoc = documentRepository.getDocumentById(documentId)
+                        if (rawDoc != null && rawDoc.isLocked) {
+                            return@combine DocumentDetailUiState(isAccessDenied = true, isLoading = false)
+                        }
+                    }
+                    
+                    DocumentDetailUiState(
+                        documentWithMetadata = doc,
+                        allLabels = labels,
+                        isLoading = false,
+                        isAccessDenied = doc == null
+                    )
+                }
             }.collect { state ->
                 _uiState.value = state
             }
@@ -57,7 +72,8 @@ class DocumentDetailViewModel @Inject constructor(
 
     private fun refreshDocument() {
         viewModelScope.launch {
-            val doc = documentRepository.getDocumentWithMetadataById(documentId, showLocked = true)
+            val itemsUnlocked = securitySessionManager.itemsUnlocked.value
+            val doc = documentRepository.getDocumentWithMetadataById(documentId, showLocked = itemsUnlocked)
             _uiState.update { it.copy(documentWithMetadata = doc) }
         }
     }
@@ -77,9 +93,9 @@ class DocumentDetailViewModel @Inject constructor(
         }
     }
 
-    fun updateNotes(notes: String) {
+    fun updateDescription(description: String) {
         viewModelScope.launch {
-            documentRepository.updateDocumentNotes(documentId, notes)
+            documentRepository.updateDocumentDescription(documentId, description)
             refreshDocument()
         }
     }

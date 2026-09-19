@@ -57,8 +57,8 @@ data class DocumentEntity(
     @ColumnInfo(name = "folder_id")
     val folderId: Long? = null,
     
-    @ColumnInfo(name = "notes")
-    val notes: String? = null,
+    @ColumnInfo(name = "description") // Renamed from notes
+    val description: String? = null,
     
     @ColumnInfo(name = "ocr_text")
     val ocrText: String? = null,

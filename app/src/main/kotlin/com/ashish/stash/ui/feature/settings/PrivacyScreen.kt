@@ -56,7 +56,7 @@ fun PrivacyScreen(onNavigateBack: () -> Unit) {
             )
 
             Text(
-                text = "Privacy is the core of Stash",
+                text = "Privacy is our Foundation",
                 style = MaterialTheme.typography.headlineMedium,
                 fontWeight = FontWeight.Bold,
                 textAlign = TextAlign.Center,
@@ -64,7 +64,7 @@ fun PrivacyScreen(onNavigateBack: () -> Unit) {
             )
 
             Text(
-                text = "Stash was built from the ground up to be a completely offline and private vault for your documents. Your data never leaves your device.",
+                text = "Stash is a completely offline document vault. We believe your sensitive data should never leave your device.",
                 style = MaterialTheme.typography.bodyLarge,
                 textAlign = TextAlign.Center,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -75,19 +75,19 @@ fun PrivacyScreen(onNavigateBack: () -> Unit) {
             PrivacySection(
                 icon = Icons.Default.CloudOff,
                 title = "100% Offline",
-                description = "Stash does not have internet access. No documents, metadata, or search queries are ever uploaded to a cloud or external server."
+                description = "Stash does not have internet access. No documents, metadata, or search queries are ever uploaded to a cloud or external server. No analytics, no tracking."
             )
 
             PrivacySection(
                 icon = Icons.Default.Storage,
-                title = "Local Indexing",
-                description = "We index your documents in-place. We don't make copies of your files into hidden folders. We only store a secure reference to the original file."
+                title = "Local Intelligence",
+                description = "OCR and search indexing happen entirely on your device. We use on-device AI models to read text inside your files."
             )
 
             PrivacySection(
                 icon = Icons.Default.Fingerprint,
-                title = "Biometric Protection",
-                description = "Your vault is protected by the same security as your phone. We use Android's native Biometric API to ensure only you can see your documents."
+                title = "Hardware Security",
+                description = "Your vault is protected by PBKDF2 hashing and native Android Biometrics. We use secure internal storage to keep your database private from other apps."
             )
 
             Surface(
@@ -97,14 +97,14 @@ fun PrivacyScreen(onNavigateBack: () -> Unit) {
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
                     Text(
-                        text = "Data Collection",
+                        text = "Your Responsibility",
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
                         color = StashBlue
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        text = "We collect ZERO data. No analytics, no tracking, and no identifying information. Stash is just a tool for you, and only you.",
+                        text = "Because Stash is 100% offline, we cannot recover your PIN or your data if the app is uninstalled. Please use our manual Backup feature in Settings to keep your metadata safe.",
                         style = MaterialTheme.typography.bodyMedium
                     )
                 }

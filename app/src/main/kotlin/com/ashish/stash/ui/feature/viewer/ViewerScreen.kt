@@ -1,5 +1,6 @@
 package com.ashish.stash.ui.feature.viewer
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -9,6 +10,9 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.ashish.stash.ui.theme.StashBlue
@@ -33,8 +37,10 @@ fun ViewerScreen(
                     }
                 },
                 actions = {
-                    IconButton(onClick = { uiState.document?.let { onNavigateToDetails(it.documentId) } }) {
-                        Icon(Icons.Outlined.Edit, contentDescription = "Edit Details")
+                    if (!uiState.isAccessDenied) {
+                        IconButton(onClick = { uiState.document?.let { onNavigateToDetails(it.documentId) } }) {
+                            Icon(Icons.Outlined.Edit, contentDescription = "Edit Details")
+                        }
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -48,6 +54,21 @@ fun ViewerScreen(
         Box(modifier = Modifier.padding(padding).fillMaxSize()) {
             if (uiState.isLoading) {
                 CircularProgressIndicator(modifier = Modifier.align(Alignment.Center), color = StashBlue)
+            } else if (uiState.isAccessDenied) {
+                Column(
+                    modifier = Modifier.fillMaxSize().padding(32.dp),
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Icon(Icons.Default.Lock, null, modifier = Modifier.size(80.dp), tint = StashBlue)
+                    Spacer(Modifier.height(24.dp))
+                    Text("Vault Security Active", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+                    Spacer(Modifier.height(8.dp))
+                    Text("This document is part of your secure vault. Please unlock your vault items from the main dashboard to view it.", 
+                        textAlign = TextAlign.Center)
+                    Spacer(Modifier.height(24.dp))
+                    Button(onClick = onNavigateBack) { Text("Go Back") }
+                }
             } else {
                 val doc = uiState.document
                 if (doc != null) {
@@ -65,6 +86,8 @@ fun ViewerScreen(
                             Text("Unsupported file type: ${doc.mimeType}", modifier = Modifier.align(Alignment.Center))
                         }
                     }
+                } else {
+                    Text("Document not found", modifier = Modifier.align(Alignment.Center))
                 }
             }
         }

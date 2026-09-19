@@ -5,6 +5,7 @@ import android.net.Uri
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -14,6 +15,7 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.InsertDriveFile
 import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.automirrored.filled.ViewQuilt
 import androidx.compose.material.icons.filled.*
@@ -65,7 +67,7 @@ fun HomeScreen(
 
     LaunchedEffect(uiState.importSuccess) {
         if (uiState.importSuccess) {
-            snackbarHostState.showSnackbar("Batch operation completed")
+            snackbarHostState.showSnackbar("Documents imported successfully")
             viewModel.clearImportSuccess()
         }
     }
@@ -149,7 +151,7 @@ fun HomeScreen(
                 containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
                 actions = {
                     Text(
-                        "Items: ${uiState.stats.totalDocuments}",
+                        "Vault Size: ${formatFileSize(uiState.stats.totalSizeBytes)}",
                         modifier = Modifier.padding(horizontal = 16.dp),
                         style = MaterialTheme.typography.labelLarge
                     )
@@ -182,15 +184,20 @@ fun HomeScreen(
                 val onDocLongClick: (Long) -> Unit = { id -> if (!isSelectionMode) selectedDocIds = setOf(id) }
 
                 when (uiState.viewMode) {
-                    ViewMode.LIST -> DocumentList(uiState, selectedDocIds, onDocClick, onDocLongClick)
-                    ViewMode.DETAILS -> DocumentDetailedList(uiState, selectedDocIds, onDocClick, onDocLongClick)
-                    else -> DocumentGrid(uiState, selectedDocIds, onDocClick, onDocLongClick)
+                    ViewMode.LIST -> DocumentListView(uiState, selectedDocIds, onDocClick, onDocLongClick)
+                    ViewMode.DETAILS -> DocumentDetailedView(uiState, selectedDocIds, onDocClick, onDocLongClick)
+                    ViewMode.TILES -> DocumentTileView(uiState, selectedDocIds, onDocClick, onDocLongClick)
+                    else -> DocumentGridView(uiState, selectedDocIds, onDocClick, onDocLongClick)
                 }
             }
 
             if (uiState.isImporting) {
                 Box(modifier = Modifier.fillMaxSize().background(Color.White.copy(alpha = 0.7f)), contentAlignment = Alignment.Center) {
-                    CircularProgressIndicator()
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        CircularProgressIndicator()
+                        Spacer(Modifier.height(16.dp))
+                        Text("Processing files...", style = MaterialTheme.typography.labelLarge)
+                    }
                 }
             }
         }
@@ -199,7 +206,7 @@ fun HomeScreen(
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-private fun DocumentList(state: HomeUiState, selectedIds: Set<Long>, onClick: (Long) -> Unit, onLongClick: (Long) -> Unit) {
+private fun DocumentListView(state: HomeUiState, selectedIds: Set<Long>, onClick: (Long) -> Unit, onLongClick: (Long) -> Unit) {
     LazyColumn(modifier = Modifier.fillMaxSize(), contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
         item { StatStrip(stats = state.stats) }
         items(items = state.documents, key = { it.data.document.documentId }) { docModel ->
@@ -216,12 +223,52 @@ private fun DocumentList(state: HomeUiState, selectedIds: Set<Long>, onClick: (L
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-private fun DocumentDetailedList(state: HomeUiState, selectedIds: Set<Long>, onClick: (Long) -> Unit, onLongClick: (Long) -> Unit) {
+private fun DocumentDetailedView(state: HomeUiState, selectedIds: Set<Long>, onClick: (Long) -> Unit, onLongClick: (Long) -> Unit) {
     LazyColumn(modifier = Modifier.fillMaxSize(), contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
         item { StatStrip(stats = state.stats) }
         items(items = state.documents, key = { it.data.document.documentId }) { docModel ->
             val id = docModel.data.document.documentId
             DetailedDocumentRow(
+                documentWithMetadata = docModel.data,
+                onClick = { onClick(id) },
+                modifier = Modifier.combinedClickable(onClick = { onClick(id) }, onLongClick = { onLongClick(id) })
+                    .let { if (selectedIds.contains(id)) it.background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)) else it }
+            )
+        }
+    }
+}
+
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+private fun DocumentTileView(state: HomeUiState, selectedIds: Set<Long>, onClick: (Long) -> Unit, onLongClick: (Long) -> Unit) {
+    LazyVerticalGrid(columns = GridCells.Adaptive(100.dp), modifier = Modifier.fillMaxSize(), contentPadding = PaddingValues(16.dp), horizontalArrangement = Arrangement.spacedBy(12.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        item(span = { GridItemSpan(maxCurrentLineSpan) }) { StatStrip(stats = state.stats) }
+        items(items = state.documents, key = { it.data.document.documentId }) { docModel ->
+            val id = docModel.data.document.documentId
+            DocumentTile(
+                documentWithMetadata = docModel.data,
+                onClick = { onClick(id) },
+                modifier = Modifier.combinedClickable(onClick = { onClick(id) }, onLongClick = { onLongClick(id) })
+                    .let { if (selectedIds.contains(id)) it.background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)) else it }
+            )
+        }
+    }
+}
+
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+private fun DocumentGridView(state: HomeUiState, selectedIds: Set<Long>, onClick: (Long) -> Unit, onLongClick: (Long) -> Unit) {
+    val columns = when (state.viewMode) {
+        ViewMode.LARGE_GRID -> 2
+        ViewMode.MEDIUM_GRID -> 3
+        ViewMode.SMALL_GRID -> 4
+        else -> 3
+    }
+    LazyVerticalGrid(columns = GridCells.Fixed(columns), modifier = Modifier.fillMaxSize(), contentPadding = PaddingValues(16.dp), horizontalArrangement = Arrangement.spacedBy(12.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        item(span = { GridItemSpan(columns) }) { StatStrip(stats = state.stats) }
+        items(items = state.documents, key = { it.data.document.documentId }) { docModel ->
+            val id = docModel.data.document.documentId
+            DocumentCard(
                 documentWithMetadata = docModel.data,
                 onClick = { onClick(id) },
                 modifier = Modifier.combinedClickable(onClick = { onClick(id) }, onLongClick = { onLongClick(id) })
@@ -247,26 +294,18 @@ fun DetailedDocumentRow(documentWithMetadata: DocumentWithMetadata, onClick: () 
     }
 }
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
-private fun DocumentGrid(state: HomeUiState, selectedIds: Set<Long>, onClick: (Long) -> Unit, onLongClick: (Long) -> Unit) {
-    val columns = when (state.viewMode) {
-        ViewMode.LARGE_GRID -> 2
-        ViewMode.MEDIUM_GRID -> 3
-        ViewMode.SMALL_GRID -> 4
-        else -> 3
-    }
-    LazyVerticalGrid(columns = GridCells.Fixed(columns), modifier = Modifier.fillMaxSize(), contentPadding = PaddingValues(16.dp), horizontalArrangement = Arrangement.spacedBy(12.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        item(span = { GridItemSpan(columns) }) { StatStrip(stats = state.stats) }
-        items(items = state.documents, key = { it.data.document.documentId }) { docModel ->
-            val id = docModel.data.document.documentId
-            DocumentCard(
-                documentWithMetadata = docModel.data,
-                onClick = { onClick(id) },
-                modifier = Modifier.combinedClickable(onClick = { onClick(id) }, onLongClick = { onLongClick(id) })
-                    .let { if (selectedIds.contains(id)) it.background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)) else it }
-            )
+fun DocumentTile(documentWithMetadata: DocumentWithMetadata, onClick: () -> Unit, modifier: Modifier = Modifier) {
+    val doc = documentWithMetadata.document
+    Column(
+        modifier = modifier.width(100.dp).clickable { onClick() },
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Box(modifier = Modifier.size(80.dp).background(MaterialTheme.colorScheme.primaryContainer, MaterialTheme.shapes.medium), contentAlignment = Alignment.Center) {
+            Icon(Icons.AutoMirrored.Filled.InsertDriveFile, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(40.dp))
+            if (doc.isLocked) Icon(Icons.Default.Lock, null, modifier = Modifier.size(16.dp).align(Alignment.BottomEnd).padding(4.dp), tint = MaterialTheme.colorScheme.primary)
         }
+        Text(doc.displayTitle, style = MaterialTheme.typography.labelSmall, maxLines = 2, textAlign = TextAlign.Center, overflow = TextOverflow.Ellipsis, modifier = Modifier.padding(top = 4.dp))
     }
 }
 
@@ -284,6 +323,8 @@ private fun EmptyHomeContent(onAddClick: () -> Unit) {
         Icon(imageVector = Icons.Default.Inventory2, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(120.dp))
         Spacer(modifier = Modifier.height(24.dp))
         Text("Vault is empty", style = MaterialTheme.typography.headlineMedium)
+        Spacer(modifier = Modifier.height(12.dp))
+        Text("Index documents already on your device without duplicating them.", textAlign = TextAlign.Center, color = LedgerSlate)
         Spacer(modifier = Modifier.height(32.dp))
         Button(onClick = onAddClick) { Text("Add Documents") }
     }

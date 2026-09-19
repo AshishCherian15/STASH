@@ -70,8 +70,8 @@ interface DocumentDao {
     @Query("UPDATE documents SET color_tag = :colorTag, updated_at = :timestamp WHERE document_id = :id")
     suspend fun updateColorTag(id: Long, colorTag: String?, timestamp: Long = System.currentTimeMillis()): Int
 
-    @Query("UPDATE documents SET notes = :notes, updated_at = :timestamp WHERE document_id = :id")
-    suspend fun updateNotes(id: Long, notes: String?, timestamp: Long = System.currentTimeMillis()): Int
+    @Query("UPDATE documents SET description = :description, updated_at = :timestamp WHERE document_id = :id")
+    suspend fun updateDescription(id: Long, description: String?, timestamp: Long = System.currentTimeMillis()): Int
 
     @Query("UPDATE documents SET importance = :importance, updated_at = :timestamp WHERE document_id = :id")
     suspend fun updateImportance(id: Long, importance: Importance, timestamp: Long = System.currentTimeMillis()): Int

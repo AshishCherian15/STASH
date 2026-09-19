@@ -47,6 +47,7 @@ fun StashApp(
             drawerContent = {
                 StashDrawer(
                     currentDestination = currentDestination,
+                    securitySessionManager = securitySessionManager,
                     onNavigate = { destination ->
                         scope.launch { drawerState.close() }
                         navController.navigate(destination) {

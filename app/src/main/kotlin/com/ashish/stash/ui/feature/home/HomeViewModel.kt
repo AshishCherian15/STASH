@@ -45,21 +45,17 @@ class HomeViewModel @Inject constructor(
 
     val uiState: StateFlow<HomeUiState> = combine(
         securitySessionManager.lockState,
+        securitySessionManager.itemsUnlocked,
         _searchQuery,
         _viewMode,
-        combine(_filterCategory, _filterFolder, _filterLabel) { c, f, l -> Triple(c, f, l) },
-        _importState
-    ) { lockState, query, mode, filters, impState ->
-        Triple(lockState, query, mode) to Triple(filters, impState, Unit)
-    }.flatMapLatest { (main, extras) ->
-        val (lockState, query, mode) = main
-        val (filters, impState, _) = extras
+        combine(_filterCategory, _filterFolder, _filterLabel) { c, f, l -> Triple(c, f, l) }
+    ) { lockState, itemsUnlocked, query, mode, filters ->
+        FilterState(lockState, itemsUnlocked, query, mode, filters.first, filters.second, filters.third)
+    }.flatMapLatest { state ->
+        val showLocked = state.itemsUnlocked
         
-        val isLocked = lockState == LockState.Locked
-        val showLocked = !isLocked
-        
-        val documentsFlow = if (query.isNotEmpty()) {
-            repository.searchDocuments(query, showLocked)
+        val documentsFlow = if (state.query.isNotEmpty()) {
+            repository.searchDocuments(state.query, showLocked)
         } else {
             repository.observeAllDocuments(showLocked)
         }
@@ -68,12 +64,13 @@ class HomeViewModel @Inject constructor(
             documentsFlow,
             repository.observeUnlockedDocumentsCount(),
             repository.observeLockedDocumentsCount(),
-            repository.observeTotalSizeBytes(showLocked)
-        ) { documents, unlocked, locked, totalSize ->
+            repository.observeTotalSizeBytes(showLocked),
+            _importState
+        ) { documents, unlocked, locked, totalSize, impState ->
             val filteredDocs = documents.filter { doc ->
-                val categoryMatch = filters.first == null || doc.category?.categoryId == filters.first
-                val folderMatch = filters.second == null || doc.folder?.folderId == filters.second
-                val labelMatch = filters.third == null || doc.labels.any { it.labelId == filters.third }
+                val categoryMatch = state.categoryId == null || doc.category?.categoryId == state.categoryId
+                val folderMatch = state.folderId == null || doc.folder?.folderId == state.folderId
+                val labelMatch = state.labelId == null || doc.labels.any { it.labelId == state.labelId }
                 categoryMatch && folderMatch && labelMatch
             }.map { metadata ->
                 DocumentUiModel(
@@ -83,10 +80,10 @@ class HomeViewModel @Inject constructor(
             }
             
             HomeUiState(
-                isLoading = lockState == LockState.Loading,
+                isLoading = state.lockState == LockState.Loading,
                 documents = filteredDocs,
-                searchQuery = query,
-                viewMode = mode,
+                searchQuery = state.query,
+                viewMode = state.mode,
                 isImporting = impState is ImportState.Processing,
                 importSuccess = impState is ImportState.Success,
                 importError = (impState as? ImportState.Error)?.error,
@@ -102,6 +99,16 @@ class HomeViewModel @Inject constructor(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5000),
         initialValue = HomeUiState()
+    )
+
+    private data class FilterState(
+        val lockState: LockState,
+        val itemsUnlocked: Boolean,
+        val query: String,
+        val mode: ViewMode,
+        val categoryId: Long?,
+        val folderId: Long?,
+        val labelId: Long?
     )
 
     fun onSearchQueryChanged(query: String) { _searchQuery.value = query }
@@ -152,6 +159,15 @@ class HomeViewModel @Inject constructor(
     fun deleteDocument(id: Long) {
         viewModelScope.launch {
             repository.deleteDocument(id)
+        }
+    }
+
+    fun toggleVaultMode() {
+        if (securitySessionManager.itemsUnlocked.value) {
+            securitySessionManager.lockItems()
+        } else {
+            // In a real scenario, this would trigger a PIN prompt if not already authenticated
+            securitySessionManager.unlockItems()
         }
     }
 }

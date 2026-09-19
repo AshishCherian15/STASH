@@ -2,7 +2,6 @@ package com.ashish.stash.ui.feature.search
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.ashish.stash.core.security.LockState
 import com.ashish.stash.core.security.SecuritySessionManager
 import com.ashish.stash.domain.usecase.SearchDocumentsUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -24,34 +23,34 @@ class SearchViewModel @Inject constructor(
     private val _isLoading = MutableStateFlow(false)
     val isLoading = _isLoading.asStateFlow()
 
-    val uiState: StateFlow<SearchUiState> = _searchQuery
-        .debounce(300)
-        .flatMapLatest { query ->
-            if (query.isEmpty()) {
-                flowOf(emptyList())
-            } else {
-                _isLoading.value = true
-                val isLocked = securitySessionManager.lockState.value == LockState.Locked
-                searchDocumentsUseCase(query, showLocked = !isLocked)
-                    .onEach { _isLoading.value = false }
-                    .catch { 
-                        _isLoading.value = false
-                        emit(emptyList()) 
-                    }
-            }
+    val uiState: StateFlow<SearchUiState> = combine(
+        _searchQuery.debounce(300),
+        securitySessionManager.itemsUnlocked
+    ) { query, itemsUnlocked ->
+        query to itemsUnlocked
+    }.flatMapLatest { (query, itemsUnlocked) ->
+        if (query.isEmpty()) {
+            flowOf(emptyList())
+        } else {
+            _isLoading.value = true
+            searchDocumentsUseCase(query, showLocked = itemsUnlocked)
+                .onEach { _isLoading.value = false }
+                .catch { 
+                    _isLoading.value = false
+                    emit(emptyList()) 
+                }
         }
-        .map { results ->
-            SearchUiState(
-                searchResults = results,
-                searchQuery = _searchQuery.value,
-                isLoading = _isLoading.value
-            )
-        }
-        .stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5000),
-            initialValue = SearchUiState()
+    }.map { results ->
+        SearchUiState(
+            searchResults = results,
+            searchQuery = _searchQuery.value,
+            isLoading = _isLoading.value
         )
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = SearchUiState()
+    )
 
     fun onSearchQueryChange(query: String) {
         _searchQuery.value = query

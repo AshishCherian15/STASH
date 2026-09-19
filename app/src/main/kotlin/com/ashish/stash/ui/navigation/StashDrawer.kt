@@ -1,7 +1,6 @@
 package com.ashish.stash.ui.navigation
 
 import android.graphics.Color
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -20,6 +19,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavDestination
 import androidx.navigation.NavDestination.Companion.hasRoute
+import com.ashish.stash.core.security.SecuritySessionManager
 import com.ashish.stash.ui.component.StashLogo
 import com.ashish.stash.ui.feature.home.HomeViewModel
 import com.ashish.stash.ui.feature.settings.SettingsViewModel
@@ -29,11 +29,13 @@ import com.ashish.stash.ui.theme.StashBlue
 fun StashDrawer(
     currentDestination: NavDestination?,
     onNavigate: (Destination) -> Unit,
+    securitySessionManager: SecuritySessionManager, // Passed from StashApp
     modifier: Modifier = Modifier,
     homeViewModel: HomeViewModel = hiltViewModel(),
     settingsViewModel: SettingsViewModel = hiltViewModel()
 ) {
     val settingsState by settingsViewModel.uiState.collectAsState()
+    val itemsUnlocked by securitySessionManager.itemsUnlocked.collectAsState()
 
     ModalDrawerSheet(
         modifier = modifier,
@@ -49,6 +51,23 @@ fun StashDrawer(
             Spacer(Modifier.width(16.dp))
             Text("Stash", style = MaterialTheme.typography.headlineMedium, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold)
         }
+        
+        // Vault Unlock Button
+        Button(
+            onClick = { 
+                if (itemsUnlocked) securitySessionManager.lockItems() 
+                else securitySessionManager.unlockItems() 
+            },
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 28.dp, vertical = 8.dp),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = if (itemsUnlocked) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.secondary
+            )
+        ) {
+            Icon(if (itemsUnlocked) Icons.Outlined.LockOpen else Icons.Outlined.Lock, null)
+            Spacer(Modifier.width(8.dp))
+            Text(if (itemsUnlocked) "Lock Vault Items" else "Unlock Vault Items")
+        }
+
         HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp), color = MaterialTheme.colorScheme.outlineVariant)
         
         LazyColumn(modifier = Modifier.weight(1f)) {
@@ -105,21 +124,6 @@ fun StashDrawer(
                         icon = Icons.Outlined.Folder,
                         onClick = { 
                             homeViewModel.setFolderFilter(folder.folderId)
-                            onNavigate(Destination.Home)
-                        }
-                    )
-                }
-            }
-
-            // Labels Section
-            if (settingsState.labels.isNotEmpty()) {
-                item { DrawerSectionHeader("Labels") }
-                items(settingsState.labels) { label ->
-                    DrawerSubItem(
-                        label = label.name,
-                        icon = Icons.Outlined.Bookmarks,
-                        onClick = { 
-                            homeViewModel.setLabelFilter(label.labelId)
                             onNavigate(Destination.Home)
                         }
                     )
