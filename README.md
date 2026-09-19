@@ -4,6 +4,7 @@
 [![Kotlin](https://img.shields.io/badge/Language-Kotlin-blue.svg)]()
 [![Compose](https://img.shields.io/badge/UI-Jetpack%20Compose-orange.svg)]()
 [![Privacy](https://img.shields.io/badge/Privacy-100%25%20Offline-black.svg)]()
+[![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 **Stash** is a premium, privacy-first document discovery and management application for Android. Designed for students, researchers, and professionals, Stash allows you to index, organize, and search through thousands of documents entirely offline using local intelligence.
 
@@ -12,7 +13,7 @@
 ## 🚀 Key Features
 
 ### 🔍 Deep Intelligence & Search
-- **Full-Text Search (FTS):** Instant search results across filenames, your custom notes, and even content inside documents using SQLite FTS4.
+- **Full-Text Search (FTS):** Instant search results across filenames, descriptions, and even content inside documents using SQLite FTS4.
 - **On-Device OCR:** Powered by Google ML Kit, Stash automatically reads text from images and scanned PDFs. All processing is 100% local—no data ever leaves your device.
 - **Smart Ranking:** Search results are ranked using a composite score of keyword relevance, document importance, and recent activity.
 
@@ -20,22 +21,24 @@
 - **Multi-Layer Locking:** Secure your entire vault, specific folders, or individual files behind a 4-digit PIN or native Biometrics (Fingerprint/Face).
 - **Privacy Invariants:** Locked documents are completely hidden from search and the main dashboard until you authenticate.
 - **Screenshot Protection:** Optional security mode that hides app content from the recent apps switcher and prevents screen recordings.
+- **Auto-Lock:** Configurable session timeouts (15s to 5m) to keep your data safe even if the app is left open.
 
 ### 📂 High-Speed Organization
 - **Index-in-Place:** Uses Android's Storage Access Framework (SAF) to index files without duplicating them, saving storage space.
-- **Rich Metadata:** Organize files with color-coded categories, hierarchical folders, and multi-tag searchable labels.
-- **Professional Palette:** Preset organizational categories for Legal, Financial, Medical, and Personnel files.
-- **Description & Links:** Attach private markdown descriptions and external web references to any document.
+- **"Poco-Style" Browser:** Multi-select engine for bulk sharing, deleting, or re-categorizing documents with a single long-press.
+- **Professional Palette:** Preset organizational categories for Legal, Financial, Medical, and Personnel files with custom hex colors.
+- **Dynamic Views:** Switch between Large Icons, Medium Icons, Small Icons, List, Details, and Tiles to suit your workflow.
+- **Description & Links:** Attach private descriptions (renamed from Notes) and external web references to any document.
 
 ### 🖼️ Seamless Viewing
 - **Built-in Previews:** High-quality in-app viewing for PDFs, Images, and Text/Markdown files.
-- **Social & External Share:** A "Poco-style" multi-select engine that lets you share bulk case files directly to social media, email, or other apps.
+- **Social & External Share:** Share bulk case files directly to social media, email, or other productivity apps using the system share sheet.
 
 ---
 
 ## 🏗️ Technical Architecture
 
-Stash is built using the latest Android development standards:
+Stash is built using modern Android development standards:
 
 - **UI Layer:** Jetpack Compose with Material 3 following the "Vault & Ledger" design system.
 - **Architecture:** MVVM + Clean Architecture with single-responsibility Use Cases.
@@ -67,7 +70,7 @@ app/src/main/kotlin/com/ashish/stash/
 
 ---
 
-## 📜 Documentation
+## 📜 Full Documentation
 
 Explore the detailed specifications in the `docs/` folder:
 - [PRD](docs/PRD.md) • [TRD](docs/TRD.md) • [Architecture](docs/ARCHITECTURE.md) • [Schema](docs/SCHEMA.md) • [UI-UX](docs/UI-UX.md) • [Security Model](docs/SECURITY.md)
