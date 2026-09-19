@@ -3,6 +3,8 @@ package com.ashish.stash.core.database.dao
 import androidx.room.*
 import com.ashish.stash.core.database.entity.DocumentEntity
 import com.ashish.stash.core.database.entity.DocumentWithMetadata
+import com.ashish.stash.core.database.entity.Importance
+import com.ashish.stash.core.database.entity.OcrStatus
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -59,14 +61,29 @@ interface DocumentDao {
     @Query("UPDATE documents SET last_opened_at = :timestamp WHERE document_id = :id")
     suspend fun updateLastOpened(id: Long, timestamp: Long): Int
 
-    @Query("UPDATE documents SET display_title = :title WHERE document_id = :id")
-    suspend fun updateTitle(id: Long, title: String): Int
+    @Query("UPDATE documents SET display_title = :title, updated_at = :timestamp WHERE document_id = :id")
+    suspend fun updateTitle(id: Long, title: String, timestamp: Long = System.currentTimeMillis()): Int
 
-    @Query("UPDATE documents SET is_locked = :isLocked WHERE document_id = :id")
-    suspend fun updateLockStatus(id: Long, isLocked: Int): Int
+    @Query("UPDATE documents SET is_locked = :isLocked, updated_at = :timestamp WHERE document_id = :id")
+    suspend fun updateLockStatus(id: Long, isLocked: Boolean, timestamp: Long = System.currentTimeMillis()): Int
 
-    @Query("UPDATE documents SET color_tag = :colorTag WHERE document_id = :id")
-    suspend fun updateColorTag(id: Long, colorTag: String?): Int
+    @Query("UPDATE documents SET color_tag = :colorTag, updated_at = :timestamp WHERE document_id = :id")
+    suspend fun updateColorTag(id: Long, colorTag: String?, timestamp: Long = System.currentTimeMillis()): Int
+
+    @Query("UPDATE documents SET notes = :notes, updated_at = :timestamp WHERE document_id = :id")
+    suspend fun updateNotes(id: Long, notes: String?, timestamp: Long = System.currentTimeMillis()): Int
+
+    @Query("UPDATE documents SET importance = :importance, updated_at = :timestamp WHERE document_id = :id")
+    suspend fun updateImportance(id: Long, importance: Importance, timestamp: Long = System.currentTimeMillis()): Int
+
+    @Query("UPDATE documents SET ocr_text = :ocrText, ocr_status = :status, updated_at = :timestamp WHERE document_id = :id")
+    suspend fun updateOcrResult(id: Long, ocrText: String?, status: OcrStatus, timestamp: Long = System.currentTimeMillis()): Int
+
+    @Query("UPDATE documents SET category_id = :categoryId, updated_at = :timestamp WHERE document_id = :id")
+    suspend fun updateCategory(id: Long, categoryId: Long?, timestamp: Long = System.currentTimeMillis()): Int
+
+    @Query("UPDATE documents SET folder_id = :folderId, updated_at = :timestamp WHERE document_id = :id")
+    suspend fun updateFolder(id: Long, folderId: Long?, timestamp: Long = System.currentTimeMillis()): Int
 
     @Query("""
         SELECT SUM(file_size) FROM documents 

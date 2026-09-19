@@ -24,7 +24,8 @@ data class UserData(
     val biometricEnabled: Boolean,
     val themeColor: String,
     val fontFamily: String,
-    val fontSizeScale: Float
+    val fontSizeScale: Float,
+    val defaultsSeeded: Boolean
 )
 
 @Singleton
@@ -45,6 +46,7 @@ class PreferencesManager @Inject constructor(
         val THEME_COLOR = stringPreferencesKey("theme_color")
         val FONT_FAMILY = stringPreferencesKey("font_family")
         val FONT_SIZE_SCALE = floatPreferencesKey("font_size_scale")
+        val DEFAULTS_SEEDED = booleanPreferencesKey("defaults_seeded")
     }
 
     val userData: Flow<UserData> = dataStore.data.map { prefs ->
@@ -60,7 +62,8 @@ class PreferencesManager @Inject constructor(
             biometricEnabled = prefs[Keys.BIOMETRIC_ENABLED] ?: false,
             themeColor = prefs[Keys.THEME_COLOR] ?: "BLUE",
             fontFamily = prefs[Keys.FONT_FAMILY] ?: "SANS_SERIF",
-            fontSizeScale = prefs[Keys.FONT_SIZE_SCALE] ?: 1.0f
+            fontSizeScale = prefs[Keys.FONT_SIZE_SCALE] ?: 1.0f,
+            defaultsSeeded = prefs[Keys.DEFAULTS_SEEDED] ?: false
         )
     }
 
@@ -68,6 +71,10 @@ class PreferencesManager @Inject constructor(
 
     suspend fun setOnboardingCompleted(completed: Boolean) {
         dataStore.edit { it[Keys.ONBOARDING_COMPLETED] = completed }
+    }
+
+    suspend fun setDefaultsSeeded(seeded: Boolean) {
+        dataStore.edit { it[Keys.DEFAULTS_SEEDED] = seeded }
     }
 
     suspend fun setDarkTheme(enabled: Boolean) {

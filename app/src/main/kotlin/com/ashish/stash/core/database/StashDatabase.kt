@@ -2,19 +2,9 @@ package com.ashish.stash.core.database
 
 import androidx.room.Database
 import androidx.room.RoomDatabase
-import com.ashish.stash.core.database.dao.CategoryDao
-import com.ashish.stash.core.database.dao.DocumentDao
-import com.ashish.stash.core.database.dao.DocumentSearchDao
-import com.ashish.stash.core.database.dao.FolderDao
-import com.ashish.stash.core.database.dao.LabelDao
-import com.ashish.stash.core.database.dao.ResourceLinkDao
-import com.ashish.stash.core.database.entity.CategoryEntity
-import com.ashish.stash.core.database.entity.DocumentEntity
-import com.ashish.stash.core.database.entity.DocumentFtsEntity
-import com.ashish.stash.core.database.entity.DocumentLabelEntity
-import com.ashish.stash.core.database.entity.FolderEntity
-import com.ashish.stash.core.database.entity.LabelEntity
-import com.ashish.stash.core.database.entity.ResourceLinkEntity
+import androidx.room.TypeConverters
+import com.ashish.stash.core.database.dao.*
+import com.ashish.stash.core.database.entity.*
 
 @Database(
     entities = [
@@ -26,9 +16,10 @@ import com.ashish.stash.core.database.entity.ResourceLinkEntity
         DocumentLabelEntity::class,
         ResourceLinkEntity::class
     ],
-    version = 1,
+    version = 2,
     exportSchema = true
 )
+@TypeConverters(StashTypeConverters::class)
 abstract class StashDatabase : RoomDatabase() {
     abstract fun documentDao(): DocumentDao
     abstract fun categoryDao(): CategoryDao

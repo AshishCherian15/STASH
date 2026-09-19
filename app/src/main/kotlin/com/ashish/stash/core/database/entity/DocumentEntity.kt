@@ -1,10 +1,6 @@
 package com.ashish.stash.core.database.entity
 
-import androidx.room.ColumnInfo
-import androidx.room.Entity
-import androidx.room.ForeignKey
-import androidx.room.Index
-import androidx.room.PrimaryKey
+import androidx.room.*
 
 @Entity(
     tableName = "documents",
@@ -23,9 +19,12 @@ import androidx.room.PrimaryKey
         )
     ],
     indices = [
+        Index(value = ["uri"], unique = true),
+        Index(value = ["file_hash"]),
         Index(value = ["category_id"]),
         Index(value = ["folder_id"]),
         Index(value = ["is_locked"]),
+        Index(value = ["created_at"]),
         Index(value = ["last_opened_at"])
     ]
 )
@@ -64,20 +63,29 @@ data class DocumentEntity(
     @ColumnInfo(name = "ocr_text")
     val ocrText: String? = null,
     
+    @ColumnInfo(name = "ocr_status")
+    val ocrStatus: OcrStatus = OcrStatus.NONE,
+    
+    @ColumnInfo(name = "source_kind")
+    val sourceKind: SourceKind = SourceKind.SAF_REFERENCE,
+    
     @ColumnInfo(name = "color_tag")
     val colorTag: String? = null,
     
     @ColumnInfo(name = "importance")
-    val importance: String,
+    val importance: Importance = Importance.MEDIUM,
     
     @ColumnInfo(name = "is_locked")
-    val isLocked: Int = 0,
+    val isLocked: Boolean = false,
     
     @ColumnInfo(name = "created_at")
-    val createdAt: Long,
+    val createdAt: Long = System.currentTimeMillis(),
     
     @ColumnInfo(name = "last_opened_at")
-    val lastOpenedAt: Long,
+    val lastOpenedAt: Long = System.currentTimeMillis(),
+
+    @ColumnInfo(name = "updated_at")
+    val updatedAt: Long = System.currentTimeMillis(),
     
     @ColumnInfo(name = "import_source")
     val importSource: String,

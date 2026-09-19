@@ -7,7 +7,7 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface LabelDao {
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insert(label: LabelEntity): Long
 
     @Update
@@ -19,10 +19,13 @@ interface LabelDao {
     @Query("SELECT * FROM labels WHERE label_id = :id")
     suspend fun getById(id: Long): LabelEntity?
 
+    @Query("SELECT * FROM labels WHERE name = :name COLLATE NOCASE")
+    suspend fun getByName(name: String): LabelEntity?
+
     @Query("SELECT * FROM labels ORDER BY name ASC")
     fun observeAll(): Flow<List<LabelEntity>>
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertDocumentLabel(documentLabel: DocumentLabelEntity)
 
     @Query("DELETE FROM document_labels WHERE document_id = :documentId AND label_id = :labelId")

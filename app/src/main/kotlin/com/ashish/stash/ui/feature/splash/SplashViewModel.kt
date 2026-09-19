@@ -28,14 +28,17 @@ class SplashViewModel @Inject constructor(
 
     private fun checkInitialDestination() {
         viewModelScope.launch {
-            // Ensure defaults are in DB before first screen
-            repository.checkAndInjectDefaults()
+            val userData = preferencesManager.userData.first()
             
-            // Artificial delay for splash feel
-            delay(1200)
+            if (!userData.defaultsSeeded) {
+                repository.checkAndInjectDefaults()
+                preferencesManager.setDefaultsSeeded(true)
+            }
             
-            val onboardingCompleted = preferencesManager.onboardingCompleted.first()
-            if (onboardingCompleted) {
+            // Artificial delay for splash feel - keeping minimal 500ms
+            delay(500)
+            
+            if (userData.onboardingCompleted) {
                 _navigationEvent.emit(SplashNavigation.ToHome)
             } else {
                 _navigationEvent.emit(SplashNavigation.ToOnboarding)

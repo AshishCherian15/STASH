@@ -14,6 +14,7 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
+import java.io.File
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -29,9 +30,14 @@ interface DocumentRepository {
     fun observePriorityDocumentsWithMetadata(showLocked: Boolean = false): Flow<List<DocumentWithMetadata>>
     fun observeUnlockedDocumentsCount(): Flow<Int>
     fun observeLockedDocumentsCount(): Flow<Int>
-    fun observeTotalSizeBytes(): Flow<Long?>
+    fun observeTotalSizeBytes(showLocked: Boolean = false): Flow<Long?>
     suspend fun updateDocumentLastOpened(id: Long, timestamp: Long): Int
-    suspend fun updateDocumentLockStatus(id: Long, isLocked: Int)
+    suspend fun updateDocumentLockStatus(id: Long, isLocked: Boolean)
+    suspend fun updateDocumentNotes(id: Long, notes: String?)
+    suspend fun updateDocumentImportance(id: Long, importance: Importance)
+    suspend fun updateDocumentOcrResult(id: Long, text: String?, status: OcrStatus)
+    suspend fun updateDocumentCategory(id: Long, categoryId: Long?)
+    suspend fun updateDocumentFolder(id: Long, folderId: Long?)
     suspend fun renameDocumentPhysical(id: Long, newName: String): Boolean
 
     // Search
@@ -91,6 +97,7 @@ class DocumentRepositoryImpl @Inject constructor(
         if (mimeType.startsWith("image/") || mimeType.contains("pdf")) {
             val workRequest = OneTimeWorkRequestBuilder<OcrProcessingWorker>()
                 .setInputData(Data.Builder().putLong("document_id", documentId).build())
+                .addTag("ocr_$documentId")
                 .build()
             WorkManager.getInstance(context).enqueue(workRequest)
         }
@@ -101,17 +108,25 @@ class DocumentRepositoryImpl @Inject constructor(
     }
 
     override suspend fun deleteDocument(id: Long) = withContext(Dispatchers.IO) {
-        documentDao.deleteById(id)
+        val document = documentDao.getById(id)
+        if (document != null) {
+            WorkManager.getInstance(context).cancelAllWorkByTag("ocr_$id")
+            
+            if (document.sourceKind == SourceKind.LOCAL_COPY) {
+                try {
+                    val file = File(Uri.parse(document.uri).path!!)
+                    if (file.exists()) file.delete()
+                } catch (e: Exception) {}
+            }
+            documentDao.deleteById(id)
+        }
     }
 
     override suspend fun checkAndInjectDefaults() = withContext(Dispatchers.IO) {
-        // Simple check: if no categories exist, inject all defaults
-        val existing = categoryDao.getById(1L)
-        if (existing == null) {
-            StashDefaults.Categories.forEach { categoryDao.insert(it) }
-            StashDefaults.Folders.forEach { folderDao.insert(it) }
-            StashDefaults.Labels.forEach { labelDao.insert(it) }
-        }
+        // Seeding logic moved to SplashViewModel + PreferencesManager flag
+        StashDefaults.Categories.forEach { categoryDao.insert(it) }
+        StashDefaults.Folders.forEach { folderDao.insert(it) }
+        StashDefaults.Labels.forEach { labelDao.insert(it) }
     }
 
     override suspend fun getDocumentById(id: Long): DocumentEntity? = withContext(Dispatchers.IO) {
@@ -134,14 +149,39 @@ class DocumentRepositoryImpl @Inject constructor(
 
     override fun observeUnlockedDocumentsCount(): Flow<Int> = documentDao.observeUnlockedCount()
     override fun observeLockedDocumentsCount(): Flow<Int> = documentDao.observeLockedCount()
-    override fun observeTotalSizeBytes(): Flow<Long?> = documentDao.observeTotalSizeBytes()
+    override fun observeTotalSizeBytes(showLocked: Boolean): Flow<Long?> = documentDao.observeTotalSizeBytes(showLocked.toInt())
 
     override suspend fun updateDocumentLastOpened(id: Long, timestamp: Long): Int = withContext(Dispatchers.IO) {
         documentDao.updateLastOpened(id, timestamp)
     }
 
-    override suspend fun updateDocumentLockStatus(id: Long, isLocked: Int) = withContext(Dispatchers.IO) {
+    override suspend fun updateDocumentLockStatus(id: Long, isLocked: Boolean) = withContext(Dispatchers.IO) {
         documentDao.updateLockStatus(id, isLocked)
+        Unit
+    }
+
+    override suspend fun updateDocumentNotes(id: Long, notes: String?) = withContext(Dispatchers.IO) {
+        documentDao.updateNotes(id, notes)
+        Unit
+    }
+
+    override suspend fun updateDocumentImportance(id: Long, importance: Importance) = withContext(Dispatchers.IO) {
+        documentDao.updateImportance(id, importance)
+        Unit
+    }
+
+    override suspend fun updateDocumentOcrResult(id: Long, text: String?, status: OcrStatus) = withContext(Dispatchers.IO) {
+        documentDao.updateOcrResult(id, text, status)
+        Unit
+    }
+
+    override suspend fun updateDocumentCategory(id: Long, categoryId: Long?) = withContext(Dispatchers.IO) {
+        documentDao.updateCategory(id, categoryId)
+        Unit
+    }
+
+    override suspend fun updateDocumentFolder(id: Long, folderId: Long?) = withContext(Dispatchers.IO) {
+        documentDao.updateFolder(id, folderId)
         Unit
     }
 
@@ -151,11 +191,7 @@ class DocumentRepositoryImpl @Inject constructor(
         val newUri = safUriManager.renameDocument(uri, newName)
         
         if (newUri != null) {
-            documentDao.update(document.copy(
-                uri = newUri.toString(),
-                displayTitle = newName,
-                originalFilename = newName
-            ))
+            documentDao.updateTitle(id, newName)
             true
         } else {
             false

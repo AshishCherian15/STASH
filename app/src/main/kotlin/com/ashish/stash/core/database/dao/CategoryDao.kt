@@ -11,10 +11,10 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface CategoryDao {
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insert(category: CategoryEntity): Long
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertAll(categories: List<CategoryEntity>)
 
     @Update
@@ -26,7 +26,7 @@ interface CategoryDao {
     @Query("SELECT * FROM categories WHERE category_id = :id")
     suspend fun getById(id: Long): CategoryEntity?
 
-    @Query("SELECT * FROM categories WHERE name = :name")
+    @Query("SELECT * FROM categories WHERE name = :name COLLATE NOCASE")
     suspend fun getByName(name: String): CategoryEntity?
 
     @Query("SELECT * FROM categories ORDER BY name ASC")
