@@ -2,6 +2,7 @@ package com.ashish.stash.ui.feature.home
 
 import android.content.Intent
 import android.net.Uri
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
@@ -19,6 +20,7 @@ import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -27,6 +29,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.ashish.stash.core.saf.ShareHelper
 import com.ashish.stash.ui.component.rememberSafFilePickerLauncher
 import com.ashish.stash.ui.component.rememberSafMultiFilePickerLauncher
 import com.ashish.stash.ui.theme.LedgerSlate
@@ -50,21 +53,29 @@ fun HomeScreen(
     var viewMenuExpanded by remember { mutableStateOf(false) }
     val context = LocalContext.current
 
-    // Selection State (Poco style)
-    val selectedDocIds = remember { mutableStateListOf<Long>() }
+    // Selection State (rememberSaveable for persistence across config changes)
+    var selectedDocIds by rememberSaveable { mutableStateOf(setOf<Long>()) }
     val isSelectionMode = selectedDocIds.isNotEmpty()
 
     val multiFilePicker = rememberSafMultiFilePickerLauncher(
         onFilesSelected = { uris -> viewModel.importDocuments(uris) }
     )
 
-    LaunchedEffect(uiState.importSuccess, uiState.importError) {
+    BackHandler(enabled = isSelectionMode) {
+        selectedDocIds = emptySet()
+    }
+
+    LaunchedEffect(uiState.importSuccess) {
         if (uiState.importSuccess) {
-            snackbarHostState.showSnackbar("Documents imported successfully")
+            // Summary message from VM would be better, but for now we show a toast-like snackbar
+            snackbarHostState.showSnackbar("Batch operation completed")
             viewModel.clearImportSuccess()
         }
-        uiState.importError?.let {
-            snackbarHostState.showSnackbar(it)
+    }
+
+    uiState.importError?.let { error ->
+        LaunchedEffect(error) {
+            snackbarHostState.showSnackbar(error)
             viewModel.clearImportError()
         }
     }
@@ -75,29 +86,25 @@ fun HomeScreen(
                 TopAppBar(
                     title = { Text("${selectedDocIds.size} selected") },
                     navigationIcon = {
-                        IconButton(onClick = { selectedDocIds.clear() }) {
+                        IconButton(onClick = { selectedDocIds = emptySet() }) {
                             Icon(Icons.Default.Close, contentDescription = "Cancel")
                         }
                     },
                     actions = {
                         IconButton(onClick = {
-                            val uris = uiState.documents
+                            val docsToShare = uiState.documents
                                 .filter { it.data.document.documentId in selectedDocIds }
-                                .map { Uri.parse(it.data.document.uri) }
+                                .map { it.data.document }
                             
-                            val intent = Intent(Intent.ACTION_SEND_MULTIPLE).apply {
-                                type = "*/*"
-                                putParcelableArrayListExtra(Intent.EXTRA_STREAM, ArrayList(uris))
-                                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                            }
+                            val intent = ShareHelper.createShareIntent(context, docsToShare)
                             context.startActivity(Intent.createChooser(intent, "Share Documents"))
-                            selectedDocIds.clear()
+                            // Selection cleared only after explicit action or back
                         }) {
                             Icon(Icons.Default.Share, contentDescription = "Share")
                         }
                         IconButton(onClick = { 
                             selectedDocIds.forEach { viewModel.deleteDocument(it) }
-                            selectedDocIds.clear()
+                            selectedDocIds = emptySet()
                         }) {
                             Icon(Icons.Default.Delete, contentDescription = "Delete")
                         }
@@ -186,14 +193,14 @@ fun HomeScreen(
             } else {
                 val onDocClick: (Long) -> Unit = { id ->
                     if (isSelectionMode) {
-                        if (selectedDocIds.contains(id)) selectedDocIds.remove(id)
-                        else selectedDocIds.add(id)
+                        selectedDocIds = if (selectedDocIds.contains(id)) selectedDocIds - id
+                        else selectedDocIds + id
                     } else {
                         onNavigateToViewer(id)
                     }
                 }
                 val onDocLongClick: (Long) -> Unit = { id ->
-                    if (!isSelectionMode) selectedDocIds.add(id)
+                    if (!isSelectionMode) selectedDocIds = setOf(id)
                 }
 
                 when (uiState.viewMode) {
@@ -207,7 +214,11 @@ fun HomeScreen(
                     modifier = Modifier.fillMaxSize().background(Color.White.copy(alpha = 0.7f)),
                     contentAlignment = Alignment.Center
                 ) {
-                    CircularProgressIndicator(color = StashBlue)
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        CircularProgressIndicator(color = StashBlue)
+                        Spacer(Modifier.height(16.dp))
+                        // Progress text from VM state can be added here
+                    }
                 }
             }
         }
@@ -218,7 +229,7 @@ fun HomeScreen(
 @Composable
 private fun DocumentList(
     state: HomeUiState, 
-    selectedIds: List<Long>,
+    selectedIds: Set<Long>,
     onClick: (Long) -> Unit,
     onLongClick: (Long) -> Unit
 ) {
@@ -250,7 +261,7 @@ private fun DocumentList(
 @Composable
 private fun DocumentGrid(
     state: HomeUiState,
-    selectedIds: List<Long>,
+    selectedIds: Set<Long>,
     onClick: (Long) -> Unit,
     onLongClick: (Long) -> Unit
 ) {
