@@ -19,6 +19,7 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import com.ashish.stash.core.database.entity.DocumentWithMetadata
 import com.ashish.stash.core.database.entity.Importance
+import com.ashish.stash.core.database.entity.OcrStatus
 import com.ashish.stash.ui.theme.StashBlue
 import com.ashish.stash.ui.theme.LedgerSlate
 import com.ashish.stash.ui.theme.VaultBrass
@@ -36,8 +37,7 @@ fun DocumentCard(
     val labels = documentWithMetadata.labels
     val resourceLinks = documentWithMetadata.resourceLinks
     
-    val needsOcr = document.mimeType.startsWith("image/") || document.mimeType.contains("pdf")
-    val ocrComplete = !document.ocrText.isNullOrBlank()
+    val isIndexing = document.ocrStatus == OcrStatus.PENDING
 
     Card(
         onClick = onClick,
@@ -129,13 +129,13 @@ fun DocumentCard(
                     }
                 }
 
-                if (labels.isNotEmpty() || (needsOcr && !ocrComplete)) {
+                if (labels.isNotEmpty() || isIndexing) {
                     Spacer(modifier = Modifier.height(8.dp))
                     Row(
                         horizontalArrangement = Arrangement.spacedBy(4.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        if (needsOcr && !ocrComplete) {
+                        if (isIndexing) {
                             Icon(
                                 Icons.Outlined.AutoAwesome,
                                 contentDescription = null,
